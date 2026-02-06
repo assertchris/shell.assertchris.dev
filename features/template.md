@@ -179,6 +179,12 @@ This feature will {{WHAT_YOU_ARE_BUILDING}} so that {{USERS / ADMINS / SYSTEM}} 
 - **{{DECISION_TITLE_1}}**: {{DECISION}}
 - **{{DECISION_TITLE_2}}**: {{DECISION}}
 
+## Pre-Commit Checklist
+Before every commit, ensure the following have been completed:
+- [ ] Code formatting applied (`composer format`)
+- [ ] All tests passing (`composer test`)
+- [ ] Feature doc updated (progress, files modified, session history)
+
 ## Session History
 
 ### Session 1
