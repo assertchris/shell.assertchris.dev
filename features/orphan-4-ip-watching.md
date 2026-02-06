@@ -74,12 +74,13 @@ This feature will add IP binding to Sanctum tokens so that the system can:
 ### Completed
 - Codebase exploration and planning
 - Phase 1: Database + Custom Model
-
-### In Progress
 - Phase 2: Enforcement Middleware + Tests
 
-### To Do
+### In Progress
 - Phase 3: Filament UI — Show IP Info
+
+### To Do
+- (none)
 
 ## Technical Notes
 
@@ -100,25 +101,27 @@ This feature will add IP binding to Sanctum tokens so that the system can:
 ### Providers
 - `app/Providers/AppServiceProvider.php` — registers custom token model
 
-### Services / Core
-- (pending) `app/Http/Middleware/EnforceTokenIpBinding.php`
+### Middleware
+- `app/Http/Middleware/EnforceTokenIpBinding.php`
 
 ### Admin / CMS
 - `app/Filament/Resources/AccessTokenResource.php` — updated model reference
 
+### Bootstrap
+- `bootstrap/app.php` — registered middleware in api group
+
 ### Tests
-- (pending) `tests/Feature/Api/IpWatchingTest.php`
+- `tests/Feature/Api/IpWatchingTest.php`
 
 ## Testing
-🟡 **Pending**: No tests written yet
-- Key coverage:
+✅ **8 tests passing** (75 total across suite)
 - First use records IP
-- Same IP allowed repeatedly
+- Same IP skips DB write
 - First IP change of day allowed
 - Second IP change blocked with 403
 - Return to original IP after change is blocked
 - Next day resets
-- TransientToken (session auth) unaffected
+- Session auth (TransientToken) unaffected
 - Blocked requests logged
 
 ## Decisions Made
@@ -144,3 +147,8 @@ Before every commit, ensure the following have been completed:
 ### Session 2
 - Implemented Phase 1: migration, custom PersonalAccessToken model, Sanctum registration, AccessTokenResource model swap
 - All 67 existing tests pass unchanged
+- Implemented Phase 2: EnforceTokenIpBinding middleware, registered in api group, 8 new tests
+- Fixed: 403 response uses generic "Forbidden." message (detailed info only in Log::warning)
+- Fixed: first request only records IP without setting ip_changed_at (avoids blocking the first real IP change)
+- Added `last_ip_address` and `ip_changed_at` to model's $fillable
+- All 75 tests pass (8 new + 67 existing)
