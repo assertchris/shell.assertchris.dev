@@ -1,0 +1,5 @@
+integrations:
+  forge:
+    shell.assertchris.dev:
+      server-id: 0
+      site-id: 0
