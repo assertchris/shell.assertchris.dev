@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "assertchris/shell",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "A read-only proxy between personal assistants and external services.",
+    "keywords": ["laravel", "proxy", "assistants"],
     "license": "MIT",
     "require": {
         "php": "^8.4",
