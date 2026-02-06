@@ -26,17 +26,17 @@ This feature will add token-authenticated read-only email access so that persona
 ## Requirements
 
 ### Functional
-- [ ] Admin can create/revoke API access tokens via Filament
+- [x] Admin can create/revoke API access tokens via Filament
 - [ ] Admin can add/edit/delete IMAP mailbox credentials via Filament
 - [ ] Admin can test mailbox connections from the admin panel
-- [ ] API accepts bearer token authentication
+- [x] API accepts bearer token authentication
 - [ ] API lists mailboxes (id and name only — no credentials)
 - [ ] API lists folders for a mailbox
 - [ ] API lists messages in a folder
 - [ ] API returns a single message with full body
 
 ### Non-Functional
-- [ ] Security: Tokens stored as SHA-256 hashes, mailbox passwords encrypted at rest
+- [x] Security: Tokens stored as SHA-256 hashes, mailbox passwords encrypted at rest
 - [ ] Security: No write/send/delete operations exposed via API
 - [ ] Security: Mailbox credentials never exposed via API responses
 
@@ -74,12 +74,12 @@ This feature will add token-authenticated read-only email access so that persona
 
 ### Completed
 - Feature doc created
+- Phase 1: Access Tokens (Sanctum install, API routes, Filament resource, tests)
 
 ### In Progress
-- Planning phase
+- Phase 2: IMAP Mailbox Management
 
 ### To Do
-- Phase 1: Access Tokens
 - Phase 2: IMAP Mailbox Management
 - Phase 3: Read-Only Email API
 
@@ -93,27 +93,33 @@ This feature will add token-authenticated read-only email access so that persona
 ## Files Modified/Created
 
 ### Database
-- (pending)
+- `database/migrations/2026_02_06_072704_create_personal_access_tokens_table.php` (Sanctum published)
 
 ### Models
-- (pending)
+- `app/Models/User.php` — added `HasApiTokens` trait
 
-### Services / Core
-- (pending)
+### Config
+- `config/sanctum.php` (Sanctum published)
 
-### API / Controllers / Responders
-- (pending)
+### API / Routes
+- `routes/api.php` — `GET /api/status` behind `auth:sanctum`
+- `bootstrap/app.php` — registered API routes
 
 ### Admin / CMS
-- (pending)
+- `app/Filament/Resources/AccessTokenResource.php`
+- `app/Filament/Resources/AccessTokenResource/Pages/ListAccessTokens.php`
+- `app/Filament/Resources/AccessTokenResource/Pages/CreateAccessToken.php`
 
 ### Tests
-- (pending)
+- `tests/Feature/Api/StatusTest.php` — API auth tests
+- `tests/Feature/AccessTokenTest.php` — token model tests
+- `tests/Feature/Filament/AccessTokenResourceTest.php` — Filament CRUD tests
+- `tests/Feature/Filament/AdminSmokeTest.php` — smoke tests for all admin pages
 
 ## Testing
-🟡 **Baseline**: 2 passing tests from scaffold
-- Total tests: 2
-- Assertions: 2
+✅ **Phase 1 complete**: 16 passing tests
+- Total tests: 16
+- Assertions: 23
 
 ## Decisions Made
 - **Token storage**: SHA-256 hash (not bcrypt) for fast lookup on every API request
@@ -133,3 +139,18 @@ Before every commit, ensure the following have been completed:
 - Explored codebase: Laravel 12, Filament 5, SQLite, Pest v4, no custom code yet
 - Researched ImapEngine package: installation, multi-mailbox support, read operations
 - Created feature doc and implementation plan (3 phases)
+
+### Session 2
+- Planned Phase 1 implementation approach
+
+### Session 3
+- Implemented Phase 1: Access Tokens
+- Installed `laravel/boost` (dev) and `laravel/sanctum`
+- Published Sanctum config/migration, ran migration
+- Added `HasApiTokens` to User model
+- Created `routes/api.php` with `GET /api/status` behind `auth:sanctum`
+- Registered API routes in `bootstrap/app.php`
+- Created Filament `AccessTokenResource` with list, create, delete (no edit — tokens are immutable)
+- Filament 5 notes: `$navigationIcon` type is `string|BackedEnum|null`, actions moved to `Filament\Actions` namespace, use `Heroicon` enum
+- Wrote 14 new tests (3 API auth, 3 token model, 5 Filament CRUD, 3 admin smoke)
+- All 16 tests passing (23 assertions)
