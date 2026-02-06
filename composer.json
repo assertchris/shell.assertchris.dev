@@ -7,6 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-ide-helper": "^3.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1"
     },
@@ -37,6 +38,28 @@
             "@php artisan migrate --force",
             "npm ci",
             "npm run build"
+        ],
+        "clear-caches": [
+            "rm -Rf ./bootstrap/cache/*.php",
+            "@php artisan cache:clear",
+            "@php artisan route:clear",
+            "@php artisan view:clear",
+            "@php artisan config:clear",
+            "@php artisan clear-compiled"
+        ],
+        "format": [
+            "vendor/bin/pint --config meta/pint.json"
+        ],
+        "refresh-ide-helpers": [
+            "@clear-caches",
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta",
+            "@format"
+        ],
+        "refresh-ide-model-docblock": [
+            "@clear-caches",
+            "@php artisan ide-helper:models --write --reset",
+            "@format"
         ],
         "test": [
             "@php artisan config:clear --ansi",

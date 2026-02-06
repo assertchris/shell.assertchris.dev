@@ -104,10 +104,10 @@ This feature will set up the project scaffold so that developers can:
 ### Completed
 - Planning and feature doc creation
 - Phase 1: Remove unused dependencies and files
+- Phase 2: IDE helpers
+- Phase 3: Pint (config in `meta/pint.json`)
 
 ### To Do
-- Phase 2: IDE helpers
-- Phase 3: Pint
 - Phase 4: Pest
 - Phase 5: Filament 5
 - Phase 6: GitHub CI
@@ -146,7 +146,8 @@ This feature will set up the project scaffold so that developers can:
 ### Infrastructure
 - `.github/workflows/tests.yml` — CI workflow
 - `herd.yml` — Forge deployment config (placeholder IDs)
-- `meta/.gitignore` — Ignores generated IDE helper files
+- `meta/.gitignore` — Ignores generated IDE helper files, whitelists pint.json
+- `meta/pint.json` — Pint config (Laravel preset, excludes meta/)
 - `LICENSE` — MIT license
 - `README.md` — Project-specific content
 - `.env.example` — Cleaned up defaults
@@ -162,7 +163,7 @@ This feature will set up the project scaffold so that developers can:
 🟡 **Pending**: Tests will be set up in Phase 4 (Pest) and verified in Phase 9
 
 ## Decisions Made
-- **Pint config**: Use Laravel preset defaults, no custom pint.json
+- **Pint config**: Laravel preset, `meta/pint.json` excludes `meta/` from formatting
 - **Frontend stack**: Keep Vite/Tailwind/npm for future UI work
 - **Forge IDs**: Placeholders for now, fill in when site is provisioned
 - **IDE helper placement**: In `require` (not `require-dev`) to match portfolio project pattern
@@ -188,3 +189,5 @@ Before every commit, ensure the following have been completed:
 ### Session 2
 - Completed Phase 1: removed Sail/Pail, deleted welcome view, replaced with JSON route, cleaned console.php, updated composer scripts (npm ci, removed dev/post-create-project-cmd), cleaned .editorconfig/.gitignore/phpunit.xml
 - Added pre-commit checklist to template and feature doc
+- Completed Phase 2: installed IDE helper, published and configured config (output to meta/), added composer scripts (clear-caches, format, refresh-ide-helpers, refresh-ide-model-docblock)
+- Completed Phase 3: created meta/pint.json with Laravel preset excluding meta/, verified composer format works
