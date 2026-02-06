@@ -52,7 +52,7 @@ class AccessTokenResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                DeleteAction::make(),
+                DeleteAction::make()->icon(null),
             ])
             ->bulkActions([
                 DeleteBulkAction::make(),

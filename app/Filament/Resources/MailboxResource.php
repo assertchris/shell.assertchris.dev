@@ -72,8 +72,8 @@ class MailboxResource extends Resource
                                 ->send();
                         }
                     }),
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()->icon(null),
+                DeleteAction::make()->icon(null),
             ])
             ->bulkActions([
                 DeleteBulkAction::make(),

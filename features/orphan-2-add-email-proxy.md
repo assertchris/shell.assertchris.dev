@@ -2,7 +2,7 @@
 
 - Branch: `feature/orphan-2-add-email-proxy`
 - Related Issue: orphan-2
-- **Status**: 🟡 In Progress
+- **Status**: ✅ Complete
 - Examples: 🟡 In Progress / ✅ Complete / 🔴 Blocked
 
 ## Overview
@@ -30,15 +30,15 @@ This feature will add token-authenticated read-only email access so that persona
 - [x] Admin can add/edit/delete IMAP mailbox credentials via Filament
 - [x] Admin can test mailbox connections from the admin panel
 - [x] API accepts bearer token authentication
-- [ ] API lists mailboxes (id and name only — no credentials)
-- [ ] API lists folders for a mailbox
-- [ ] API lists messages in a folder
-- [ ] API returns a single message with full body
+- [x] API lists mailboxes (id and name only — no credentials)
+- [x] API lists folders for a mailbox
+- [x] API lists messages in a folder
+- [x] API returns a single message with full body
 
 ### Non-Functional
 - [x] Security: Tokens stored as SHA-256 hashes, mailbox passwords encrypted at rest
-- [ ] Security: No write/send/delete operations exposed via API
-- [ ] Security: Mailbox credentials never exposed via API responses
+- [x] Security: No write/send/delete operations exposed via API
+- [x] Security: Mailbox credentials never exposed via API responses
 
 ### Out of Scope
 - Sending or modifying email
@@ -76,12 +76,13 @@ This feature will add token-authenticated read-only email access so that persona
 - Feature doc created
 - Phase 1: Access Tokens (Sanctum install, API routes, Filament resource, tests)
 - Phase 2: IMAP Mailbox Management (model, migration, factory, Filament resource, test connection, tests)
+- Phase 3: Read-Only Email API (MailboxService, controllers, API resources, routes, tests)
 
 ### In Progress
-- Phase 3: Read-Only Email API
+- None
 
 ### To Do
-- Phase 3: Read-Only Email API
+- None — all phases complete
 
 ## Technical Notes
 
@@ -106,15 +107,30 @@ This feature will add token-authenticated read-only email access so that persona
 ### Config
 - `config/sanctum.php` (Sanctum published)
 
+### Services
+- `app/Services/MailboxService.php` — connects to IMAP, fetches folders/messages
+
 ### API / Routes
-- `routes/api.php` — `GET /api/status` behind `auth:sanctum`
+- `routes/api.php` — `GET /api/status`, mailbox/folder/message endpoints behind `auth:sanctum`
 - `bootstrap/app.php` — registered API routes
 
+### API Resources
+- `app/Http/Resources/MailboxResource.php` — `{id, name}` only (no credentials)
+- `app/Http/Resources/FolderResource.php` — `{path, name}`
+- `app/Http/Resources/MessageSummaryResource.php` — `{uid, subject, from, to, date, has_attachments}`
+- `app/Http/Resources/MessageResource.php` — full message with `{cc, text, html, attachment_count}`
+
+### Responders
+- `app/Http/Responders/Api/ListMailboxesResponder.php` — list active mailboxes
+- `app/Http/Responders/Api/ListFoldersResponder.php` — list IMAP folders
+- `app/Http/Responders/Api/ListMessagesResponder.php` — paginated message summaries
+- `app/Http/Responders/Api/ShowMessageResponder.php` — full message with body
+
 ### Admin / CMS
-- `app/Filament/Resources/AccessTokenResource.php`
+- `app/Filament/Resources/AccessTokenResource.php` — removed action icons
 - `app/Filament/Resources/AccessTokenResource/Pages/ListAccessTokens.php`
 - `app/Filament/Resources/AccessTokenResource/Pages/CreateAccessToken.php`
-- `app/Filament/Resources/MailboxResource.php` — list, create, edit, delete, test connection
+- `app/Filament/Resources/MailboxResource.php` — list, create, edit, delete, test connection, removed action icons
 - `app/Filament/Resources/MailboxResource/Pages/ListMailboxes.php`
 - `app/Filament/Resources/MailboxResource/Pages/CreateMailbox.php`
 - `app/Filament/Resources/MailboxResource/Pages/EditMailbox.php`
@@ -126,11 +142,14 @@ This feature will add token-authenticated read-only email access so that persona
 - `tests/Feature/Filament/AdminSmokeTest.php` — smoke tests for all admin pages
 - `tests/Feature/MailboxTest.php` — model, encrypted cast, toImapConfig, relationships
 - `tests/Feature/Filament/MailboxResourceTest.php` — Filament CRUD, scoping, test connection (mocked)
+- `tests/Unit/MailboxServiceTest.php` — service unit tests (connect, getFolders, getFolder, getMessages, getMessage)
+- `tests/Feature/Api/MailboxApiTest.php` — list mailboxes, list folders, auth, scoping, connection failure
+- `tests/Feature/Api/MessageApiTest.php` — list messages, show message, pagination, folder/uid 404s, auth
 
 ## Testing
-✅ **Phase 2 complete**: 35 passing tests
-- Total tests: 35
-- Assertions: 67
+✅ **Phase 3 complete**: 60 passing tests
+- Total tests: 60
+- Assertions: 158
 
 ## Decisions Made
 - **Token storage**: SHA-256 hash (not bcrypt) for fast lookup on every API request
@@ -178,3 +197,17 @@ Before every commit, ensure the following have been completed:
 - Edit page keeps current password when left blank via `dehydrateStateUsing()`
 - Wrote 19 new tests (6 model, 10 resource CRUD + scoping + connection test, 3 admin smoke)
 - All 35 tests passing (67 assertions)
+
+### Session 5
+- Implemented Phase 3: Read-Only Email API
+- Created `MailboxService` with connect, getFolders, getFolder, getMessages, getMessage methods
+- Created 4 API Resources: MailboxResource (id/name only), FolderResource, MessageSummaryResource, MessageResource
+- Created `MailboxController` (index: list active mailboxes, folders: list IMAP folders)
+- Created `MessageController` (index: paginated message summaries, show: full message with body)
+- Added 4 routes: GET mailboxes, folders, messages, messages/{uid} — all behind `auth:sanctum`
+- Controllers scope mailbox to authenticated user (404 if mismatch), catch IMAP failures as 503
+- MessageController caps per_page at 50, re-throws HTTP exceptions through catch block
+- Uses ImapEngine's own LengthAwarePaginator (not Laravel's) for message pagination
+- Removed action icons from AccessTokenResource and MailboxResource edit/delete actions
+- Wrote 7 unit tests for MailboxService + 8 feature tests for mailbox API + 8 feature tests for message API
+- All 60 tests passing (158 assertions)
