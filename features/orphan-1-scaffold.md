@@ -107,8 +107,9 @@ This feature will set up the project scaffold so that developers can:
 - Phase 2: IDE helpers
 - Phase 3: Pint (config in `meta/pint.json`)
 
+- Phase 4: Pest (replaced PHPUnit, tests converted and passing)
+
 ### To Do
-- Phase 4: Pest
 - Phase 5: Filament 5
 - Phase 6: GitHub CI
 - Phase 7: Open source prep
@@ -160,7 +161,7 @@ This feature will set up the project scaffold so that developers can:
 - `bootstrap/providers.php` — AdminPanelProvider registered
 
 ## Testing
-🟡 **Pending**: Tests will be set up in Phase 4 (Pest) and verified in Phase 9
+✅ **Passing**: 2 tests, 2 assertions (Pest v4)
 
 ## Decisions Made
 - **Pint config**: Laravel preset, `meta/pint.json` excludes `meta/` from formatting
@@ -191,3 +192,4 @@ Before every commit, ensure the following have been completed:
 - Added pre-commit checklist to template and feature doc
 - Completed Phase 2: installed IDE helper, published and configured config (output to meta/), added composer scripts (clear-caches, format, refresh-ide-helpers, refresh-ide-model-docblock)
 - Completed Phase 3: created meta/pint.json with Laravel preset excluding meta/, verified composer format works
+- Completed Phase 4: replaced PHPUnit with Pest v4, converted example tests, deleted TestCase.php, cleaned up Pest.php
