@@ -44,6 +44,6 @@ If the token is missing or invalid, you will receive a `401` response:
 
 ## Notes
 
-- This is a **read-only** API — all endpoints use `GET` requests.
-- Tokens do not expire, but can be revoked at any time through the admin panel.
+- Tokens may have an expiry date set during creation. Expired tokens will return a `401` response.
+- Tokens can be revoked at any time through the admin panel.
 - Always include `Accept: application/json` to receive proper JSON error responses.

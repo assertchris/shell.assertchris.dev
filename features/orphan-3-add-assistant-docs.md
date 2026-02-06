@@ -75,12 +75,12 @@ This feature will add markdown-rendered documentation pages so that an AI assist
 - Phase 3: Created `DocPagesService` (moved from registry to proper service)
 - Phase 4: Created `ListDocPagesResponder` and `ShowDocPageResponder` with DI
 - Phase 5: Created `authentication.md` and `mailboxes.md` documentation
+- Phase 6: Added routes to `web.php`, fixed doc content issues
 
 ### In Progress
-- Phase 6: Add routes
+- Phase 7: Write tests
 
 ### To Do
-- Add routes
 - Write tests
 - Format and verify
 
@@ -136,3 +136,4 @@ Before every commit, ensure the following have been completed:
 - Phase 2: Created layout (`components/layouts/docs.blade.php`), index and show views
 - Phase 3: Created `DocPagesService`, responders with DI
 - Phase 4+5: Created responders and markdown documentation content
+- Phase 6: Added routes, fixed doc content (removed read-only claim, fixed token expiry, removed duplicate status endpoint)

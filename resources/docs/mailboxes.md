@@ -11,26 +11,6 @@ Accept: application/json
 
 ---
 
-## GET /api/status
-
-Health check endpoint.
-
-```bash
-curl -s https://your-domain.com/api/status \
-  -H "Authorization: Bearer YOUR_API_TOKEN" \
-  -H "Accept: application/json"
-```
-
-### Success Response (200)
-
-```json
-{
-  "status": "ok"
-}
-```
-
----
-
 ## GET /api/mailboxes
 
 Returns all active mailboxes for the authenticated user.
