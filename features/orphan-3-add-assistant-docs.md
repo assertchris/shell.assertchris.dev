@@ -76,13 +76,13 @@ This feature will add markdown-rendered documentation pages so that an AI assist
 - Phase 4: Created `ListDocPagesResponder` and `ShowDocPageResponder` with DI
 - Phase 5: Created `authentication.md` and `mailboxes.md` documentation
 - Phase 6: Added routes to `web.php`, fixed doc content issues
+- Phase 7: Created feature tests (5 tests, 13 assertions)
 
 ### In Progress
-- Phase 7: Write tests
+- Phase 8: Final format and verify
 
 ### To Do
-- Write tests
-- Format and verify
+- `npm run build`
 
 ## Technical Notes
 
@@ -137,3 +137,4 @@ Before every commit, ensure the following have been completed:
 - Phase 3: Created `DocPagesService`, responders with DI
 - Phase 4+5: Created responders and markdown documentation content
 - Phase 6: Added routes, fixed doc content (removed read-only claim, fixed token expiry, removed duplicate status endpoint)
+- Phase 7: Created `tests/Feature/Docs/DocPagesTest.php` (5 tests)
