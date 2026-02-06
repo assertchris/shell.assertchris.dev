@@ -71,12 +71,13 @@ This feature will add markdown-rendered documentation pages so that an AI assist
 - Explored codebase (responder pattern, API endpoints, resources, routing)
 - Created implementation plan
 - Phase 1: Installed `@tailwindcss/typography`, added `@plugin` directive to `resources/css/app.css`
+- Phase 2: Created docs layout, index view, and show view
 
 ### In Progress
-- Phase 2: Create layout and views
+- Phase 3: Create doc page registry
 
 ### To Do
-- Create layout, views, registry, responders
+- Create registry, responders
 - Write markdown documentation content
 - Add routes
 - Write tests
@@ -97,7 +98,7 @@ This feature will add markdown-rendered documentation pages so that an AI assist
 - `app/Http/Responders/Docs/ShowDocPageResponder.php` — Show responder
 
 ### Views / Frontend
-- `resources/views/components/docs-layout.blade.php` — Shared layout component
+- `resources/views/components/layouts/docs.blade.php` — Shared layout component
 - `resources/views/docs/index.blade.php` — Index page
 - `resources/views/docs/show.blade.php` — Individual doc page
 - `resources/docs/authentication.md` — Auth documentation
@@ -131,3 +132,4 @@ Before every commit, ensure the following have been completed:
 
 ### Session 2
 - Phase 1: Installed `@tailwindcss/typography`, added plugin directive to CSS
+- Phase 2: Created layout (`components/layouts/docs.blade.php`), index and show views
