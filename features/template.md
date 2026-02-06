@@ -184,6 +184,7 @@ Before every commit, ensure the following have been completed:
 - [ ] Code formatting applied (`composer format`)
 - [ ] All tests passing (`composer test`)
 - [ ] Feature doc updated (progress, files modified, session history)
+- **Never commit unless explicitly asked to by the user.**
 
 ## Session History
 

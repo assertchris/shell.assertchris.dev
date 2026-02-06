@@ -108,9 +108,9 @@ This feature will set up the project scaffold so that developers can:
 - Phase 3: Pint (config in `meta/pint.json`)
 
 - Phase 4: Pest (replaced PHPUnit, tests converted and passing)
+- Phase 5: Filament 5 (v5.2.0 installed, admin panel, custom theme, FilamentUser on User model)
 
 ### To Do
-- Phase 5: Filament 5
 - Phase 6: GitHub CI
 - Phase 7: Open source prep
 - Phase 8: Forge deployment
@@ -177,6 +177,7 @@ Before every commit, ensure the following have been completed:
 - [ ] Code formatting applied (`composer format`)
 - [ ] All tests passing (`composer test`)
 - [ ] Feature doc updated (progress, files modified, session history)
+- **Never commit unless explicitly asked to by the user.**
 
 ## Session History
 
@@ -193,3 +194,6 @@ Before every commit, ensure the following have been completed:
 - Completed Phase 2: installed IDE helper, published and configured config (output to meta/), added composer scripts (clear-caches, format, refresh-ide-helpers, refresh-ide-model-docblock)
 - Completed Phase 3: created meta/pint.json with Laravel preset excluding meta/, verified composer format works
 - Completed Phase 4: replaced PHPUnit with Pest v4, converted example tests, deleted TestCase.php, cleaned up Pest.php
+
+### Session 3
+- Completed Phase 5: installed Filament v5.2.0, ran filament:install --panels (created AdminPanelProvider, registered in bootstrap/providers.php), ran make:filament-theme (created theme CSS, auto-configured vite.config.js and panel provider with viteTheme), added FilamentUser interface to User model with canAccessPanel(), compiled theme via npm run build
