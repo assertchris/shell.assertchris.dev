@@ -2,7 +2,7 @@
 
 - Branch: `feature/orphan-4-ip-watching`
 - Related Issue: N/A
-- **Status**: 🟡 In Progress
+- **Status**: ✅ Complete
 - Examples: 🟡 In Progress / ✅ Complete / 🔴 Blocked
 
 ## Overview
@@ -25,24 +25,24 @@ This feature will add IP binding to Sanctum tokens so that the system can:
 ## Requirements
 
 ### Functional
-- [ ] Track `last_ip_address` and `ip_changed_at` on each token
-- [ ] First request from a token records the IP silently
-- [ ] Same IP on subsequent requests continues without extra DB writes
-- [ ] First IP change of the day is allowed (columns updated)
-- [ ] Second+ IP change in the same day returns 403 with message
-- [ ] Next calendar day resets — IP changes are allowed again
-- [ ] Session-based auth (Filament/web TransientToken) is not affected
-- [ ] Blocked requests are logged via `Log::warning`
+- [x] Track `last_ip_address` and `ip_changed_at` on each token
+- [x] First request from a token records the IP silently
+- [x] Same IP on subsequent requests continues without extra DB writes
+- [x] First IP change of the day is allowed (columns updated)
+- [x] Second+ IP change in the same day returns 403 with message
+- [x] Next calendar day resets — IP changes are allowed again
+- [x] Session-based auth (Filament/web TransientToken) is not affected
+- [x] Blocked requests are logged via `Log::warning`
 
 ### Non-Functional
-- [ ] Observability: `Log::warning` on blocked requests with token ID, IPs, and user context
-- [ ] Performance: No extra DB write when IP matches (read-only check via model attributes)
-- [ ] Security/Permissions: Only affects bearer token auth, not session auth
-- [ ] Backwards compatibility: Existing tokens work — first request just records the IP
+- [x] Observability: `Log::warning` on blocked requests with token ID, IPs, and user context
+- [x] Performance: No extra DB write when IP matches (read-only check via model attributes)
+- [x] Security/Permissions: Only affects bearer token auth, not session auth
+- [x] Backwards compatibility: Existing tokens work — first request just records the IP
 
 ### UX / Admin
-- [ ] Filament AccessTokenResource shows `last_ip_address` and `ip_changed_at` columns
-- [ ] Columns have sensible placeholders ("Never used", "Never")
+- [x] Filament AccessTokenResource shows `last_ip_address` and `ip_changed_at` columns
+- [x] Columns have sensible placeholders ("Never used", "Never")
 
 ### Out of Scope
 - Token revocation on suspicious activity (reject-only for now)
@@ -75,9 +75,10 @@ This feature will add IP binding to Sanctum tokens so that the system can:
 - Codebase exploration and planning
 - Phase 1: Database + Custom Model
 - Phase 2: Enforcement Middleware + Tests
+- Phase 3: Filament UI — Show IP Info
 
 ### In Progress
-- Phase 3: Filament UI — Show IP Info
+- (none)
 
 ### To Do
 - (none)
@@ -105,16 +106,17 @@ This feature will add IP binding to Sanctum tokens so that the system can:
 - `app/Http/Middleware/EnforceTokenIpBinding.php`
 
 ### Admin / CMS
-- `app/Filament/Resources/AccessTokenResource.php` — updated model reference
+- `app/Filament/Resources/AccessTokenResource.php` — updated model reference, added IP tracking columns
 
 ### Bootstrap
 - `bootstrap/app.php` — registered middleware in api group
 
 ### Tests
 - `tests/Feature/Api/IpWatchingTest.php`
+- `tests/Feature/Filament/AccessTokenResourceTest.php` — added IP column tests
 
 ## Testing
-✅ **8 tests passing** (75 total across suite)
+✅ **10 tests passing** (77 total across suite)
 - First use records IP
 - Same IP skips DB write
 - First IP change of day allowed
@@ -123,6 +125,8 @@ This feature will add IP binding to Sanctum tokens so that the system can:
 - Next day resets
 - Session auth (TransientToken) unaffected
 - Blocked requests logged
+- Filament table renders IP tracking columns
+- Filament table renders placeholders for unused tokens
 
 ## Decisions Made
 - **Block behavior**: Reject request with 403, do not revoke the token. Token still works from the allowed IP and resets next day.
@@ -152,3 +156,11 @@ Before every commit, ensure the following have been completed:
 - Fixed: first request only records IP without setting ip_changed_at (avoids blocking the first real IP change)
 - Added `last_ip_address` and `ip_changed_at` to model's $fillable
 - All 75 tests pass (8 new + 67 existing)
+
+### Session 3
+- Implemented Phase 3: Added `last_ip_address` and `ip_changed_at` TextColumns to AccessTokenResource table
+- Columns are display-only (no edit page exists); placeholders for null values
+- `ip_changed_at` hidden by default via `toggleable(isToggledHiddenByDefault: true)`
+- Updated test import to use `App\Models\PersonalAccessToken` instead of Sanctum's
+- Added 2 new tests for column rendering and placeholder display
+- All 77 tests pass (10 feature-specific + 67 existing)

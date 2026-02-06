@@ -42,6 +42,14 @@ class AccessTokenResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->placeholder('Never'),
+                TextColumn::make('last_ip_address')
+                    ->label('Last IP')
+                    ->placeholder('Never used'),
+                TextColumn::make('ip_changed_at')
+                    ->label('IP Changed')
+                    ->dateTime()
+                    ->placeholder('Never')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
