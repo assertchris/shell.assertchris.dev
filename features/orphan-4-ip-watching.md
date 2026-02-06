@@ -73,12 +73,12 @@ This feature will add IP binding to Sanctum tokens so that the system can:
 
 ### Completed
 - Codebase exploration and planning
-
-### In Progress
 - Phase 1: Database + Custom Model
 
-### To Do
+### In Progress
 - Phase 2: Enforcement Middleware + Tests
+
+### To Do
 - Phase 3: Filament UI — Show IP Info
 
 ## Technical Notes
@@ -92,16 +92,19 @@ This feature will add IP binding to Sanctum tokens so that the system can:
 ## Files Modified/Created
 
 ### Database
-- (pending) Migration for `last_ip_address` and `ip_changed_at` columns
+- `database/migrations/2026_02_06_143334_add_ip_tracking_to_personal_access_tokens.php`
 
 ### Models
-- (pending) `app/Models/PersonalAccessToken.php`
+- `app/Models/PersonalAccessToken.php`
+
+### Providers
+- `app/Providers/AppServiceProvider.php` — registers custom token model
 
 ### Services / Core
 - (pending) `app/Http/Middleware/EnforceTokenIpBinding.php`
 
 ### Admin / CMS
-- (pending) `app/Filament/Resources/AccessTokenResource.php` — model reference + IP columns
+- `app/Filament/Resources/AccessTokenResource.php` — updated model reference
 
 ### Tests
 - (pending) `tests/Feature/Api/IpWatchingTest.php`
@@ -137,3 +140,7 @@ Before every commit, ensure the following have been completed:
 - Designed IP tracking approach with two columns (`last_ip_address`, `ip_changed_at`) and middleware enforcement
 - Decided on reject-only (403) rather than token revocation
 - Created 3-phase implementation plan
+
+### Session 2
+- Implemented Phase 1: migration, custom PersonalAccessToken model, Sanctum registration, AccessTokenResource model swap
+- All 67 existing tests pass unchanged
