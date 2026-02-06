@@ -27,8 +27,8 @@ This feature will add token-authenticated read-only email access so that persona
 
 ### Functional
 - [x] Admin can create/revoke API access tokens via Filament
-- [ ] Admin can add/edit/delete IMAP mailbox credentials via Filament
-- [ ] Admin can test mailbox connections from the admin panel
+- [x] Admin can add/edit/delete IMAP mailbox credentials via Filament
+- [x] Admin can test mailbox connections from the admin panel
 - [x] API accepts bearer token authentication
 - [ ] API lists mailboxes (id and name only — no credentials)
 - [ ] API lists folders for a mailbox
@@ -75,12 +75,12 @@ This feature will add token-authenticated read-only email access so that persona
 ### Completed
 - Feature doc created
 - Phase 1: Access Tokens (Sanctum install, API routes, Filament resource, tests)
+- Phase 2: IMAP Mailbox Management (model, migration, factory, Filament resource, test connection, tests)
 
 ### In Progress
-- Phase 2: IMAP Mailbox Management
+- Phase 3: Read-Only Email API
 
 ### To Do
-- Phase 2: IMAP Mailbox Management
 - Phase 3: Read-Only Email API
 
 ## Technical Notes
@@ -94,9 +94,14 @@ This feature will add token-authenticated read-only email access so that persona
 
 ### Database
 - `database/migrations/2026_02_06_072704_create_personal_access_tokens_table.php` (Sanctum published)
+- `database/migrations/2026_02_06_075015_create_mailboxes_table.php`
 
 ### Models
-- `app/Models/User.php` — added `HasApiTokens` trait
+- `app/Models/User.php` — added `HasApiTokens` trait, `mailboxes()` relationship
+- `app/Models/Mailbox.php` — encrypted password cast, `toImapConfig()`, `belongsTo(User)`
+
+### Factories
+- `database/factories/MailboxFactory.php` — realistic defaults, `inactive()` state
 
 ### Config
 - `config/sanctum.php` (Sanctum published)
@@ -109,17 +114,23 @@ This feature will add token-authenticated read-only email access so that persona
 - `app/Filament/Resources/AccessTokenResource.php`
 - `app/Filament/Resources/AccessTokenResource/Pages/ListAccessTokens.php`
 - `app/Filament/Resources/AccessTokenResource/Pages/CreateAccessToken.php`
+- `app/Filament/Resources/MailboxResource.php` — list, create, edit, delete, test connection
+- `app/Filament/Resources/MailboxResource/Pages/ListMailboxes.php`
+- `app/Filament/Resources/MailboxResource/Pages/CreateMailbox.php`
+- `app/Filament/Resources/MailboxResource/Pages/EditMailbox.php`
 
 ### Tests
 - `tests/Feature/Api/StatusTest.php` — API auth tests
 - `tests/Feature/AccessTokenTest.php` — token model tests
 - `tests/Feature/Filament/AccessTokenResourceTest.php` — Filament CRUD tests
 - `tests/Feature/Filament/AdminSmokeTest.php` — smoke tests for all admin pages
+- `tests/Feature/MailboxTest.php` — model, encrypted cast, toImapConfig, relationships
+- `tests/Feature/Filament/MailboxResourceTest.php` — Filament CRUD, scoping, test connection (mocked)
 
 ## Testing
-✅ **Phase 1 complete**: 16 passing tests
-- Total tests: 16
-- Assertions: 23
+✅ **Phase 2 complete**: 35 passing tests
+- Total tests: 35
+- Assertions: 67
 
 ## Decisions Made
 - **Token storage**: SHA-256 hash (not bcrypt) for fast lookup on every API request
@@ -154,3 +165,16 @@ Before every commit, ensure the following have been completed:
 - Filament 5 notes: `$navigationIcon` type is `string|BackedEnum|null`, actions moved to `Filament\Actions` namespace, use `Heroicon` enum
 - Wrote 14 new tests (3 API auth, 3 token model, 5 Filament CRUD, 3 admin smoke)
 - All 16 tests passing (23 assertions)
+
+### Session 4
+- Implemented Phase 2: IMAP Mailbox Management
+- Installed `directorytree/imapengine-laravel` v1.2.0
+- Created `Mailbox` model with encrypted password cast, `toImapConfig()` method, `belongsTo(User)`
+- Created migration with user_id, name, host, port, encryption, username, password, is_active columns
+- Created `MailboxFactory` with realistic defaults and `inactive()` state
+- Added `mailboxes()` relationship to User model
+- Created Filament `MailboxResource` with list, create, edit, delete, "Test Connection" action
+- Test Connection uses `Imap::build()` with try/catch, shows success/failure notification
+- Edit page keeps current password when left blank via `dehydrateStateUsing()`
+- Wrote 19 new tests (6 model, 10 resource CRUD + scoping + connection test, 3 admin smoke)
+- All 35 tests passing (67 assertions)
