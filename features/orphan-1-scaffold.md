@@ -2,7 +2,7 @@
 
 - Branch: `feature/orphan-1-scaffold`
 - Related Issue: N/A
-- **Status**: 🟡 In Progress
+- **Status**: 🟢 Complete
 
 ## Overview
 
@@ -92,11 +92,9 @@ This feature will set up the project scaffold so that developers can:
 - Replace stock `README.md` with project-specific content
 - Update `config/app.php` default name to `'Shell'`
 
-### Phase 8: Laravel Forge deployment
-- Create `herd.yml` with placeholder server-id/site-id
-- Ensure `composer setup` works for deployment
+### ~~Phase 8: Laravel Forge deployment~~ (Removed — not needed)
 
-### Phase 9: Final verification
+### Phase 8: Final verification
 - Run all tooling end-to-end: format, IDE helpers, tests, artisan, Filament panel
 
 ## Progress
@@ -106,15 +104,11 @@ This feature will set up the project scaffold so that developers can:
 - Phase 1: Remove unused dependencies and files
 - Phase 2: IDE helpers
 - Phase 3: Pint (config in `meta/pint.json`)
-
 - Phase 4: Pest (replaced PHPUnit, tests converted and passing)
 - Phase 5: Filament 5 (v5.2.0 installed, admin panel, custom theme, FilamentUser on User model)
-
-### To Do
-- Phase 6: GitHub CI
-- Phase 7: Open source prep
-- Phase 8: Forge deployment
-- Phase 9: Final verification
+- Phase 6: GitHub CI (workflow triggers on push/PR, PHP 8.4, builds assets before tests)
+- Phase 7: Open source prep (MIT license, composer metadata, app naming)
+- Phase 8: Final verification (all tooling passes end-to-end)
 
 ## Technical Notes
 - IDE helper is in `require` (not `require-dev`) to match the assertchris.dev portfolio project pattern
@@ -146,10 +140,9 @@ This feature will set up the project scaffold so that developers can:
 
 ### Infrastructure
 - `.github/workflows/tests.yml` — CI workflow
-- `herd.yml` — Forge deployment config (placeholder IDs)
 - `meta/.gitignore` — Ignores generated IDE helper files, whitelists pint.json
 - `meta/pint.json` — Pint config (Laravel preset, excludes meta/)
-- `LICENSE` — MIT license
+- `LICENSE.md` — MIT license
 - `README.md` — Project-specific content
 - `.env.example` — Cleaned up defaults
 - `composer.json` — Dependencies, scripts, metadata
@@ -166,7 +159,6 @@ This feature will set up the project scaffold so that developers can:
 ## Decisions Made
 - **Pint config**: Laravel preset, `meta/pint.json` excludes `meta/` from formatting
 - **Frontend stack**: Keep Vite/Tailwind/npm for future UI work
-- **Forge IDs**: Placeholders for now, fill in when site is provisioned
 - **IDE helper placement**: In `require` (not `require-dev`) to match portfolio project pattern
 - **Filament installation**: Follow official v5 docs, not copy from assertchris.dev (which uses v3)
 - **Dev workflow**: No `composer dev` script — app served via nginx/Herd, npm dev run in separate tabs
@@ -197,3 +189,10 @@ Before every commit, ensure the following have been completed:
 
 ### Session 3
 - Completed Phase 5: installed Filament v5.2.0, ran filament:install --panels (created AdminPanelProvider, registered in bootstrap/providers.php), ran make:filament-theme (created theme CSS, auto-configured vite.config.js and panel provider with viteTheme), added FilamentUser interface to User model with canAccessPanel(), compiled theme via npm run build
+
+### Session 4
+- Completed Phase 6: created `.github/workflows/tests.yml` (PHP 8.4, Node 20, builds Vite assets, SQLite, runs Pest)
+- Bumped `composer.json` PHP requirement from `^8.2` to `^8.4` to match runtime
+- Completed Phase 7: created `LICENSE.md` (MIT), updated composer metadata to `assertchris/shell`, set `APP_NAME=Shell` in `.env.example` and `config/app.php`
+- Removed Phase 8 (Forge deployment via `herd.yml`) — not needed
+- Completed Phase 8 (formerly 9): final verification — format, tests, IDE helpers, and Filament panel all pass
