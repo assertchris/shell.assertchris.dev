@@ -26,6 +26,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Mailbox::class);
     }
 
+    public function dashboardMessages(): HasMany
+    {
+        return $this->hasMany(DashboardMessage::class);
+    }
+
     /**
      * The attributes that are mass assignable.
      *

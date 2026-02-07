@@ -99,7 +99,7 @@ This feature will add a dashboard message system so that the assistant can:
 ## Files Modified/Created
 
 ### Database
-- `database/migrations/2026_02_07_011053_create_dashboard_messages_table.php` — dashboard_messages table with indexes
+- `database/migrations/2026_02_07_162943_create_dashboard_messages_table.php` — dashboard_messages table with indexes
 
 ### Models
 - `app/Models/DashboardMessage.php` — Eloquent model with casts and relationships
@@ -124,14 +124,17 @@ This feature will add a dashboard message system so that the assistant can:
 - `tests/Feature/Api/DashboardMessageApiTest.php` — full API endpoint coverage
 
 ## Testing
-🟡 **In progress**: Phase 1 tests passing
+🟡 **In progress**: Phase 1 tests passing — 15 tests, 46 assertions (93 total across suite)
 - Key coverage:
   - Create message via API with valid/invalid data
-  - List messages with pagination and filters (unread_only, include_archived)
-  - Update message read/archive status
-  - Ownership check (cannot update another user's message)
-  - Source token tracking
-  - Unauthenticated access rejected
+  - Default priority when not specified
+  - Validation of required fields and priority enum
+  - Source token name and ID capture
+  - List messages with pagination, unread_only filter, include_archived filter
+  - List excludes archived by default
+  - Update message read/archive status (toggle both directions)
+  - Ownership check (404 for other user's message)
+  - All 3 endpoints require authentication
 
 ## Decisions Made
 - **Messages are API-only**: No create/edit in Filament admin — messages come exclusively from the API
