@@ -29,7 +29,7 @@ This feature will add a dashboard message system so that the assistant can:
 - [x] `POST /api/dashboard/messages` — create a message (captures source token name)
 - [x] `GET /api/dashboard/messages` — paginated list with `unread_only` and `include_archived` filters
 - [x] `PATCH /api/dashboard/messages/{message}` — toggle read/archive with ownership check
-- [ ] Filament resource for viewing/managing messages (no create/edit — API only)
+- [x] Filament resource for viewing/managing messages (no create/edit — API only)
 - [ ] Dashboard widget showing 5 most recent unread messages, polling every 30s
 - [ ] Navigation badge with unread message count
 
@@ -39,9 +39,9 @@ This feature will add a dashboard message system so that the assistant can:
 - [x] Backwards compatibility: No impact on existing features
 
 ### UX / Admin
-- [ ] Filament list view with priority badges, read status icons, filters
-- [ ] Filament view page rendering HTML body with Mark Read/Archive/Delete actions
-- [ ] Auto-mark as read when viewing a message
+- [x] Filament list view with priority badges, read status icons, filters
+- [x] Filament view page rendering HTML body with Mark Read/Archive/Delete actions
+- [x] Auto-mark as read when viewing a message
 - [ ] Dashboard widget with clickable messages linking to view page
 
 ### Out of Scope
@@ -81,12 +81,13 @@ This feature will add a dashboard message system so that the assistant can:
 ### Completed
 - Codebase exploration and planning
 - Phase 1: Data Model + API Endpoints
-
-### In Progress
 - Phase 2: Filament Resource
 
-### To Do
+### In Progress
 - Phase 3: Dashboard Widget + Navigation Badge
+
+### To Do
+- (none)
 
 ## Technical Notes
 
@@ -94,7 +95,7 @@ This feature will add a dashboard message system so that the assistant can:
 
 **Source tracking:** The `source` field stores the token name and `source_token_id` stores the token ID, capturing which API token created each message.
 
-**HTML body:** The body field is longText to support HTML content with images, videos, and links. Filament view page will use `HtmlEntry` for rendering.
+**HTML body:** The body field is longText to support HTML content with images, videos, and links. Filament view page uses `TextEntry::make('body')->html()` for rendering (no `HtmlEntry` in Filament v5).
 
 ## Files Modified/Created
 
@@ -120,21 +121,24 @@ This feature will add a dashboard message system so that the assistant can:
 ### Factories / Seeders
 - `database/factories/DashboardMessageFactory.php` — factory with read(), archived(), urgent(), high() states
 
+### Admin / CMS
+- `app/Filament/Resources/DashboardMessageResource.php` — resource with user-scoped query, table, filters
+- `app/Filament/Resources/DashboardMessageResource/Pages/ListDashboardMessages.php` — list page (no create action)
+- `app/Filament/Resources/DashboardMessageResource/Pages/ViewDashboardMessage.php` — view page with infolist, auto-read, header actions
+
 ### Tests
 - `tests/Feature/Api/DashboardMessageApiTest.php` — full API endpoint coverage
+- `tests/Feature/Filament/DashboardMessageResourceTest.php` — list, view, actions, user scoping
 
 ## Testing
-🟡 **In progress**: Phase 1 tests passing — 15 tests, 46 assertions (93 total across suite)
-- Key coverage:
-  - Create message via API with valid/invalid data
-  - Default priority when not specified
-  - Validation of required fields and priority enum
-  - Source token name and ID capture
-  - List messages with pagination, unread_only filter, include_archived filter
-  - List excludes archived by default
-  - Update message read/archive status (toggle both directions)
-  - Ownership check (404 for other user's message)
-  - All 3 endpoints require authentication
+🟡 **In progress**: Phase 1 + Phase 2 tests passing — 27 feature tests (105 total across suite)
+- Phase 1 (API): 15 tests, 46 assertions
+  - Create, list, update endpoints with validation, filters, ownership checks, auth
+- Phase 2 (Filament): 12 tests, 24 assertions
+  - List page renders, user scoping, archived filter default
+  - View page renders, auto-marks as read, preserves existing read_at
+  - Toggle read/archive actions, delete action
+  - No create action on list page
 
 ## Decisions Made
 - **Messages are API-only**: No create/edit in Filament admin — messages come exclusively from the API
@@ -157,3 +161,8 @@ Before every commit, ensure the following have been completed:
 - Created feature doc from template
 - Implemented Phase 1: enum, migration, model, factory, form requests, API resource, responders, routes, tests
 - All Phase 1 API tests passing
+- Implemented Phase 2: Filament DashboardMessageResource with list/view pages
+- List page: title, priority badge, source, read icon, created_at; filters for read, priority, archived
+- View page: infolist with HTML body, auto-marks as read on mount, toggle read/archive/delete actions
+- No HtmlEntry in Filament v5 — used TextEntry with ->html() instead
+- All 105 tests pass (27 feature-specific + 78 existing)
