@@ -2,7 +2,7 @@
 
 - Branch: `feature/orphan-5-add-dashboard`
 - Related Issue: N/A
-- **Status**: 🟡 In Progress
+- **Status**: ✅ Complete
 - Examples: 🟡 In Progress / ✅ Complete / 🔴 Blocked
 
 ## Overview
@@ -30,8 +30,8 @@ This feature will add a dashboard message system so that the assistant can:
 - [x] `GET /api/dashboard/messages` — paginated list with `unread_only` and `include_archived` filters
 - [x] `PATCH /api/dashboard/messages/{message}` — toggle read/archive with ownership check
 - [x] Filament resource for viewing/managing messages (no create/edit — API only)
-- [ ] Dashboard widget showing 5 most recent unread messages, polling every 30s
-- [ ] Navigation badge with unread message count
+- [x] Dashboard widget showing 5 most recent unread messages, polling every 30s
+- [x] Navigation badge with unread message count
 
 ### Non-Functional
 - [x] Security/Permissions: Messages scoped to authenticated user; ownership check on updates
@@ -42,7 +42,7 @@ This feature will add a dashboard message system so that the assistant can:
 - [x] Filament list view with priority badges, read status icons, filters
 - [x] Filament view page rendering HTML body with Mark Read/Archive/Delete actions
 - [x] Auto-mark as read when viewing a message
-- [ ] Dashboard widget with clickable messages linking to view page
+- [x] Dashboard widget with clickable messages linking to view page
 
 ### Out of Scope
 - Push notifications (browser/mobile)
@@ -82,9 +82,10 @@ This feature will add a dashboard message system so that the assistant can:
 - Codebase exploration and planning
 - Phase 1: Data Model + API Endpoints
 - Phase 2: Filament Resource
+- Phase 3: Dashboard Widget + Navigation Badge
 
 ### In Progress
-- Phase 3: Dashboard Widget + Navigation Badge
+- (none)
 
 ### To Do
 - (none)
@@ -122,16 +123,18 @@ This feature will add a dashboard message system so that the assistant can:
 - `database/factories/DashboardMessageFactory.php` — factory with read(), archived(), urgent(), high() states
 
 ### Admin / CMS
-- `app/Filament/Resources/DashboardMessageResource.php` — resource with user-scoped query, table, filters
+- `app/Filament/Resources/DashboardMessageResource.php` — resource with user-scoped query, table, filters, navigation badge
 - `app/Filament/Resources/DashboardMessageResource/Pages/ListDashboardMessages.php` — list page (no create action)
 - `app/Filament/Resources/DashboardMessageResource/Pages/ViewDashboardMessage.php` — view page with infolist, auto-read, header actions
+- `app/Filament/Widgets/RecentDashboardMessagesWidget.php` — table widget, 5 most recent unread, polls 30s
 
 ### Tests
 - `tests/Feature/Api/DashboardMessageApiTest.php` — full API endpoint coverage
 - `tests/Feature/Filament/DashboardMessageResourceTest.php` — list, view, actions, user scoping
+- `tests/Feature/Filament/DashboardMessageWidgetTest.php` — widget rendering, scoping, filtering
 
 ## Testing
-🟡 **In progress**: Phase 1 + Phase 2 tests passing — 27 feature tests (105 total across suite)
+✅ **All phases complete**: 33 feature tests, 111 total across suite
 - Phase 1 (API): 15 tests, 46 assertions
   - Create, list, update endpoints with validation, filters, ownership checks, auth
 - Phase 2 (Filament): 12 tests, 24 assertions
@@ -139,6 +142,8 @@ This feature will add a dashboard message system so that the assistant can:
   - View page renders, auto-marks as read, preserves existing read_at
   - Toggle read/archive actions, delete action
   - No create action on list page
+- Phase 3 (Widget): 6 tests, 6 assertions
+  - Widget renders, shows unread/unarchived only, user scoping, max 5 messages
 
 ## Decisions Made
 - **Messages are API-only**: No create/edit in Filament admin — messages come exclusively from the API
@@ -166,3 +171,8 @@ Before every commit, ensure the following have been completed:
 - View page: infolist with HTML body, auto-marks as read on mount, toggle read/archive/delete actions
 - No HtmlEntry in Filament v5 — used TextEntry with ->html() instead
 - All 105 tests pass (27 feature-specific + 78 existing)
+- Implemented Phase 3: RecentDashboardMessagesWidget table widget, navigation badge on resource
+- Widget: 5 most recent unread/unarchived, polls 30s, titles link to view page
+- Navigation badge: red count of unread+unarchived messages
+- All 111 tests pass (33 feature-specific + 78 existing)
+- All 3 phases complete

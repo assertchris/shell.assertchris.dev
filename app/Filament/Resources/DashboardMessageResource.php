@@ -26,6 +26,25 @@ class DashboardMessageResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Messages';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = DashboardMessage::query()
+            ->where('user_id', auth()->id())
+            ->whereNull('read_at')
+            ->whereNull('archived_at')
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    /**
+     * @return string|array<string>|null
+     */
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'danger';
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
