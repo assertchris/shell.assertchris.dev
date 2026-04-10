@@ -21,9 +21,10 @@ class User extends Authenticatable implements FilamentUser
         return true;
     }
 
-    public function mailboxes(): HasMany
+    /** @return HasMany<Account, $this> */
+    public function accounts(): HasMany
     {
-        return $this->hasMany(Mailbox::class);
+        return $this->hasMany(Account::class);
     }
 
     /**

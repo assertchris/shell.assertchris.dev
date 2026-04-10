@@ -2,19 +2,19 @@
 
 namespace App\Http\Responders\Api;
 
-use App\Http\Resources\MailboxResource;
+use App\Http\Resources\AccountResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-class ListMailboxesResponder
+class ListAccountsResponder
 {
     public function __invoke(Request $request): AnonymousResourceCollection
     {
-        $mailboxes = $request->user()
-            ->mailboxes()
+        $accounts = $request->user()
+            ->accounts()
             ->where('is_active', true)
             ->get();
 
-        return MailboxResource::collection($mailboxes);
+        return AccountResource::collection($accounts);
     }
 }
