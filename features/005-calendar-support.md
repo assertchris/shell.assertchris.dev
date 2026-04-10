@@ -460,12 +460,13 @@ Update `DocPagesTest.php`: assert calendars appears in index; `/docs/calendars` 
 - Phase 2: Google OAuth via Socialite
 - Phase 3: CalendarService
 - Phase 4: Calendar API Endpoints
+- Phase 5: Documentation Updates
 
 ### Blocked
 - Nothing
 
 ### To Do
-- Phase 5: Docs
+- Nothing
 
 ## Technical Notes
 
