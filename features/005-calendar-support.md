@@ -457,12 +457,12 @@ Update `DocPagesTest.php`: assert calendars appears in index; `/docs/calendars` 
 - Worktree and feature doc created
 - Planning complete
 - Phase 1: Replace Mailbox with Account; update all responders and routes
+- Phase 2: Google OAuth via Socialite
 
 ### Blocked
 - Nothing
 
 ### To Do
-- Phase 2: Google OAuth via Socialite
 - Phase 3: CalendarService
 - Phase 4: Calendar API Endpoints
 - Phase 5: Docs

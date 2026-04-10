@@ -3,11 +3,14 @@
 namespace App\Filament\Resources\AccountResource\Pages;
 
 use App\Filament\Resources\AccountResource;
+use App\Models\Account;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Schema;
 
@@ -65,6 +68,23 @@ class EditAccount extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('connectGoogle')
+                ->label('Connect Google Account')
+                ->url(fn (Account $record): string => route('google.redirect', $record))
+                ->visible(fn (Account $record): bool => $record->google_calendar_used && ! $record->isGoogleCalendarConnected()),
+            Action::make('disconnectGoogle')
+                ->label('Disconnect Google')
+                ->requiresConfirmation()
+                ->action(function (Account $record): void {
+                    $record->update([
+                        'google_calendar_access_token' => null,
+                        'google_calendar_refresh_token' => null,
+                        'google_calendar_token_expires_at' => null,
+                        'google_calendar_used' => false,
+                    ]);
+                    Notification::make()->title('Google Calendar disconnected.')->success()->send();
+                })
+                ->visible(fn (Account $record): bool => $record->isGoogleCalendarConnected()),
             DeleteAction::make(),
         ];
     }
