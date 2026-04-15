@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Mailbox;
+use App\Models\Account;
 use App\Services\MailboxService;
 use DirectoryTree\ImapEngine\Laravel\Facades\Imap;
 use DirectoryTree\ImapEngine\MailboxInterface;
@@ -35,9 +35,9 @@ test('connect builds and connects an IMAP mailbox', function () {
         ->andReturn($fakeImapMailbox);
 
     $service = new MailboxService;
-    $mailbox = Mailbox::factory()->create();
+    $account = Account::factory()->create();
 
-    $result = $service->connect($mailbox);
+    $result = $service->connect($account);
 
     expect($result)->toBeInstanceOf(MailboxInterface::class);
 });

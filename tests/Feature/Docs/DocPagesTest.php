@@ -4,7 +4,8 @@ test('docs index returns 200 and lists page links', function () {
     $this->get('/docs')
         ->assertSuccessful()
         ->assertSee('Authentication')
-        ->assertSee('Mailboxes');
+        ->assertSee('Mailboxes')
+        ->assertSee('Calendars');
 });
 
 test('docs authentication page returns 200 with rendered content', function () {
@@ -17,8 +18,15 @@ test('docs authentication page returns 200 with rendered content', function () {
 test('docs mailboxes page returns 200 with endpoint documentation', function () {
     $this->get('/docs/mailboxes')
         ->assertSuccessful()
-        ->assertSee('/api/mailboxes')
-        ->assertSee('/api/mailboxes/{mailbox}/folders');
+        ->assertSee('/{account}/mailbox')
+        ->assertSee('/{account}/mailbox/{folder}/messages');
+});
+
+test('docs calendars page returns 200 with endpoint documentation', function () {
+    $this->get('/docs/calendars')
+        ->assertSuccessful()
+        ->assertSee('/{account}/calendar')
+        ->assertSee('google_calendar_used');
 });
 
 test('docs unknown slug returns 404', function () {
@@ -30,4 +38,5 @@ test('docs pages do not require authentication', function () {
     $this->get('/docs')->assertSuccessful();
     $this->get('/docs/authentication')->assertSuccessful();
     $this->get('/docs/mailboxes')->assertSuccessful();
+    $this->get('/docs/calendars')->assertSuccessful();
 });

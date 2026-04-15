@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Mailbox;
+use App\Models\Account;
 use App\Models\User;
 use App\Services\MailboxService;
 use DirectoryTree\ImapEngine\Pagination\LengthAwarePaginator;
@@ -37,7 +37,7 @@ function makeRfc822Message(
 
 test('list messages returns paginated messages', function () {
     $user = User::factory()->create();
-    $mailbox = Mailbox::factory()->for($user)->create();
+    $account = Account::factory()->for($user)->create();
     $token = $user->createToken('test');
 
     $messages = collect([
@@ -61,7 +61,7 @@ test('list messages returns paginated messages', function () {
         $mock->shouldReceive('getMessages')->once()->andReturn($paginator);
     });
 
-    $this->getJson("/api/mailboxes/{$mailbox->id}/folders/INBOX/messages", [
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertSuccessful()
@@ -76,7 +76,7 @@ test('list messages returns paginated messages', function () {
 
 test('list messages caps per_page at 50', function () {
     $user = User::factory()->create();
-    $mailbox = Mailbox::factory()->for($user)->create();
+    $account = Account::factory()->for($user)->create();
     $token = $user->createToken('test');
 
     $paginator = new LengthAwarePaginator(
@@ -98,7 +98,7 @@ test('list messages caps per_page at 50', function () {
             ->andReturn($paginator);
     });
 
-    $this->getJson("/api/mailboxes/{$mailbox->id}/folders/INBOX/messages?per_page=100", [
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages?per_page=100", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertSuccessful();
@@ -106,7 +106,7 @@ test('list messages caps per_page at 50', function () {
 
 test('list messages returns 404 for unknown folder', function () {
     $user = User::factory()->create();
-    $mailbox = Mailbox::factory()->for($user)->create();
+    $account = Account::factory()->for($user)->create();
     $token = $user->createToken('test');
 
     $fakeMailbox = new FakeMailbox;
@@ -116,22 +116,45 @@ test('list messages returns 404 for unknown folder', function () {
         $mock->shouldReceive('getFolder')->once()->andReturnNull();
     });
 
-    $this->getJson("/api/mailboxes/{$mailbox->id}/folders/NonExistent/messages", [
+    $this->getJson("/api/{$account->id}/mailbox/NonExistent/messages", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNotFound();
+});
+
+test('list messages returns 404 for other user account', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $account = Account::factory()->for($otherUser)->create();
+    $token = $user->createToken('test');
+
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNotFound();
+});
+
+test('list messages returns 404 when mail_used is false', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->for($user)->create(['mail_used' => false]);
+    $token = $user->createToken('test');
+
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertNotFound();
 });
 
 test('list messages requires authentication', function () {
-    $mailbox = Mailbox::factory()->create();
+    $account = Account::factory()->create();
 
-    $this->getJson("/api/mailboxes/{$mailbox->id}/folders/INBOX/messages")
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages")
         ->assertUnauthorized();
 });
 
 test('show message returns full body', function () {
     $user = User::factory()->create();
-    $mailbox = Mailbox::factory()->for($user)->create();
+    $account = Account::factory()->for($user)->create();
     $token = $user->createToken('test');
 
     $message = new FakeMessage(42, contents: makeRfc822Message(
@@ -151,7 +174,7 @@ test('show message returns full body', function () {
         $mock->shouldReceive('getMessage')->once()->with($fakeFolder, 42)->andReturn($message);
     });
 
-    $this->getJson("/api/mailboxes/{$mailbox->id}/folders/INBOX/messages/42", [
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/42", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertSuccessful()
@@ -169,7 +192,7 @@ test('show message returns full body', function () {
 
 test('show message returns 404 for unknown uid', function () {
     $user = User::factory()->create();
-    $mailbox = Mailbox::factory()->for($user)->create();
+    $account = Account::factory()->for($user)->create();
     $token = $user->createToken('test');
 
     $fakeMailbox = new FakeMailbox;
@@ -181,7 +204,7 @@ test('show message returns 404 for unknown uid', function () {
         $mock->shouldReceive('getMessage')->once()->andReturnNull();
     });
 
-    $this->getJson("/api/mailboxes/{$mailbox->id}/folders/INBOX/messages/999", [
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/999", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertNotFound();
@@ -189,7 +212,7 @@ test('show message returns 404 for unknown uid', function () {
 
 test('show message returns 404 for unknown folder', function () {
     $user = User::factory()->create();
-    $mailbox = Mailbox::factory()->for($user)->create();
+    $account = Account::factory()->for($user)->create();
     $token = $user->createToken('test');
 
     $fakeMailbox = new FakeMailbox;
@@ -199,15 +222,38 @@ test('show message returns 404 for unknown folder', function () {
         $mock->shouldReceive('getFolder')->once()->andReturnNull();
     });
 
-    $this->getJson("/api/mailboxes/{$mailbox->id}/folders/NonExistent/messages/1", [
+    $this->getJson("/api/{$account->id}/mailbox/NonExistent/messages/1", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNotFound();
+});
+
+test('show message returns 404 for other user account', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $account = Account::factory()->for($otherUser)->create();
+    $token = $user->createToken('test');
+
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/1", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNotFound();
+});
+
+test('show message returns 404 when mail_used is false', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->for($user)->create(['mail_used' => false]);
+    $token = $user->createToken('test');
+
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/1", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertNotFound();
 });
 
 test('show message requires authentication', function () {
-    $mailbox = Mailbox::factory()->create();
+    $account = Account::factory()->create();
 
-    $this->getJson("/api/mailboxes/{$mailbox->id}/folders/INBOX/messages/1")
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/1")
         ->assertUnauthorized();
 });

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Mailbox;
+use App\Models\Account;
 use DirectoryTree\ImapEngine\Collections\FolderCollection;
 use DirectoryTree\ImapEngine\FolderInterface;
 use DirectoryTree\ImapEngine\Laravel\Facades\Imap;
@@ -12,9 +12,9 @@ use DirectoryTree\ImapEngine\Pagination\LengthAwarePaginator;
 
 class MailboxService
 {
-    public function connect(Mailbox $mailbox): MailboxInterface
+    public function connect(Account $account): MailboxInterface
     {
-        $imapMailbox = Imap::build($mailbox->toImapConfig());
+        $imapMailbox = Imap::build($account->toImapConfig());
         $imapMailbox->connect();
 
         return $imapMailbox;
