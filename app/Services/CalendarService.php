@@ -10,7 +10,11 @@ class CalendarService
 {
     protected function buildClient(): Client
     {
-        return new Client;
+        $client = new Client;
+        $client->setClientId(config('services.google.client_id'));
+        $client->setClientSecret(config('services.google.client_secret'));
+
+        return $client;
     }
 
     public function connect(Account $account): Calendar

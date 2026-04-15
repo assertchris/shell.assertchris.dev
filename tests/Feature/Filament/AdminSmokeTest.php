@@ -2,10 +2,10 @@
 
 use App\Filament\Resources\AccessTokenResource\Pages\CreateAccessToken;
 use App\Filament\Resources\AccessTokenResource\Pages\ListAccessTokens;
-use App\Filament\Resources\MailboxResource\Pages\CreateMailbox;
-use App\Filament\Resources\MailboxResource\Pages\EditMailbox;
-use App\Filament\Resources\MailboxResource\Pages\ListMailboxes;
-use App\Models\Mailbox;
+use App\Filament\Resources\AccountResource\Pages\CreateAccount;
+use App\Filament\Resources\AccountResource\Pages\EditAccount;
+use App\Filament\Resources\AccountResource\Pages\ListAccounts;
+use App\Models\Account;
 use App\Models\User;
 use Filament\Pages\Dashboard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,26 +34,26 @@ test('access tokens create page renders', function () {
         ->assertSuccessful();
 });
 
-test('mailboxes list page renders', function () {
+test('accounts list page renders', function () {
     $this->actingAs(User::factory()->create());
 
-    Livewire::test(ListMailboxes::class)
+    Livewire::test(ListAccounts::class)
         ->assertSuccessful();
 });
 
-test('mailboxes create page renders', function () {
+test('accounts create page renders', function () {
     $this->actingAs(User::factory()->create());
 
-    Livewire::test(CreateMailbox::class)
+    Livewire::test(CreateAccount::class)
         ->assertSuccessful();
 });
 
-test('mailboxes edit page renders', function () {
+test('accounts edit page renders', function () {
     $user = User::factory()->create();
-    $mailbox = Mailbox::factory()->create(['user_id' => $user->id]);
+    $account = Account::factory()->create(['user_id' => $user->id]);
 
     $this->actingAs($user);
 
-    Livewire::test(EditMailbox::class, ['record' => $mailbox->id])
+    Livewire::test(EditAccount::class, ['record' => $account->id])
         ->assertSuccessful();
 });
