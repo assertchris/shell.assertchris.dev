@@ -358,6 +358,7 @@ Each section: parameter table, example request, example success response, error 
 - Feature doc written with full implementation plan
 - Phase 1: Slack OAuth & Account Storage
 - Phase 2: Slack API Client & Data Layer
+- Phase 3: HTTP API Read Endpoints
 
 ### In Progress
 - (none)
@@ -366,7 +367,6 @@ Each section: parameter table, example request, example success response, error 
 - (none)
 
 ### To Do
-- Phase 3: HTTP API Read Endpoints
 - Phase 4: HTTP API Send Endpoint
 - Phase 5: Documentation (rewrite doc for REST endpoints)
 
