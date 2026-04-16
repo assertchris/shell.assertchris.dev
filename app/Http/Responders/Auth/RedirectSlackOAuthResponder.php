@@ -16,7 +16,7 @@ class RedirectSlackOAuthResponder
         session(['slack_oauth_account_id' => $account->id]);
 
         return Socialite::driver('slack')
-            ->scopes(['channels:read', 'channels:history', 'chat:write', 'identity.basic', 'im:read', 'im:history'])
+            ->setUserScopes(['channels:read', 'channels:history', 'chat:write', 'im:read', 'im:history', 'users:read'])
             ->redirect();
     }
 }
