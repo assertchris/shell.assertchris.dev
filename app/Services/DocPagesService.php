@@ -13,6 +13,7 @@ class DocPagesService
             'authentication' => ['title' => 'Authentication', 'file' => 'authentication.md'],
             'mailboxes' => ['title' => 'Mailboxes', 'file' => 'mailboxes.md'],
             'calendars' => ['title' => 'Calendars', 'file' => 'calendars.md'],
+            'slack' => ['title' => 'Slack', 'file' => 'slack.md'],
         ];
     }
 
