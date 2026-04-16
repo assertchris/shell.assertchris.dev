@@ -32,6 +32,8 @@ This feature will add a full Slack integration so that Chris's AI agent can:
 - [ ] User can connect a Slack workspace via OAuth in the Accounts admin section
 - [ ] User can disconnect a connected Slack workspace from the same UI
 - [ ] Agent can list all channels, DMs, and group DMs visible to the connected Slack account (via HTTP API)
+- [ ] Agent can list workspace members to discover user IDs (via HTTP API)
+- [ ] Agent can open/find a DM channel with any user by user ID (via HTTP API)
 - [ ] Agent can read messages from a specific channel or DM (via HTTP API)
 - [ ] Agent can send a message to a specific channel or DM (via HTTP API)
 - [ ] HTTP API endpoints are authenticated (requires a valid Sanctum token)
@@ -376,6 +378,87 @@ In the `GET /api/slack/{account}/channels` section, note that the response inclu
 
 ---
 
+### Phase 7 — User List & Open DM
+
+**Goal:** Add two endpoints so the agent can discover workspace members and initiate a DM with any of them.
+
+#### Step 7.1 — Add `listUsers()` to `SlackService`
+
+```php
+/**
+ * @return array{users: array<int, array{id: string, name: string, real_name: string, is_bot: bool}>, next_cursor: ?string}
+ */
+public function listUsers(Account $account, ?string $cursor = null): array
+```
+
+Calls `GET https://slack.com/api/users.list` with params: `limit=200`, `cursor`.
+Filters out deleted users (`deleted: true`) from the response.
+Returns shaped array + `next_cursor` from `response_metadata.next_cursor`.
+
+#### Step 7.2 — Add `openConversation()` to `SlackService`
+
+```php
+/**
+ * @return array{channel_id: string}
+ */
+public function openConversation(Account $account, string $userId): array
+```
+
+Calls `POST https://slack.com/api/conversations.open` with body `users: $userId`.
+Returns `['channel_id' => $response->json('channel.id')]`.
+
+#### Step 7.3 — Create `ListSlackUsersResponder`
+
+Path: `app/Http/Responders/Api/ListSlackUsersResponder.php`
+
+Route: `GET /api/slack/{account}/users` — supports `?cursor=`
+
+Same ownership/connected guards. Delegates to `SlackService::listUsers()`. Returns `response()->json(['data' => $users, 'meta' => ['next_cursor' => $nextCursor]])`.
+
+#### Step 7.4 — Create `OpenSlackConversationResponder`
+
+Path: `app/Http/Responders/Api/OpenSlackConversationResponder.php`
+
+Route: `POST /api/slack/{account}/conversations/open`
+
+Validate: `user_id` (required string).
+Same ownership/connected guards. Delegates to `SlackService::openConversation()`.
+Returns `response()->json(['channel_id' => $result['channel_id']])`.
+
+#### Step 7.5 — Register routes
+
+In `routes/api.php`, alongside existing Slack routes:
+
+```php
+Route::get('/slack/{account}/users', ListSlackUsersResponder::class);
+Route::post('/slack/{account}/conversations/open', OpenSlackConversationResponder::class);
+```
+
+#### Step 7.6 — Tests
+
+Add to `tests/Feature/SlackServiceTest.php`:
+- `listUsers` returns shaped array, filters deleted users, passes cursor
+- `listUsers` throws on non-ok response
+- `openConversation` returns channel_id
+- `openConversation` throws on non-ok response
+
+Create `tests/Feature/Api/SlackUsersAndConversationsTest.php`:
+- Unauthenticated returns 401 (both endpoints)
+- Wrong account returns 404 (both endpoints)
+- Not connected returns 404 (both endpoints)
+- `listUsers` happy path returns user list
+- `openConversation` missing `user_id` returns 422
+- `openConversation` happy path returns channel_id
+- Service errors return 503
+
+#### Step 7.7 — Update `resources/docs/slack.md`
+
+Add two new endpoint sections:
+- `GET /api/slack/{account}/users` — parameter table, example response, error table
+- `POST /api/slack/{account}/conversations/open` — parameter table (`user_id`), example response (`channel_id`), usage note: use the returned `channel_id` with the messages endpoints to read/send to the DM
+
+---
+
 ## Progress
 
 ### Completed
@@ -387,6 +470,7 @@ In the `GET /api/slack/{account}/channels` section, note that the response inclu
 - Phase 4: HTTP API Send Endpoint
 - Phase 5: Documentation (rewrite doc for REST endpoints)
 - Phase 6: DM Support
+- Phase 7: User List & Open DM
 
 ### In Progress
 - (none)

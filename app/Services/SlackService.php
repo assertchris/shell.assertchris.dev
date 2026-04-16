@@ -88,6 +88,64 @@ class SlackService
     }
 
     /**
+     * @return array{users: array<int, array{id: string, name: string, real_name: string, is_bot: bool}>, next_cursor: string|null}
+     */
+    public function listUsers(Account $account, ?string $cursor = null): array
+    {
+        $params = ['limit' => 200];
+
+        if ($cursor !== null) {
+            $params['cursor'] = $cursor;
+        }
+
+        $response = Http::withToken($account->slack_access_token)
+            ->get('https://slack.com/api/users.list', $params);
+
+        if (! $response->json('ok')) {
+            throw new \RuntimeException($response->json('error'));
+        }
+
+        $members = array_filter(
+            $response->json('members') ?? [],
+            fn (array $member) => ! ($member['deleted'] ?? false)
+        );
+
+        $users = array_map(
+            fn (array $member) => [
+                'id' => $member['id'],
+                'name' => $member['name'],
+                'real_name' => $member['real_name'] ?? '',
+                'is_bot' => $member['is_bot'] ?? false,
+            ],
+            array_values($members)
+        );
+
+        return [
+            'users' => $users,
+            'next_cursor' => $response->json('response_metadata.next_cursor') ?: null,
+        ];
+    }
+
+    /**
+     * @return array{channel_id: string}
+     */
+    public function openConversation(Account $account, string $userId): array
+    {
+        $response = Http::withToken($account->slack_access_token)
+            ->post('https://slack.com/api/conversations.open', [
+                'users' => $userId,
+            ]);
+
+        if (! $response->json('ok')) {
+            throw new \RuntimeException($response->json('error'));
+        }
+
+        return [
+            'channel_id' => $response->json('channel.id'),
+        ];
+    }
+
+    /**
      * @return array{ok: bool, ts: string}
      */
     public function sendMessage(Account $account, string $channelId, string $text): array

@@ -156,3 +156,88 @@ curl -s -X POST "https://your-domain.com/api/slack/1/channels/C012AB3CD/messages
 | 404 | Account not found, does not belong to you, or Slack is not connected |
 | 422 | Validation error — `text` field is required |
 | 503 | Slack API unavailable |
+
+---
+
+## GET /api/slack/{account}/users
+
+Returns all non-deleted workspace members visible to the connected account.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `account` | integer | Account ID |
+| `cursor` | string | Pagination cursor from a previous response (optional) |
+
+```bash
+curl -s "https://your-domain.com/api/slack/1/users" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Accept: application/json"
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "U012AB3CD",
+      "name": "alice",
+      "real_name": "Alice Smith",
+      "is_bot": false
+    },
+    {
+      "id": "U034EF5GH",
+      "name": "bob",
+      "real_name": "Bob Jones",
+      "is_bot": false
+    }
+  ],
+  "meta": {
+    "next_cursor": "dXNlcjpVMDYxNTU3MjAw"
+  }
+}
+```
+
+### Error Responses
+
+| Status | Reason |
+|--------|--------|
+| 401 | Unauthenticated |
+| 404 | Account not found, does not belong to you, or Slack is not connected |
+| 503 | Slack API unavailable |
+
+---
+
+## POST /api/slack/{account}/conversations/open
+
+Opens or retrieves an existing DM channel with a specific user. Returns the Slack channel ID for the DM. Use the returned `channel_id` with the messages endpoints to read or send messages in the DM.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `account` | integer | Account ID |
+| `user_id` | string | Slack user ID to open a DM with (required, request body) |
+
+```bash
+curl -s -X POST "https://your-domain.com/api/slack/1/conversations/open" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "U012AB3CD"}'
+```
+
+### Success Response (200)
+
+```json
+{
+  "channel_id": "D001ABCDE"
+}
+```
+
+### Error Responses
+
+| Status | Reason |
+|--------|--------|
+| 401 | Unauthenticated |
+| 404 | Account not found, does not belong to you, or Slack is not connected |
+| 422 | Validation error — `user_id` field is required |
+| 503 | Slack API unavailable |

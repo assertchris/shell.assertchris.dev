@@ -240,3 +240,128 @@ test('sendMessage throws on non-ok response', function () {
     expect(fn () => app(SlackService::class)->sendMessage($account, 'C_BAD', 'Hi'))
         ->toThrow(\RuntimeException::class, 'channel_not_found');
 });
+
+test('listUsers returns shaped array and filters deleted users', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withSlack()->create(['user_id' => $user->id]);
+
+    Http::fake([
+        'slack.com/api/users.list*' => Http::response([
+            'ok' => true,
+            'members' => [
+                [
+                    'id' => 'U001',
+                    'name' => 'alice',
+                    'real_name' => 'Alice Smith',
+                    'is_bot' => false,
+                    'deleted' => false,
+                ],
+                [
+                    'id' => 'U002',
+                    'name' => 'bob',
+                    'real_name' => 'Bob Jones',
+                    'is_bot' => false,
+                    'deleted' => true,
+                ],
+                [
+                    'id' => 'U003',
+                    'name' => 'slackbot',
+                    'real_name' => 'Slackbot',
+                    'is_bot' => true,
+                    'deleted' => false,
+                ],
+            ],
+            'response_metadata' => ['next_cursor' => ''],
+        ]),
+    ]);
+
+    $result = app(SlackService::class)->listUsers($account);
+
+    expect($result['users'])->toHaveCount(2)
+        ->and($result['users'][0])->toBe([
+            'id' => 'U001',
+            'name' => 'alice',
+            'real_name' => 'Alice Smith',
+            'is_bot' => false,
+        ])
+        ->and($result['users'][1])->toBe([
+            'id' => 'U003',
+            'name' => 'slackbot',
+            'real_name' => 'Slackbot',
+            'is_bot' => true,
+        ])
+        ->and($result['next_cursor'])->toBeNull();
+});
+
+test('listUsers passes cursor when provided', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withSlack()->create(['user_id' => $user->id]);
+
+    Http::fake([
+        'slack.com/api/users.list*' => Http::response([
+            'ok' => true,
+            'members' => [],
+            'response_metadata' => ['next_cursor' => 'next-page-cursor'],
+        ]),
+    ]);
+
+    $result = app(SlackService::class)->listUsers($account, 'some-cursor');
+
+    Http::assertSent(function ($request) {
+        return str_contains($request->url(), 'users.list')
+            && $request['cursor'] === 'some-cursor';
+    });
+
+    expect($result['next_cursor'])->toBe('next-page-cursor');
+});
+
+test('listUsers throws on non-ok response', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withSlack()->create(['user_id' => $user->id]);
+
+    Http::fake([
+        'slack.com/api/users.list*' => Http::response([
+            'ok' => false,
+            'error' => 'invalid_auth',
+        ]),
+    ]);
+
+    expect(fn () => app(SlackService::class)->listUsers($account))
+        ->toThrow(\RuntimeException::class, 'invalid_auth');
+});
+
+test('openConversation returns channel_id', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withSlack()->create(['user_id' => $user->id]);
+
+    Http::fake([
+        'slack.com/api/conversations.open' => Http::response([
+            'ok' => true,
+            'channel' => ['id' => 'D001ABCDE'],
+        ]),
+    ]);
+
+    $result = app(SlackService::class)->openConversation($account, 'U001');
+
+    expect($result)->toBe(['channel_id' => 'D001ABCDE']);
+
+    Http::assertSent(function ($request) {
+        return str_contains($request->url(), 'conversations.open')
+            && $request['users'] === 'U001';
+    });
+});
+
+test('openConversation throws on non-ok response', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withSlack()->create(['user_id' => $user->id]);
+
+    Http::fake([
+        'slack.com/api/conversations.open' => Http::response([
+            'ok' => false,
+            'error' => 'user_not_found',
+        ]),
+    ]);
+
+    expect(fn () => app(SlackService::class)->openConversation($account, 'U_BAD'))
+        ->toThrow(\RuntimeException::class, 'user_not_found');
+});
