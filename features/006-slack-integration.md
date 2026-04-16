@@ -8,13 +8,13 @@
 
 Shell is a personal AI agent host that proxies external services (mail, calendar) so the agent can act on the user's behalf. Currently, the agent can read emails and calendar events, but has no awareness of Slack — meaning it cannot see conversations happening there or participate in them.
 
-This feature adds full Slack integration: the user connects their Slack workspace via OAuth, and the agent gains MCP tools to list channels, read messages, and send messages. The agent acts as the user, using their credentials, not a shared bot token.
+This feature adds full Slack integration: the user connects their Slack workspace via OAuth, and the agent gains HTTP API endpoints to list channels, read messages, and send messages. The agent acts as the user, using their credentials, not a shared bot token.
 
 ### Background / Current Behavior
 
 - **Current behavior**: Shell supports mail (IMAP) and Google Calendar as proxied services. No Slack integration exists.
 - **Problem**: The agent cannot see or interact with Slack, limiting its usefulness as a personal assistant.
-- **Where it happens**: `app/Services/`, `app/Mcp/` (not yet scaffolded), `app/Filament/` (Accounts UI)
+- **Where it happens**: `app/Services/`, `app/Http/Controllers/`, `app/Filament/` (Accounts UI)
 - **Impact**: Chris cannot delegate Slack-related tasks to his AI agent.
 
 ### Target Outcome
@@ -31,17 +31,17 @@ This feature will add a full Slack integration so that Chris's AI agent can:
 
 - [ ] User can connect a Slack workspace via OAuth in the Accounts admin section
 - [ ] User can disconnect a connected Slack workspace from the same UI
-- [ ] Agent can list all channels visible to the connected Slack account
-- [ ] Agent can read messages from a specific channel
-- [ ] Agent can send a message to a specific channel
-- [ ] MCP endpoint is authenticated (requires a valid Sanctum token)
+- [ ] Agent can list all channels visible to the connected Slack account (via HTTP API)
+- [ ] Agent can read messages from a specific channel (via HTTP API)
+- [ ] Agent can send a message to a specific channel (via HTTP API)
+- [ ] HTTP API endpoints are authenticated (requires a valid Sanctum token)
 - [ ] All Slack credentials are stored encrypted at rest
 
 ### Non-Functional
 
 - [ ] Observability: Slack API errors return 503 with contextual message, consistent with mail/calendar pattern
 - [ ] Performance: Slack API calls are live-proxied (no caching or background sync); Slack rate limits handled gracefully
-- [ ] Security/Permissions: Slack OAuth token stored encrypted; MCP endpoint requires `auth:sanctum`; account ownership verified before using credentials
+- [ ] Security/Permissions: Slack OAuth token stored encrypted; HTTP API endpoints require `auth:sanctum`; account ownership verified before using credentials
 - [ ] Data retention / lifecycle: Tokens cleared on disconnect; no message data persisted to the database
 - [ ] Backwards compatibility: Existing `slack.notifications` config key left untouched
 
@@ -246,188 +246,108 @@ Create `tests/Feature/SlackServiceTest.php`:
 
 ---
 
-### Phase 3 — MCP Server & Read Tools
+### Phase 3 — HTTP API Read Endpoints
 
-**Goal:** Scaffold the MCP server and expose tools for listing channels and reading messages.
+**Goal:** Expose `GET /api/slack/{account}/channels` and `GET /api/slack/{account}/channels/{channel}/messages` so the agent can read Slack data over the existing HTTP API. Follow the same controller/route conventions as the rest of the API.
 
-#### Step 3.1 — Add `laravel/mcp` to composer.json
+#### Step 3.1 — Check existing API route conventions
 
-The package is in vendor but not yet in `composer.json`. Add it:
+Before creating anything, inspect `routes/api.php` and existing API controllers (e.g. mail or calendar) to understand the route structure, controller naming, and auth middleware in use.
+
+#### Step 3.2 — Create `SlackController`
 
 ```bash
-composer require laravel/mcp --no-interaction
+php artisan make:controller Api/SlackController --no-interaction
 ```
 
-#### Step 3.2 — Create `routes/ai.php`
+Methods:
+- `channels(Request $request, Account $account): JsonResponse` — calls `SlackService::listChannels()`; supports `?cursor=` query param
+- `messages(Request $request, Account $account, string $channelId): JsonResponse` — calls `SlackService::listMessages()`; supports `?limit=` and `?cursor=` query params
 
-The `McpServiceProvider` auto-loads this file. Create it:
+Guards for both methods:
+- `abort_unless($account->user_id === $request->user()->id, 404)`
+- `abort_unless($account->isSlackConnected(), 404)`
+
+On `\Throwable`: return `response()->json(['error' => 'Slack API unavailable: '.$e->getMessage()], 503)`
+
+#### Step 3.3 — Register routes
+
+In `routes/api.php`, under `auth:sanctum` middleware, add:
 
 ```php
-<?php
-
-use App\Mcp\Servers\ShellServer;
-use Laravel\Mcp\Facades\Mcp;
-
-Mcp::web('/mcp', ShellServer::class)->middleware('auth:sanctum');
+Route::get('/slack/{account}/channels', [SlackController::class, 'channels']);
+Route::get('/slack/{account}/channels/{channel}/messages', [SlackController::class, 'messages']);
 ```
 
-The `auth:sanctum` middleware ensures only authenticated users can call MCP tools. `$request->user()` will be available in tool handlers.
+#### Step 3.4 — Tests
 
-#### Step 3.3 — Create `ShellServer`
+Create `tests/Feature/SlackReadEndpointsTest.php`:
+- Unauthenticated request returns 401
+- Wrong account (not owned by user) returns 404
+- Account not Slack-connected returns 404
+- `channels` happy path returns channel list JSON
+- `messages` happy path returns messages + next_cursor JSON
+- `channels` service error returns 503
 
-```bash
-php artisan make:mcp-server ShellServer --no-interaction
-```
-
-Path: `app/Mcp/Servers/ShellServer.php`
-
-Register tools:
-```php
-protected array $tools = [
-    \App\Mcp\Tools\ListSlackChannelsTool::class,
-    \App\Mcp\Tools\ReadSlackMessagesTool::class,
-];
-```
-
-#### Step 3.4 — Create `ListSlackChannelsTool`
-
-```bash
-php artisan make:mcp-tool ListSlackChannelsTool --no-interaction
-```
-
-Path: `app/Mcp/Tools/ListSlackChannelsTool.php`
-
-```php
-protected string $description = 'List all Slack channels visible to the connected account.';
-
-public function schema(JsonSchema $schema): array
-{
-    return [
-        'account_id' => $schema->integer('The Account ID to use for the Slack connection')->required(),
-        'cursor'     => $schema->string('Pagination cursor from a previous response')->nullable(),
-    ];
-}
-
-public function handle(Request $request): Response
-{
-    $request->validate(['account_id' => ['required', 'integer']]);
-
-    $account = Account::query()->findOrFail($request->get('account_id'));
-    abort_unless($account->user_id === $request->user()->id, 404);
-    abort_unless($account->isSlackConnected(), 404);
-
-    try {
-        $channels = app(SlackService::class)->listChannels($account, $request->get('cursor'));
-        return Response::json($channels);
-    } catch (\Throwable $e) {
-        return Response::error('Slack API unavailable: ' . $e->getMessage());
-    }
-}
-```
-
-#### Step 3.5 — Create `ReadSlackMessagesTool`
-
-```bash
-php artisan make:mcp-tool ReadSlackMessagesTool --no-interaction
-```
-
-Path: `app/Mcp/Tools/ReadSlackMessagesTool.php`
-
-Schema inputs: `account_id` (required integer), `channel_id` (required string), `limit` (optional integer, default 50), `cursor` (optional string).
-
-Delegates to `SlackService::listMessages()`. Returns `Response::json([...])`.
-
-#### Step 3.6 — Tests
-
-Create `tests/Feature/Mcp/ListSlackChannelsToolTest.php`:
-- Unauthenticated request returns error
-- Wrong account (not owned by user) returns error
-- Account not Slack-connected returns error
-- Happy path returns channel list
-
-Create `tests/Feature/Mcp/ReadSlackMessagesToolTest.php`:
-- Same auth/ownership/connected guards
-- Happy path returns messages + next_cursor
-- Service error returns MCP error response
-
-Use `ShellServer::tool(ListSlackChannelsTool::class, [...])->actingAs($user)->assertSee(...)` pattern.
 Mock `SlackService` with `$this->mock(SlackService::class, ...)`.
 
 ---
 
-### Phase 4 — MCP Send Tool
+### Phase 4 — HTTP API Send Endpoint
 
-**Goal:** Add a `SendSlackMessageTool` so the agent can post messages to Slack on the user's behalf.
+**Goal:** Expose `POST /api/slack/{account}/channels/{channel}/messages` so the agent can send messages to Slack.
 
-#### Step 4.1 — Create `SendSlackMessageTool`
+#### Step 4.1 — Add `send` method to `SlackController`
 
-```bash
-php artisan make:mcp-tool SendSlackMessageTool --no-interaction
+`send(Request $request, Account $account, string $channelId): JsonResponse`
+
+Validate: `text` (required string).
+Same ownership/connected guards. Delegates to `SlackService::sendMessage()`.
+Returns `response()->json(['ts' => $result['ts']])` on success.
+
+#### Step 4.2 — Register route
+
+In `routes/api.php`, alongside the read routes:
+
+```php
+Route::post('/slack/{account}/channels/{channel}/messages', [SlackController::class, 'send']);
 ```
-
-Path: `app/Mcp/Tools/SendSlackMessageTool.php`
-
-Schema inputs: `account_id` (required integer), `channel_id` (required string), `text` (required string).
-
-Same auth/ownership/connected guards as read tools. Delegates to `SlackService::sendMessage()`. Returns `Response::text("Message sent (ts: {$result['ts']})")`.
-
-#### Step 4.2 — Register in `ShellServer`
-
-Add `SendSlackMessageTool::class` to `$tools` array.
 
 #### Step 4.3 — Tests
 
-Create `tests/Feature/Mcp/SendSlackMessageToolTest.php`:
-- Unauthenticated request returns error
-- Wrong account returns error
-- Account not Slack-connected returns error
-- Missing required fields (`channel_id`, `text`) return validation error
-- Happy path returns success message with ts
-- Service error returns MCP error response
+Create `tests/Feature/SlackSendEndpointTest.php`:
+- Unauthenticated request returns 401
+- Wrong account returns 404
+- Account not Slack-connected returns 404
+- Missing `text` returns 422
+- Happy path returns `{'ts': '...'}` JSON
+- Service error returns 503
 
 ---
 
 ### Phase 5 — Documentation
 
-**Goal:** Add a Slack doc page following the exact pattern of `mailboxes.md` and `calendars.md`, register it in `DocPagesService`, and update tests.
+**Goal:** Update `resources/docs/slack.md` to document the HTTP REST endpoints (replacing the MCP tool format written earlier), and keep `DocPagesService` and `DocPagesTest` consistent.
 
-#### Step 5.1 — Create `resources/docs/slack.md`
+#### Step 5.1 — Rewrite `resources/docs/slack.md`
 
-Follow the `mailboxes.md` format exactly:
+The file already exists but was written for MCP tools. Rewrite it following `mailboxes.md` format exactly:
 - H1: `# Slack`
 - Auth reminder + required headers code block
 - Setup note: "Slack must be connected via OAuth in the admin panel (Accounts → Edit → Slack section)"
-- Three endpoint sections:
+- Three endpoint sections using proper REST patterns:
 
 ```
----
-## GET /mcp  (tool: list_slack_channels)
-## GET /mcp  (tool: read_slack_messages)
-## POST /mcp (tool: send_slack_message)
+## GET /api/slack/{account}/channels
+## GET /api/slack/{account}/channels/{channel}/messages
+## POST /api/slack/{account}/channels/{channel}/messages
 ```
 
-Since MCP tools don't follow REST route patterns, the doc should describe the tool names, their input parameters, and example JSON request/response shapes. See `authentication.md` for style guidance on non-standard flows.
+Each section: parameter table, example request, example success response, error table (401, 404, 422, 503).
 
-Each tool section should include:
-- Parameter table (name, type, required, description)
-- Example MCP request JSON
-- Example success response JSON
-- Error responses table (401 unauthenticated, 404 account not found/not connected, 503 Slack API unavailable)
+#### Step 5.2 — Verify `DocPagesService` and tests
 
-#### Step 5.2 — Update `DocPagesService`
-
-In `app/Services/DocPagesService.php`, add to the `all()` return array:
-
-```php
-'slack' => ['title' => 'Slack', 'file' => 'slack.md'],
-```
-
-#### Step 5.3 — Update `DocPagesTest.php`
-
-In `tests/Feature/Docs/DocPagesTest.php`:
-- Add `assertSee('Slack')` to the docs index test
-- Add test: `/docs/slack` returns 200
-- Add `/docs/slack` to the "no auth required" assertions
+`app/Services/DocPagesService.php` already has the `slack` entry. `tests/Feature/Docs/DocPagesTest.php` already has the Slack assertions. No changes needed unless the rewritten doc breaks existing assertions — check and fix if so.
 
 ---
 
@@ -438,9 +358,6 @@ In `tests/Feature/Docs/DocPagesTest.php`:
 - Feature doc written with full implementation plan
 - Phase 1: Slack OAuth & Account Storage
 - Phase 2: Slack API Client & Data Layer
-- Phase 3: MCP Server & Read Tools
-- Phase 4: MCP Send Tool
-- Phase 5: Documentation
 
 ### In Progress
 - (none)
@@ -449,7 +366,9 @@ In `tests/Feature/Docs/DocPagesTest.php`:
 - (none)
 
 ### To Do
-- (none)
+- Phase 3: HTTP API Read Endpoints
+- Phase 4: HTTP API Send Endpoint
+- Phase 5: Documentation (rewrite doc for REST endpoints)
 
 ## Technical Notes
 
@@ -462,11 +381,8 @@ The goal is for the agent to see what Chris sees — his private channels, DMs, 
 **Why live proxy, no database persistence?**
 Consistent with the mail and calendar integrations. Messages are fetched on demand. No sync jobs, no message table. Keeps the system simple and avoids staleness issues.
 
-**`laravel/mcp` in vendor but not `composer.json`**
-The package was likely installed via the monorepo or Boost tooling. It must be explicitly added to `composer.json` with `composer require laravel/mcp` so it's tracked as a project dependency.
-
-**MCP route auth**
-`Mcp::web('/mcp', ShellServer::class)->middleware('auth:sanctum')` — the MCP POST endpoint will require a Sanctum bearer token, the same as the REST API. `$request->user()` is available in tool `handle()` methods.
+**Agent access via HTTP API**
+The agent interacts with Shell exclusively over the HTTP API (Sanctum-authenticated). No MCP server is needed — REST endpoints in `routes/api.php` are the integration point.
 
 **`config/services.php` key collision**
 The existing `slack.notifications` block is for Laravel's built-in Slack notification channel. OAuth credentials are added as `slack.client_id`, `slack.client_secret`, `slack.redirect` — alongside, not replacing, the notifications block.
@@ -490,12 +406,8 @@ Disabled by default in Slack apps. Do NOT add `slack_refresh_token` or `slack_to
 - `app/Http/Responders/Auth/RedirectSlackOAuthResponder.php` — new
 - `app/Http/Responders/Auth/CallbackSlackOAuthResponder.php` — new
 
-### MCP
-- `routes/ai.php` — new; registers ShellServer on `/mcp` with `auth:sanctum`
-- `app/Mcp/Servers/ShellServer.php` — new; lists all tools
-- `app/Mcp/Tools/ListSlackChannelsTool.php` — new
-- `app/Mcp/Tools/ReadSlackMessagesTool.php` — new
-- `app/Mcp/Tools/SendSlackMessageTool.php` — new
+### API / HTTP
+- `app/Http/Controllers/Api/SlackController.php` — new; channels, messages, send endpoints
 
 ### Views / Frontend
 - `resources/docs/slack.md` — new doc page
@@ -518,9 +430,8 @@ Disabled by default in Slack apps. Do NOT add `slack_refresh_token` or `slack_to
 ### Tests
 - `tests/Feature/SlackOAuthTest.php` — new
 - `tests/Feature/SlackServiceTest.php` — new
-- `tests/Feature/Mcp/ListSlackChannelsToolTest.php` — new
-- `tests/Feature/Mcp/ReadSlackMessagesToolTest.php` — new
-- `tests/Feature/Mcp/SendSlackMessageToolTest.php` — new
+- `tests/Feature/SlackReadEndpointsTest.php` — new
+- `tests/Feature/SlackSendEndpointTest.php` — new
 - `tests/Feature/Filament/AccountResourceTest.php` — update for Slack UI elements
 - `tests/Feature/Docs/DocPagesTest.php` — update for Slack doc page
 
@@ -538,9 +449,9 @@ Disabled by default in Slack apps. Do NOT add `slack_refresh_token` or `slack_to
 
 ## Questions/Decisions Needed
 - [x] Confirm approval to `composer require socialiteproviders/slack` — ✅ approved
-- [x] Confirm approval to `composer require laravel/mcp` — ✅ approved
 - [x] Slack OAuth scopes: include `im:read` + `im:history` now — ✅ approved
-- [x] MCP auth: Sanctum token only (`auth:sanctum`) — ✅ confirmed
+- [x] API auth: Sanctum token only (`auth:sanctum`) — ✅ confirmed
+- [x] Agent accesses Slack via HTTP API, not MCP — ✅ confirmed (MCP removed)
 
 ## Decisions Made
 - User OAuth tokens (not bot tokens) — agent sees what Chris sees
@@ -548,9 +459,9 @@ Disabled by default in Slack apps. Do NOT add `slack_refresh_token` or `slack_to
 - No token rotation support (not needed for default Slack OAuth v2)
 - `config/services.php` `slack.notifications` block left untouched
 - `composer require socialiteproviders/slack` — approved
-- `composer require laravel/mcp` — approved
 - DM/IM scopes (`im:read`, `im:history`) included in initial OAuth scopes
-- MCP endpoint auth: Sanctum token only (`auth:sanctum`), no web session auth needed
+- HTTP API auth: Sanctum token only (`auth:sanctum`), consistent with rest of API
+- MCP server removed — agent interacts via HTTP API only
 
 ## Pre-Commit Checklist
 Before every commit, ensure the following have been completed:
@@ -582,3 +493,14 @@ Before every commit, ensure the following have been completed:
   - Added `withSlack()` factory state to `AccountFactory`
   - Created `tests/Feature/SlackOAuthTest.php` (7 tests)
   - Added Slack UI tests to `tests/Feature/Filament/AccountResourceTest.php` (4 tests)
+- Implemented Phase 2: Slack API Client & Data Layer
+  - Created `app/Services/SlackService.php` with `listChannels`, `listMessages`, `sendMessage`
+  - Created `tests/Feature/SlackServiceTest.php` (8 tests, all using `Http::fake()`)
+
+### Session 4
+- Removed MCP server: agent interacts via HTTP API only
+  - Deleted `routes/ai.php`, `app/Mcp/` directory tree, `tests/Feature/Mcp/` directory tree
+  - Removed `laravel/mcp` from `composer.json`
+  - Rewrote Phases 3, 4, 5 in feature doc to target HTTP API controllers instead of MCP tools
+  - Updated Progress: Phases 3–5 moved back to To Do
+  - Updated Requirements, Technical Notes, Files, and Decisions sections throughout
