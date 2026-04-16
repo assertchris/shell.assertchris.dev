@@ -30,12 +30,11 @@ test('docs calendars page returns 200 with endpoint documentation', function () 
         ->assertSee('google_calendar_used');
 });
 
-test('docs slack page returns 200 with tool documentation', function () {
+test('docs slack page returns 200 with endpoint documentation', function () {
     $this->get('/docs/slack')
         ->assertSuccessful()
-        ->assertSee('list_slack_channels')
-        ->assertSee('read_slack_messages')
-        ->assertSee('send_slack_message');
+        ->assertSee('/api/slack/{account}/channels')
+        ->assertSee('/api/slack/{account}/channels/{channel}/messages');
 });
 
 test('docs unknown slug returns 404', function () {

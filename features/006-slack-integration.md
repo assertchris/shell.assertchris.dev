@@ -360,6 +360,7 @@ Each section: parameter table, example request, example success response, error 
 - Phase 2: Slack API Client & Data Layer
 - Phase 3: HTTP API Read Endpoints
 - Phase 4: HTTP API Send Endpoint
+- Phase 5: Documentation (rewrite doc for REST endpoints)
 
 ### In Progress
 - (none)
@@ -368,7 +369,7 @@ Each section: parameter table, example request, example success response, error 
 - (none)
 
 ### To Do
-- Phase 5: Documentation (rewrite doc for REST endpoints)
+- (none)
 
 ## Technical Notes
 

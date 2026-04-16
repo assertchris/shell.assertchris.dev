@@ -1,6 +1,6 @@
 # Slack
 
-All MCP tools require authentication. See [Authentication](/docs/authentication) for details.
+All endpoints require authentication. See [Authentication](/docs/authentication) for details.
 
 Every request should include these headers:
 
@@ -13,46 +13,40 @@ Slack must be connected via OAuth in the admin panel (Accounts → Edit → Slac
 
 ---
 
-## tool: list_slack_channels
+## GET /api/slack/{account}/channels
 
 Returns all Slack channels visible to the connected account (public and private channels the user is a member of).
 
-### Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `account` | integer | Account ID |
+| `cursor` | string | Pagination cursor from a previous response (optional) |
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `account_id` | integer | yes | Account ID with a connected Slack workspace |
-| `cursor` | string | no | Pagination cursor from a previous response |
+```bash
+curl -s "https://your-domain.com/api/slack/1/channels" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Accept: application/json"
+```
 
-### Example MCP Request
+### Success Response (200)
 
 ```json
 {
-  "tool": "list_slack_channels",
-  "parameters": {
-    "account_id": 1,
-    "cursor": null
-  }
+  "data": [
+    {
+      "id": "C012AB3CD",
+      "name": "general",
+      "is_private": false,
+      "num_members": 42
+    },
+    {
+      "id": "C034EF5GH",
+      "name": "engineering",
+      "is_private": false,
+      "num_members": 12
+    }
+  ]
 }
-```
-
-### Success Response
-
-```json
-[
-  {
-    "id": "C012AB3CD",
-    "name": "general",
-    "is_private": false,
-    "num_members": 42
-  },
-  {
-    "id": "C034EF5GH",
-    "name": "engineering",
-    "is_private": false,
-    "num_members": 12
-  }
-]
 ```
 
 ### Error Responses
@@ -65,38 +59,28 @@ Returns all Slack channels visible to the connected account (public and private 
 
 ---
 
-## tool: read_slack_messages
+## GET /api/slack/{account}/channels/{channel}/messages
 
 Returns messages from a specific Slack channel.
 
-### Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `account` | integer | Account ID |
+| `channel` | string | Slack channel ID (e.g. `C012AB3CD`) |
+| `limit` | integer | Number of messages to return (default: 50, max: 200) |
+| `cursor` | string | Pagination cursor from a previous response (optional) |
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `account_id` | integer | yes | Account ID with a connected Slack workspace |
-| `channel_id` | string | yes | Slack channel ID (e.g. `C012AB3CD`) |
-| `limit` | integer | no | Number of messages to return (default: 50) |
-| `cursor` | string | no | Pagination cursor from a previous response |
-
-### Example MCP Request
-
-```json
-{
-  "tool": "read_slack_messages",
-  "parameters": {
-    "account_id": 1,
-    "channel_id": "C012AB3CD",
-    "limit": 20,
-    "cursor": null
-  }
-}
+```bash
+curl -s "https://your-domain.com/api/slack/1/channels/C012AB3CD/messages?limit=20" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Accept: application/json"
 ```
 
-### Success Response
+### Success Response (200)
 
 ```json
 {
-  "messages": [
+  "data": [
     {
       "ts": "1713200000.000100",
       "user": "U012AB3CD",
@@ -108,7 +92,9 @@ Returns messages from a specific Slack channel.
       "text": "Morning! Ready for standup?"
     }
   ],
-  "next_cursor": "dXNlcjpVMDYxNTU3MjAw"
+  "meta": {
+    "next_cursor": "dXNlcjpVMDYxNTU3MjAw"
+  }
 }
 ```
 
@@ -122,35 +108,30 @@ Returns messages from a specific Slack channel.
 
 ---
 
-## tool: send_slack_message
+## POST /api/slack/{account}/channels/{channel}/messages
 
 Sends a message to a Slack channel on behalf of the connected account.
 
-### Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `account` | integer | Account ID |
+| `channel` | string | Slack channel ID (e.g. `C012AB3CD`) |
+| `text` | string | Message text to send (required, request body) |
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `account_id` | integer | yes | Account ID with a connected Slack workspace |
-| `channel_id` | string | yes | Slack channel ID (e.g. `C012AB3CD`) |
-| `text` | string | yes | Message text to send |
+```bash
+curl -s -X POST "https://your-domain.com/api/slack/1/channels/C012AB3CD/messages" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Deploying v1.2.3 to production now."}'
+```
 
-### Example MCP Request
+### Success Response (200)
 
 ```json
 {
-  "tool": "send_slack_message",
-  "parameters": {
-    "account_id": 1,
-    "channel_id": "C012AB3CD",
-    "text": "Deploying v1.2.3 to production now."
-  }
+  "ts": "1713200200.000300"
 }
-```
-
-### Success Response
-
-```
-Message sent (ts: 1713200200.000300)
 ```
 
 ### Error Responses
@@ -159,4 +140,5 @@ Message sent (ts: 1713200200.000300)
 |--------|--------|
 | 401 | Unauthenticated |
 | 404 | Account not found, does not belong to you, or Slack is not connected |
+| 422 | Validation error — `text` field is required |
 | 503 | Slack API unavailable |
