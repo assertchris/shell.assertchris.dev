@@ -5,7 +5,8 @@ test('docs index returns 200 and lists page links', function () {
         ->assertSuccessful()
         ->assertSee('Authentication')
         ->assertSee('Mailboxes')
-        ->assertSee('Calendars');
+        ->assertSee('Calendars')
+        ->assertSee('Slack');
 });
 
 test('docs authentication page returns 200 with rendered content', function () {
@@ -29,6 +30,13 @@ test('docs calendars page returns 200 with endpoint documentation', function () 
         ->assertSee('google_calendar_used');
 });
 
+test('docs slack page returns 200 with endpoint documentation', function () {
+    $this->get('/docs/slack')
+        ->assertSuccessful()
+        ->assertSee('/api/slack/{account}/channels')
+        ->assertSee('/api/slack/{account}/channels/{channel}/messages');
+});
+
 test('docs unknown slug returns 404', function () {
     $this->get('/docs/nonexistent')
         ->assertNotFound();
@@ -39,4 +47,5 @@ test('docs pages do not require authentication', function () {
     $this->get('/docs/authentication')->assertSuccessful();
     $this->get('/docs/mailboxes')->assertSuccessful();
     $this->get('/docs/calendars')->assertSuccessful();
+    $this->get('/docs/slack')->assertSuccessful();
 });

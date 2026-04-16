@@ -37,6 +37,8 @@ class AccountResource extends Resource
                     ->boolean(),
                 IconColumn::make('google_calendar_used')
                     ->boolean(),
+                IconColumn::make('slack_used')
+                    ->boolean(),
                 IconColumn::make('is_active')
                     ->boolean(),
                 TextColumn::make('created_at')

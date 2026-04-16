@@ -24,6 +24,10 @@ class Account extends Model
         'google_calendar_access_token',
         'google_calendar_refresh_token',
         'google_calendar_token_expires_at',
+        'slack_used',
+        'slack_access_token',
+        'slack_team_id',
+        'slack_team_name',
         'is_active',
     ];
 
@@ -37,8 +41,10 @@ class Account extends Model
             'google_calendar_access_token' => 'encrypted',
             'google_calendar_refresh_token' => 'encrypted',
             'google_calendar_token_expires_at' => 'datetime',
+            'slack_access_token' => 'encrypted',
             'mail_used' => 'boolean',
             'google_calendar_used' => 'boolean',
+            'slack_used' => 'boolean',
             'is_active' => 'boolean',
         ];
     }
@@ -51,6 +57,11 @@ class Account extends Model
     public function isGoogleCalendarConnected(): bool
     {
         return $this->google_calendar_access_token !== null && $this->google_calendar_used;
+    }
+
+    public function isSlackConnected(): bool
+    {
+        return $this->slack_used && ! empty($this->slack_access_token);
     }
 
     /**

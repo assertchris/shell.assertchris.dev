@@ -112,3 +112,55 @@ test('admin can delete an account', function () {
 
     expect(Account::find($account->id))->toBeNull();
 });
+
+test('edit page shows slack section', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->create(['user_id' => $user->id]);
+
+    $this->actingAs($user);
+
+    Livewire::test(EditAccount::class, ['record' => $account->id])
+        ->assertSee('Slack');
+});
+
+test('edit page shows connect slack action when slack enabled but not connected', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->create(['user_id' => $user->id, 'slack_used' => true]);
+
+    $this->actingAs($user);
+
+    Livewire::test(EditAccount::class, ['record' => $account->id])
+        ->assertSee('Connect Slack');
+});
+
+test('edit page shows disconnect slack action when slack is connected', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withSlack()->create(['user_id' => $user->id]);
+
+    $this->actingAs($user);
+
+    Livewire::test(EditAccount::class, ['record' => $account->id])
+        ->assertSee('Disconnect Slack');
+});
+
+test('disconnect slack action clears slack credentials', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withSlack()->create(['user_id' => $user->id]);
+
+    expect($account->isSlackConnected())->toBeTrue();
+
+    $account->update([
+        'slack_access_token' => null,
+        'slack_team_id' => null,
+        'slack_team_name' => null,
+        'slack_used' => false,
+    ]);
+
+    $account->refresh();
+
+    expect($account->slack_access_token)->toBeNull()
+        ->and($account->slack_team_id)->toBeNull()
+        ->and($account->slack_team_name)->toBeNull()
+        ->and($account->slack_used)->toBeFalse()
+        ->and($account->isSlackConnected())->toBeFalse();
+});

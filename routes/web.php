@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Responders\Auth\CallbackGoogleOAuthResponder;
+use App\Http\Responders\Auth\CallbackSlackOAuthResponder;
 use App\Http\Responders\Auth\RedirectGoogleOAuthResponder;
+use App\Http\Responders\Auth\RedirectSlackOAuthResponder;
 use App\Http\Responders\Docs\ListDocPagesResponder;
 use App\Http\Responders\Docs\ShowDocPageResponder;
 use Illuminate\Support\Facades\Route;
@@ -16,4 +18,6 @@ Route::get('/docs/{slug}', ShowDocPageResponder::class)->name('docs.show');
 Route::middleware('auth')->group(function () {
     Route::get('/auth/google/{account}/redirect', RedirectGoogleOAuthResponder::class)->name('google.redirect');
     Route::get('/auth/google/callback', CallbackGoogleOAuthResponder::class)->name('google.callback');
+    Route::get('/auth/slack/{account}/redirect', RedirectSlackOAuthResponder::class)->name('slack.redirect');
+    Route::get('/auth/slack/callback', CallbackSlackOAuthResponder::class)->name('slack.callback');
 });

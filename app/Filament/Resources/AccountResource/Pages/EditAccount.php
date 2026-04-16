@@ -79,6 +79,29 @@ class EditAccount extends EditRecord
                             })
                             ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get, Account $record): bool => $get('google_calendar_used') && $record->isGoogleCalendarConnected()),
                     ]),
+                Section::make('Slack')
+                    ->schema([
+                        Toggle::make('slack_used')
+                            ->default(false)
+                            ->live(),
+                        Action::make('connectSlack')
+                            ->label('Connect Slack')
+                            ->url(fn (Account $record): string => route('slack.redirect', $record))
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get, Account $record): bool => $get('slack_used') && ! $record->isSlackConnected()),
+                        Action::make('disconnectSlack')
+                            ->label('Disconnect Slack')
+                            ->requiresConfirmation()
+                            ->action(function (Account $record): void {
+                                $record->update([
+                                    'slack_access_token' => null,
+                                    'slack_team_id' => null,
+                                    'slack_team_name' => null,
+                                    'slack_used' => false,
+                                ]);
+                                Notification::make()->title('Slack disconnected.')->success()->send();
+                            })
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get, Account $record): bool => $get('slack_used') && $record->isSlackConnected()),
+                    ]),
             ]);
     }
 

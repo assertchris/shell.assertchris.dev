@@ -57,6 +57,12 @@ class CreateAccount extends CreateRecord
                             ->default(false)
                             ->live(),
                     ]),
+                Section::make('Slack')
+                    ->schema([
+                        Toggle::make('slack_used')
+                            ->default(false)
+                            ->live(),
+                    ]),
             ]);
     }
 

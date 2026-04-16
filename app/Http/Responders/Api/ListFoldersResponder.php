@@ -14,9 +14,6 @@ class ListFoldersResponder
 
     public function __invoke(Request $request, Account $account): AnonymousResourceCollection
     {
-        abort_unless($account->user_id === $request->user()->id, 404);
-        abort_unless($account->mail_used, 404);
-
         try {
             $imapMailbox = $this->mailboxService->connect($account);
             $folders = $this->mailboxService->getFolders($imapMailbox);
