@@ -6,6 +6,7 @@ use App\Http\Responders\Api\ListFoldersResponder;
 use App\Http\Responders\Api\ListMessagesResponder;
 use App\Http\Responders\Api\ListSlackChannelsResponder;
 use App\Http\Responders\Api\ListSlackMessagesResponder;
+use App\Http\Responders\Api\SendSlackMessageResponder;
 use App\Http\Responders\Api\ShowCalendarEntryResponder;
 use App\Http\Responders\Api\ShowMessageResponder;
 use Illuminate\Support\Facades\Route;
@@ -24,4 +25,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/slack/{account}/channels', ListSlackChannelsResponder::class);
     Route::get('/slack/{account}/channels/{channel}/messages', ListSlackMessagesResponder::class);
+    Route::post('/slack/{account}/channels/{channel}/messages', SendSlackMessageResponder::class);
 });
