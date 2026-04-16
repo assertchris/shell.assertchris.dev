@@ -439,6 +439,7 @@ In `tests/Feature/Docs/DocPagesTest.php`:
 - Phase 1: Slack OAuth & Account Storage
 - Phase 2: Slack API Client & Data Layer
 - Phase 3: MCP Server & Read Tools
+- Phase 4: MCP Send Tool
 
 ### In Progress
 - (none)
@@ -447,7 +448,6 @@ In `tests/Feature/Docs/DocPagesTest.php`:
 - (none)
 
 ### To Do
-- Phase 4: MCP Send Tool
 - Phase 5: Documentation
 
 ## Technical Notes

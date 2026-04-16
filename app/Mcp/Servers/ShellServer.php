@@ -4,6 +4,7 @@ namespace App\Mcp\Servers;
 
 use App\Mcp\Tools\ListSlackChannelsTool;
 use App\Mcp\Tools\ReadSlackMessagesTool;
+use App\Mcp\Tools\SendSlackMessageTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -20,6 +21,7 @@ class ShellServer extends Server
     protected array $tools = [
         ListSlackChannelsTool::class,
         ReadSlackMessagesTool::class,
+        SendSlackMessageTool::class,
     ];
 
     /**
