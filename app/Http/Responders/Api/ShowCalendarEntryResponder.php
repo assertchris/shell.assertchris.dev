@@ -14,9 +14,6 @@ class ShowCalendarEntryResponder
 
     public function __invoke(Request $request, Account $account, string $eventId): CalendarEntryResource
     {
-        abort_unless($account->user_id === $request->user()->id, 404);
-        abort_unless($account->isGoogleCalendarConnected(), 404);
-
         try {
             $entry = $this->calendarService->getEntry($account, $eventId);
 

@@ -459,6 +459,103 @@ Add two new endpoint sections:
 
 ---
 
+### Phase 8 — Account Ownership & Service-Connected Middleware
+
+**Goal:** Replace the repeated `abort_unless` ownership and service-connected guards in all API responders with two dedicated middleware, applied via route groups. Touches mail, calendar, and Slack responders.
+
+#### Step 8.1 — Create `EnsureAccountOwnership` middleware
+
+```bash
+php artisan make:middleware EnsureAccountOwnership --no-interaction
+```
+
+- Resolves `$request->route('account')` — expects an `Account` model (route model binding already handles this)
+- Aborts 404 if `$account->user_id !== $request->user()->id`
+- No-ops if route has no `account` parameter
+
+#### Step 8.2 — Create `EnsureServiceConnected` middleware
+
+```bash
+php artisan make:middleware EnsureServiceConnected --no-interaction
+```
+
+Accepts a parameter (the service name). Resolves `$request->route('account')` and checks:
+- `slack` → `$account->isSlackConnected()`
+- `mail` → `$account->mail_used`
+- `calendar` → `$account->isGoogleCalendarConnected()`
+
+Aborts 404 if the check fails. Throws `\InvalidArgumentException` for unknown service names.
+
+#### Step 8.3 — Register middleware aliases in `bootstrap/app.php`
+
+```php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'account.owner'    => EnsureAccountOwnership::class,
+        'service.connected' => EnsureServiceConnected::class,
+    ]);
+})
+```
+
+#### Step 8.4 — Update `routes/api.php`
+
+Restructure into nested route groups:
+
+```php
+// All account routes — ownership enforced here
+Route::middleware(['auth:sanctum', 'account.owner'])->group(function () {
+
+    Route::get('/accounts', ListAccountsResponder::class);
+
+    Route::middleware('service.connected:mail')->group(function () {
+        Route::get('/{account}/mailbox', ...);
+        Route::get('/{account}/mailbox/{folder}/messages', ...);
+        Route::get('/{account}/mailbox/{folder}/messages/{uid}', ...);
+    });
+
+    Route::middleware('service.connected:calendar')->group(function () {
+        Route::get('/{account}/calendar', ...);
+        Route::get('/{account}/calendar/{eventId}', ...);
+    });
+
+    Route::middleware('service.connected:slack')->group(function () {
+        Route::get('/slack/{account}/channels', ...);
+        // ... all other slack routes
+    });
+});
+```
+
+Note: `/status` and `/accounts` have no `{account}` param — `EnsureAccountOwnership` no-ops for these.
+
+#### Step 8.5 — Remove guards from all affected responders
+
+Remove the two `abort_unless` lines from every API responder that previously handled ownership and service-connection. The affected files:
+- `ListFoldersResponder`, `ListMessagesResponder`, `ShowMessageResponder`
+- `ListCalendarEntriesResponder`, `ShowCalendarEntryResponder`
+- `ListSlackChannelsResponder`, `ListSlackMessagesResponder`, `SendSlackMessageResponder`, `ListSlackUsersResponder`, `OpenSlackConversationResponder`
+
+Also fix the 403/404 inconsistency — ownership now consistently returns 404.
+
+#### Step 8.6 — Tests
+
+Create `tests/Feature/Middleware/EnsureAccountOwnershipTest.php`:
+- Request with matching user passes through
+- Request with wrong user returns 404
+- Route without `{account}` param passes through
+
+Create `tests/Feature/Middleware/EnsureServiceConnectedTest.php`:
+- Slack connected passes through
+- Slack not connected returns 404
+- Mail connected passes through
+- Mail not connected returns 404
+- Calendar connected passes through
+- Calendar not connected returns 404
+- Unknown service throws `InvalidArgumentException`
+
+Update existing API test files to remove redundant ownership/connection guard tests that are now covered by middleware tests (or keep them as integration coverage — check what makes sense).
+
+---
+
 ## Progress
 
 ### Completed
@@ -471,6 +568,7 @@ Add two new endpoint sections:
 - Phase 5: Documentation (rewrite doc for REST endpoints)
 - Phase 6: DM Support
 - Phase 7: User List & Open DM
+- Phase 8: Account Ownership & Service-Connected Middleware
 
 ### In Progress
 - (none)

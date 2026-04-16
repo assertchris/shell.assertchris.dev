@@ -14,9 +14,6 @@ class ListSlackMessagesResponder
 
     public function __invoke(Request $request, Account $account, string $channelId): JsonResponse
     {
-        abort_unless($account->user_id === $request->user()->id, 404);
-        abort_unless($account->isSlackConnected(), 404);
-
         $limit = min(200, max(1, (int) $request->query('limit', 50)));
         $cursor = $request->query('cursor');
 

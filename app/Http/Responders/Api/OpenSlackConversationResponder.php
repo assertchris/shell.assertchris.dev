@@ -14,9 +14,6 @@ class OpenSlackConversationResponder
 
     public function __invoke(Request $request, Account $account): JsonResponse
     {
-        abort_unless($account->user_id === $request->user()->id, 404);
-        abort_unless($account->isSlackConnected(), 404);
-
         $request->validate([
             'user_id' => ['required', 'string'],
         ]);
