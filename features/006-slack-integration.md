@@ -438,6 +438,7 @@ In `tests/Feature/Docs/DocPagesTest.php`:
 - Feature doc written with full implementation plan
 - Phase 1: Slack OAuth & Account Storage
 - Phase 2: Slack API Client & Data Layer
+- Phase 3: MCP Server & Read Tools
 
 ### In Progress
 - (none)
@@ -446,7 +447,6 @@ In `tests/Feature/Docs/DocPagesTest.php`:
 - (none)
 
 ### To Do
-- Phase 3: MCP Server & Read Tools
 - Phase 4: MCP Send Tool
 - Phase 5: Documentation
 
