@@ -68,6 +68,64 @@ test('listChannels passes cursor when provided', function () {
     });
 });
 
+test('listChannels normalises DM name to dm:<user_id>', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withSlack()->create(['user_id' => $user->id]);
+
+    Http::fake([
+        'slack.com/api/conversations.list*' => Http::response([
+            'ok' => true,
+            'channels' => [
+                [
+                    'id' => 'D001',
+                    'user' => 'U999',
+                    'is_private' => true,
+                    'num_members' => 2,
+                ],
+            ],
+        ]),
+    ]);
+
+    $channels = app(SlackService::class)->listChannels($account);
+
+    expect($channels)->toHaveCount(1)
+        ->and($channels[0])->toBe([
+            'id' => 'D001',
+            'name' => 'dm:U999',
+            'is_private' => true,
+            'num_members' => 2,
+        ]);
+});
+
+test('listChannels passes through mpim name as-is', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withSlack()->create(['user_id' => $user->id]);
+
+    Http::fake([
+        'slack.com/api/conversations.list*' => Http::response([
+            'ok' => true,
+            'channels' => [
+                [
+                    'id' => 'G001',
+                    'name' => 'mpdm-alice--bob--charlie-1',
+                    'is_private' => true,
+                    'num_members' => 3,
+                ],
+            ],
+        ]),
+    ]);
+
+    $channels = app(SlackService::class)->listChannels($account);
+
+    expect($channels)->toHaveCount(1)
+        ->and($channels[0])->toBe([
+            'id' => 'G001',
+            'name' => 'mpdm-alice--bob--charlie-1',
+            'is_private' => true,
+            'num_members' => 3,
+        ]);
+});
+
 test('listChannels throws on non-ok response', function () {
     $user = User::factory()->create();
     $account = Account::factory()->withSlack()->create(['user_id' => $user->id]);

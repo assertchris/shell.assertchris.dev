@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Http;
 class SlackService
 {
     /**
+     * Returns all channels, DMs, and group DMs visible to the connected account.
+     * For DM conversations (im type), `name` is derived as `dm:<user_id>` since
+     * Slack does not provide a name field for 1:1 DMs. For group DMs (mpim type),
+     * the Slack-provided name is used as-is.
+     *
      * @return array<int, array{id: string, name: string, is_private: bool, num_members: int}>
      */
     public function listChannels(Account $account, ?string $cursor = null): array
@@ -15,7 +20,7 @@ class SlackService
         $params = [
             'limit' => 200,
             'exclude_archived' => true,
-            'types' => 'public_channel,private_channel',
+            'types' => 'public_channel,private_channel,im,mpim',
         ];
 
         if ($cursor !== null) {
@@ -30,12 +35,18 @@ class SlackService
         }
 
         return array_map(
-            fn (array $channel) => [
-                'id' => $channel['id'],
-                'name' => $channel['name'],
-                'is_private' => $channel['is_private'],
-                'num_members' => $channel['num_members'] ?? 0,
-            ],
+            function (array $channel) {
+                $name = isset($channel['user'])
+                    ? 'dm:'.$channel['user']
+                    : ($channel['name'] ?? '');
+
+                return [
+                    'id' => $channel['id'],
+                    'name' => $name,
+                    'is_private' => $channel['is_private'],
+                    'num_members' => $channel['num_members'] ?? 0,
+                ];
+            },
             $response->json('channels') ?? []
         );
     }

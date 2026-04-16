@@ -15,7 +15,9 @@ Slack must be connected via OAuth in the admin panel (Accounts → Edit → Slac
 
 ## GET /api/slack/{account}/channels
 
-Returns all Slack channels visible to the connected account (public and private channels the user is a member of).
+Returns all conversations visible to the connected account: public channels, private channels, direct messages (DMs), and group DMs (MPDMs).
+
+DM conversations have no Slack-assigned name. Their `name` field is normalised to `dm:<user_id>` where `<user_id>` is the Slack user ID of the other party. Group DM names are passed through as-is (e.g. `mpdm-alice--bob--charlie-1`).
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -44,6 +46,18 @@ curl -s "https://your-domain.com/api/slack/1/channels" \
       "name": "engineering",
       "is_private": false,
       "num_members": 12
+    },
+    {
+      "id": "D001ABCDE",
+      "name": "dm:U012AB3CD",
+      "is_private": true,
+      "num_members": 2
+    },
+    {
+      "id": "G001FGHIJ",
+      "name": "mpdm-alice--bob--charlie-1",
+      "is_private": true,
+      "num_members": 3
     }
   ]
 }

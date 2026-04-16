@@ -2,7 +2,7 @@
 
 - Branch: `feature/006-slack-integration`
 - Related Issue: N/A
-- **Status**: 🟡 In Progress
+- **Status**: ✅ Complete
 
 ## Overview
 
@@ -21,9 +21,9 @@ This feature adds full Slack integration: the user connects their Slack workspac
 
 This feature will add a full Slack integration so that Chris's AI agent can:
 - Connect a Slack workspace via OAuth (user token, not bot token)
-- List channels and workspaces visible to the connected account
-- Read messages in any channel the user can access
-- Send messages to any channel on behalf of the user
+- List channels, DMs, and group DMs visible to the connected account
+- Read messages in any channel or DM the user can access
+- Send messages to any channel or DM on behalf of the user
 
 ## Requirements
 
@@ -31,9 +31,9 @@ This feature will add a full Slack integration so that Chris's AI agent can:
 
 - [ ] User can connect a Slack workspace via OAuth in the Accounts admin section
 - [ ] User can disconnect a connected Slack workspace from the same UI
-- [ ] Agent can list all channels visible to the connected Slack account (via HTTP API)
-- [ ] Agent can read messages from a specific channel (via HTTP API)
-- [ ] Agent can send a message to a specific channel (via HTTP API)
+- [ ] Agent can list all channels, DMs, and group DMs visible to the connected Slack account (via HTTP API)
+- [ ] Agent can read messages from a specific channel or DM (via HTTP API)
+- [ ] Agent can send a message to a specific channel or DM (via HTTP API)
 - [ ] HTTP API endpoints are authenticated (requires a valid Sanctum token)
 - [ ] All Slack credentials are stored encrypted at rest
 
@@ -56,7 +56,6 @@ This feature will add a full Slack integration so that Chris's AI agent can:
 - Slack slash commands or bot webhook inbound events
 - Persisting message history to the database
 - Multi-workspace support (one Slack connection per Account)
-- DM/IM reading (can be added later via additional scopes)
 - Token rotation (Slack's default OAuth v2 tokens do not expire unless rotation is enabled)
 
 ---
@@ -231,7 +230,7 @@ Implementation pattern:
 - Callers (`try/catch \Throwable`) will turn this into a 503, consistent with existing service pattern
 
 Slack API endpoints:
-- `GET https://slack.com/api/conversations.list` — `listChannels()`; params: `limit`, `cursor`, `exclude_archived=true`, `types=public_channel,private_channel`
+- `GET https://slack.com/api/conversations.list` — `listChannels()`; params: `limit`, `cursor`, `exclude_archived=true`, `types=public_channel,private_channel,im,mpim`
 - `GET https://slack.com/api/conversations.history` — `listMessages()`; params: `channel`, `limit`, `cursor`
 - `POST https://slack.com/api/chat.postMessage` — `sendMessage()`; body: `channel`, `text`
 
@@ -351,6 +350,32 @@ Each section: parameter table, example request, example success response, error 
 
 ---
 
+### Phase 6 — DM Support
+
+**Goal:** Extend the existing Slack integration to include DMs (1:1) and group DMs (MPIM) alongside channels. No new endpoints needed — DMs use the same Slack API; it's a types parameter change and a response shape update.
+
+#### Step 6.1 — Update `SlackService::listChannels()`
+
+Change the `types` parameter from `public_channel,private_channel` to `public_channel,private_channel,im,mpim`.
+
+DM conversations have a different shape from channels — they have no `name` field. Add a normalisation step:
+- For `im` type: derive a display name from `user` field (the other party's user ID) — store as `name: 'dm:<user_id>'`
+- For `mpim` type: the `name` field is present (Slack sets it to something like `mpdm-user1--user2--user3-1`)
+
+Update the return type PHPDoc to reflect that `name` may be a derived value for DMs.
+
+#### Step 6.2 — Update `SlackServiceTest`
+
+Add test cases:
+- `listChannels` with DM in response returns normalised `name: 'dm:<user_id>'`
+- `listChannels` with group DM (mpim) in response returns the mpim name as-is
+
+#### Step 6.3 — Update `resources/docs/slack.md`
+
+In the `GET /api/slack/{account}/channels` section, note that the response includes channels, DMs (`dm:<user_id>`), and group DMs, and update the example response to show a mixed result.
+
+---
+
 ## Progress
 
 ### Completed
@@ -361,6 +386,7 @@ Each section: parameter table, example request, example success response, error 
 - Phase 3: HTTP API Read Endpoints
 - Phase 4: HTTP API Send Endpoint
 - Phase 5: Documentation (rewrite doc for REST endpoints)
+- Phase 6: DM Support
 
 ### In Progress
 - (none)
@@ -437,16 +463,15 @@ Disabled by default in Slack apps. Do NOT add `slack_refresh_token` or `slack_to
 - `tests/Feature/Docs/DocPagesTest.php` — update for Slack doc page
 
 ## Testing
-🟡 **Not started**: No tests written yet.
-- Total tests: 0
-- Assertions: 0
+✅ **Complete** — All phases tested.
 - Key coverage:
-  - Slack OAuth redirect/callback/disconnect flows
-  - SlackService HTTP interactions (Http::fake())
-  - MCP tool auth guards (unauthenticated, wrong user, not connected)
-  - MCP tool happy paths (channels, messages, send)
-  - Filament UI elements (connect/disconnect actions)
-  - Docs page (200, content, no auth required)
+  - Slack OAuth redirect/callback/disconnect flows (`SlackOAuthTest`)
+  - `SlackService` HTTP interactions via `Http::fake()` (`SlackServiceTest`)
+  - API read endpoint auth guards and happy paths (`SlackReadEndpointsTest`)
+  - API send endpoint auth guards and happy paths (`SlackSendEndpointTest`)
+  - Filament UI elements — connect/disconnect actions (`AccountResourceTest`)
+  - Docs page — 200, content, no auth required (`DocPagesTest`)
+  - DM support in `SlackService` — DM name normalisation and MPIM pass-through (`SlackServiceTest`)
 
 ## Questions/Decisions Needed
 - [x] Confirm approval to `composer require socialiteproviders/slack` — ✅ approved
