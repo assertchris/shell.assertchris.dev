@@ -436,15 +436,15 @@ In `tests/Feature/Docs/DocPagesTest.php`:
 ### Completed
 - Branch and worktree created
 - Feature doc written with full implementation plan
+- Phase 1: Slack OAuth & Account Storage
 
 ### In Progress
 - (none)
 
 ### Blocked
-- (none — `socialiteproviders/slack` needs to be added; confirm with Chris before `composer require`)
+- (none)
 
 ### To Do
-- Phase 1: Slack OAuth & Account Storage
 - Phase 2: Slack API Client & Data Layer
 - Phase 3: MCP Server & Read Tools
 - Phase 4: MCP Send Tool
@@ -567,3 +567,17 @@ Before every commit, ensure the following have been completed:
 ### Session 2
 - Ran phased planning: launched 4 research sub-agents covering OAuth, API client, MCP tools, and docs
 - Wrote full implementation plan to feature doc (5 phases)
+
+### Session 3
+- Implemented Phase 1: Slack OAuth & Account Storage
+  - Added `socialiteproviders/slack` via composer
+  - Registered Socialite Slack driver event listener in `AppServiceProvider`
+  - Added OAuth credentials to `config/services.php` and `.env.example`
+  - Created migration adding `slack_used`, `slack_access_token`, `slack_team_id`, `slack_team_name` to `accounts`
+  - Updated `Account` model: fillable, casts, `isSlackConnected()` helper
+  - Created `RedirectSlackOAuthResponder` and `CallbackSlackOAuthResponder`
+  - Registered `slack.redirect` and `slack.callback` routes
+  - Updated Filament: `slack_used` icon column in list, toggle in create, Slack section in edit
+  - Added `withSlack()` factory state to `AccountFactory`
+  - Created `tests/Feature/SlackOAuthTest.php` (7 tests)
+  - Added Slack UI tests to `tests/Feature/Filament/AccountResourceTest.php` (4 tests)

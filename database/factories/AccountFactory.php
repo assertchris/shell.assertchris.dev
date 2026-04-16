@@ -30,6 +30,10 @@ class AccountFactory extends Factory
             'google_calendar_access_token' => null,
             'google_calendar_refresh_token' => null,
             'google_calendar_token_expires_at' => null,
+            'slack_used' => false,
+            'slack_access_token' => null,
+            'slack_team_id' => null,
+            'slack_team_name' => null,
             'is_active' => true,
         ];
     }
@@ -58,6 +62,16 @@ class AccountFactory extends Factory
             'google_calendar_access_token' => null,
             'google_calendar_refresh_token' => null,
             'google_calendar_token_expires_at' => null,
+        ]);
+    }
+
+    public function withSlack(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'slack_used' => true,
+            'slack_access_token' => fake()->sha256(),
+            'slack_team_id' => 'T'.fake()->bothify('??########'),
+            'slack_team_name' => fake()->company(),
         ]);
     }
 }
