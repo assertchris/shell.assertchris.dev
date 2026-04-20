@@ -5,7 +5,7 @@ use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
-use Laravel\Socialite\Two\User as SocialiteUser;
+use SocialiteProviders\Manager\OAuth2\User as SocialiteUser;
 use SocialiteProviders\Slack\Provider as SlackProvider;
 
 uses(RefreshDatabase::class);
@@ -15,7 +15,7 @@ test('redirect route returns 302 to slack', function () {
     $account = Account::factory()->create(['user_id' => $user->id]);
 
     $slackProvider = Mockery::mock(SlackProvider::class);
-    $slackProvider->shouldReceive('scopes')->once()->andReturnSelf();
+    $slackProvider->shouldReceive('setUserScopes')->once()->andReturnSelf();
     $slackProvider->shouldReceive('redirect')->once()->andReturn(redirect('https://slack.com/oauth/v2/authorize?fake=1'));
 
     $socialite = Mockery::mock(SocialiteFactory::class);
@@ -33,7 +33,7 @@ test('redirect route stores account id in session', function () {
     $account = Account::factory()->create(['user_id' => $user->id]);
 
     $slackProvider = Mockery::mock(SlackProvider::class);
-    $slackProvider->shouldReceive('scopes')->once()->andReturnSelf();
+    $slackProvider->shouldReceive('setUserScopes')->once()->andReturnSelf();
     $slackProvider->shouldReceive('redirect')->once()->andReturn(redirect('https://slack.com/'));
 
     $socialite = Mockery::mock(SocialiteFactory::class);
@@ -64,11 +64,10 @@ test('callback stores tokens and redirects to filament edit page', function () {
     session(['slack_oauth_account_id' => $account->id]);
 
     $socialiteUser = Mockery::mock(SocialiteUser::class);
-    $socialiteUser->token = 'xoxp-fake-access-token';
-    $socialiteUser->shouldReceive('getRaw')->andReturn([
-        'team_id' => 'T0123456789',
-        'team' => ['name' => 'Acme Corp'],
-    ]);
+    $socialiteUser->accessTokenResponseBody = [
+        'authed_user' => ['access_token' => 'xoxp-fake-access-token'],
+        'team' => ['id' => 'T0123456789', 'name' => 'Acme Corp'],
+    ];
 
     $slackProvider = Mockery::mock(SlackProvider::class);
     $slackProvider->shouldReceive('user')->once()->andReturn($socialiteUser);

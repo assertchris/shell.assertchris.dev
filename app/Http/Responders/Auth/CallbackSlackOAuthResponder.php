@@ -21,12 +21,12 @@ class CallbackSlackOAuthResponder
         abort_unless($account->user_id === $request->user()->id, 403);
 
         $slackUser = Socialite::driver('slack')->user();
-        $raw = $slackUser->getRaw();
+        $oauthResponse = $slackUser->accessTokenResponseBody;
 
         $account->update([
-            'slack_access_token' => $slackUser->token,
-            'slack_team_id' => $raw['team_id'] ?? null,
-            'slack_team_name' => $raw['team']['name'] ?? null,
+            'slack_access_token' => $oauthResponse['authed_user']['access_token'] ?? $oauthResponse['access_token'] ?? null,
+            'slack_team_id' => $oauthResponse['team']['id'] ?? null,
+            'slack_team_name' => $oauthResponse['team']['name'] ?? null,
             'slack_used' => true,
         ]);
 
