@@ -276,6 +276,7 @@ This feature will add fine-grained permission toggles per service and a Google C
 - Phase 2: `EnsurePermission` middleware, apply to existing calendar/Slack routes, tests
 - Phase 3: Calendar write API (`CalendarService::createEntry`, `CreateCalendarEntryResponder`, route + `google_calendar_write` middleware), tests
 - Phase 4: Filament UI — read/write permission toggles nested in Mail, Google Calendar, and Slack sections; visibility gated on parent service toggle; tests
+- Phase 5: Updated `resources/docs/calendars.md` and `resources/docs/slack.md` with Permissions sections, 403 error rows, and `POST /api/{account}/calendar` endpoint documentation
 
 ### In Progress
 - —
@@ -284,7 +285,7 @@ This feature will add fine-grained permission toggles per service and a Google C
 - —
 
 ### To Do
-- [ ] Phase 5: Update `resources/docs/calendars.md` and `resources/docs/slack.md` with permission system and new endpoint
+- —
 
 ---
 

@@ -11,6 +11,15 @@ Accept: application/json
 
 Slack must be connected via OAuth in the admin panel (Accounts → Edit → Slack section). Enable the **Slack** toggle and click **Connect Slack Account** to complete the OAuth flow. The connected workspace name and team ID are stored with the account.
 
+## Permissions
+
+Each account has two fine-grained permission flags that control Slack access:
+
+- `slack_read` — must be enabled to use GET endpoints. If disabled, all GET requests return `403 Forbidden`.
+- `slack_write` — must be enabled to use POST endpoints. If disabled, all POST requests return `403 Forbidden`.
+
+Both flags default to **enabled**. They can be toggled per-account in the Filament admin UI under the Slack section.
+
 ---
 
 ## GET /api/slack/{account}/channels
@@ -68,6 +77,7 @@ curl -s "https://your-domain.com/api/slack/1/channels" \
 | Status | Reason |
 |--------|--------|
 | 401 | Unauthenticated |
+| 403 | Slack read permission is disabled for this account |
 | 404 | Account not found, does not belong to you, or Slack is not connected |
 | 503 | Slack API unavailable |
 
@@ -117,6 +127,7 @@ curl -s "https://your-domain.com/api/slack/1/channels/C012AB3CD/messages?limit=2
 | Status | Reason |
 |--------|--------|
 | 401 | Unauthenticated |
+| 403 | Slack read permission is disabled for this account |
 | 404 | Account not found, does not belong to you, or Slack is not connected |
 | 503 | Slack API unavailable |
 
@@ -153,6 +164,7 @@ curl -s -X POST "https://your-domain.com/api/slack/1/channels/C012AB3CD/messages
 | Status | Reason |
 |--------|--------|
 | 401 | Unauthenticated |
+| 403 | Slack write permission is disabled for this account |
 | 404 | Account not found, does not belong to you, or Slack is not connected |
 | 422 | Validation error — `text` field is required |
 | 503 | Slack API unavailable |
@@ -203,6 +215,7 @@ curl -s "https://your-domain.com/api/slack/1/users" \
 | Status | Reason |
 |--------|--------|
 | 401 | Unauthenticated |
+| 403 | Slack read permission is disabled for this account |
 | 404 | Account not found, does not belong to you, or Slack is not connected |
 | 503 | Slack API unavailable |
 
@@ -238,6 +251,7 @@ curl -s -X POST "https://your-domain.com/api/slack/1/conversations/open" \
 | Status | Reason |
 |--------|--------|
 | 401 | Unauthenticated |
+| 403 | Slack write permission is disabled for this account |
 | 404 | Account not found, does not belong to you, or Slack is not connected |
 | 422 | Validation error — `user_id` field is required |
 | 503 | Slack API unavailable |
