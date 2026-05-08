@@ -272,6 +272,7 @@ This feature will add fine-grained permission toggles per service and a Google C
 - Worktree created at `.worktrees/feature/007-finer-permissions`
 - Feature doc created
 - Planning complete
+- Phase 1: Migration, model, factory, tests
 
 ### In Progress
 - —
@@ -280,7 +281,6 @@ This feature will add fine-grained permission toggles per service and a Google C
 - —
 
 ### To Do
-- [ ] Phase 1: Migration, model, factory, tests
 - [ ] Phase 2: `EnsurePermission` middleware, apply to existing calendar/Slack routes, tests
 - [ ] Phase 3: Calendar write API (`CalendarService::createEntry`, `CreateCalendarEntryResponder`, route + `google_calendar_write` middleware), tests
 - [ ] Phase 4: Filament UI toggles, tests
