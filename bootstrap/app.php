@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnforceTokenIpBinding;
 use App\Http\Middleware\EnsureAccountOwnership;
+use App\Http\Middleware\EnsurePermission;
 use App\Http\Middleware\EnsureServiceConnected;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'account.owner' => EnsureAccountOwnership::class,
+            'permission' => EnsurePermission::class,
             'service.connected' => EnsureServiceConnected::class,
         ]);
     })

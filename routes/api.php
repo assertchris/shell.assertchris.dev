@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Responders\Api\CreateCalendarEntryResponder;
 use App\Http\Responders\Api\ListAccountsResponder;
 use App\Http\Responders\Api\ListCalendarEntriesResponder;
 use App\Http\Responders\Api\ListFoldersResponder;
@@ -25,15 +26,24 @@ Route::middleware(['auth:sanctum', 'account.owner'])->group(function () {
     });
 
     Route::middleware('service.connected:calendar')->group(function () {
-        Route::get('/{account}/calendar', ListCalendarEntriesResponder::class);
-        Route::get('/{account}/calendar/{eventId}', ShowCalendarEntryResponder::class);
+        Route::get('/{account}/calendar', ListCalendarEntriesResponder::class)
+            ->middleware('permission:google_calendar_read');
+        Route::get('/{account}/calendar/{eventId}', ShowCalendarEntryResponder::class)
+            ->middleware('permission:google_calendar_read');
+        Route::post('/{account}/calendar', CreateCalendarEntryResponder::class)
+            ->middleware('permission:google_calendar_write');
     });
 
     Route::middleware('service.connected:slack')->group(function () {
-        Route::get('/slack/{account}/channels', ListSlackChannelsResponder::class);
-        Route::get('/slack/{account}/channels/{channel}/messages', ListSlackMessagesResponder::class);
-        Route::post('/slack/{account}/channels/{channel}/messages', SendSlackMessageResponder::class);
-        Route::get('/slack/{account}/users', ListSlackUsersResponder::class);
-        Route::post('/slack/{account}/conversations/open', OpenSlackConversationResponder::class);
+        Route::get('/slack/{account}/channels', ListSlackChannelsResponder::class)
+            ->middleware('permission:slack_read');
+        Route::get('/slack/{account}/channels/{channel}/messages', ListSlackMessagesResponder::class)
+            ->middleware('permission:slack_read');
+        Route::post('/slack/{account}/channels/{channel}/messages', SendSlackMessageResponder::class)
+            ->middleware('permission:slack_write');
+        Route::get('/slack/{account}/users', ListSlackUsersResponder::class)
+            ->middleware('permission:slack_read');
+        Route::post('/slack/{account}/conversations/open', OpenSlackConversationResponder::class)
+            ->middleware('permission:slack_write');
     });
 });

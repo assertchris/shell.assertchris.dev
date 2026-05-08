@@ -164,3 +164,60 @@ test('disconnect slack action clears slack credentials', function () {
         ->and($account->slack_used)->toBeFalse()
         ->and($account->isSlackConnected())->toBeFalse();
 });
+
+test('google calendar read and write toggles render when google_calendar_used is true', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withGoogleCalendar()->create(['user_id' => $user->id]);
+
+    $this->actingAs($user);
+
+    Livewire::test(EditAccount::class, ['record' => $account->id])
+        ->assertFormFieldExists('google_calendar_read')
+        ->assertFormFieldExists('google_calendar_write');
+});
+
+test('saving edit form with google_calendar_read false persists correctly', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withGoogleCalendar()->create(['user_id' => $user->id, 'google_calendar_read' => true]);
+
+    $this->actingAs($user);
+
+    Livewire::test(EditAccount::class, ['record' => $account->id])
+        ->fillForm(['google_calendar_read' => false])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($account->fresh()->google_calendar_read)->toBeFalse();
+});
+
+test('saving edit form with slack_write false persists correctly', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withSlack()->create(['user_id' => $user->id, 'slack_write' => true]);
+
+    $this->actingAs($user);
+
+    Livewire::test(EditAccount::class, ['record' => $account->id])
+        ->fillForm(['slack_write' => false])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($account->fresh()->slack_write)->toBeFalse();
+});
+
+test('toggling google_calendar_read to false and saving reflects updated value on reload', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withGoogleCalendar()->create(['user_id' => $user->id, 'google_calendar_read' => true]);
+
+    $this->actingAs($user);
+
+    Livewire::test(EditAccount::class, ['record' => $account->id])
+        ->fillForm(['google_calendar_read' => false])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $account->refresh();
+    expect($account->google_calendar_read)->toBeFalse();
+
+    Livewire::test(EditAccount::class, ['record' => $account->id])
+        ->assertFormSet(['google_calendar_read' => false]);
+});

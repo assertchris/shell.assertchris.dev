@@ -49,15 +49,27 @@ class AccountFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'google_calendar_used' => true,
+            'google_calendar_read' => true,
+            'google_calendar_write' => true,
             'google_calendar_access_token' => fake()->sha256(),
             'google_calendar_refresh_token' => fake()->sha256(),
             'google_calendar_token_expires_at' => now()->addHour(),
         ]);
     }
 
+    public function withCalendarReadOnly(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'google_calendar_read' => true,
+            'google_calendar_write' => false,
+        ]);
+    }
+
     public function mailOnly(): static
     {
         return $this->state(fn (array $attributes) => [
+            'mail_read' => true,
+            'mail_write' => true,
             'google_calendar_used' => false,
             'google_calendar_access_token' => null,
             'google_calendar_refresh_token' => null,
@@ -69,9 +81,19 @@ class AccountFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'slack_used' => true,
+            'slack_read' => true,
+            'slack_write' => true,
             'slack_access_token' => fake()->sha256(),
             'slack_team_id' => 'T'.fake()->bothify('??########'),
             'slack_team_name' => fake()->company(),
+        ]);
+    }
+
+    public function withSlackReadOnly(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'slack_read' => true,
+            'slack_write' => false,
         ]);
     }
 }

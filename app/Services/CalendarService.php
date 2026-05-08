@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Account;
 use Google\Client;
 use Google\Service\Calendar;
+use Google\Service\Calendar\Event;
+use Google\Service\Calendar\EventDateTime;
 
 class CalendarService
 {
@@ -80,6 +82,58 @@ class CalendarService
         return [
             'items' => $items,
             'nextPageToken' => $events->getNextPageToken(),
+        ];
+    }
+
+    /**
+     * @param  array{summary: string, description?: string|null, location?: string|null, start: array{dateTime: string, timeZone: string}, end: array{dateTime: string, timeZone: string}}  $data
+     * @return array{id: string, title: string, description: string|null, start: string|null, end: string|null, location: string|null, attendees: array<int, array{email: string, name: string|null, responseStatus: string|null}>, html_link: string|null}
+     */
+    public function createEntry(Account $account, array $data): array
+    {
+        $calendar = $this->connect($account);
+
+        $event = new Event;
+        $event->setSummary($data['summary']);
+
+        if (isset($data['description'])) {
+            $event->setDescription($data['description']);
+        }
+
+        if (isset($data['location'])) {
+            $event->setLocation($data['location']);
+        }
+
+        $start = new EventDateTime;
+        $start->setDateTime($data['start']['dateTime']);
+        $start->setTimeZone($data['start']['timeZone']);
+        $event->setStart($start);
+
+        $end = new EventDateTime;
+        $end->setDateTime($data['end']['dateTime']);
+        $end->setTimeZone($data['end']['timeZone']);
+        $event->setEnd($end);
+
+        $created = $calendar->events->insert('primary', $event);
+
+        $attendees = array_map(
+            fn ($attendee) => [
+                'email' => $attendee->getEmail(),
+                'name' => $attendee->getDisplayName(),
+                'responseStatus' => $attendee->getResponseStatus(),
+            ],
+            $created->getAttendees() ?? []
+        );
+
+        return [
+            'id' => $created->getId(),
+            'title' => $created->getSummary(),
+            'description' => $created->getDescription(),
+            'start' => $created->getStart()?->getDateTime() ?? $created->getStart()?->getDate(),
+            'end' => $created->getEnd()?->getDateTime() ?? $created->getEnd()?->getDate(),
+            'location' => $created->getLocation(),
+            'attendees' => $attendees,
+            'html_link' => $created->getHtmlLink(),
         ];
     }
 

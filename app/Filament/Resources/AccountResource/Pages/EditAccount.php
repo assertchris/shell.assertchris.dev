@@ -31,6 +31,14 @@ class EditAccount extends EditRecord
                         Toggle::make('mail_used')
                             ->default(true)
                             ->live(),
+                        Toggle::make('mail_read')
+                            ->label('Read')
+                            ->helperText('Not yet enforced — mail read endpoints are not built yet.')
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('mail_used')),
+                        Toggle::make('mail_write')
+                            ->label('Write')
+                            ->helperText('Not yet enforced — mail write endpoints are not built yet.')
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('mail_used')),
                         TextInput::make('mail_host')
                             ->maxLength(255)
                             ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
@@ -61,6 +69,12 @@ class EditAccount extends EditRecord
                         Toggle::make('google_calendar_used')
                             ->default(false)
                             ->live(),
+                        Toggle::make('google_calendar_read')
+                            ->label('Read')
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('google_calendar_used')),
+                        Toggle::make('google_calendar_write')
+                            ->label('Write')
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('google_calendar_used')),
                         Action::make('connectGoogle')
                             ->label('Connect Google Account')
                             ->url(fn (Account $record): string => route('google.redirect', $record))
@@ -84,6 +98,12 @@ class EditAccount extends EditRecord
                         Toggle::make('slack_used')
                             ->default(false)
                             ->live(),
+                        Toggle::make('slack_read')
+                            ->label('Read')
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('slack_used')),
+                        Toggle::make('slack_write')
+                            ->label('Write')
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('slack_used')),
                         Action::make('connectSlack')
                             ->label('Connect Slack')
                             ->url(fn (Account $record): string => route('slack.redirect', $record))
