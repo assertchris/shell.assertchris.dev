@@ -190,3 +190,128 @@ test('show calendar entry returns 503 on service error', function () {
     ])
         ->assertServiceUnavailable();
 });
+
+test('create calendar entry requires authentication', function () {
+    $account = Account::factory()->withGoogleCalendar()->create();
+
+    $this->postJson("/api/{$account->id}/calendar", [])
+        ->assertUnauthorized();
+});
+
+test('create calendar entry returns 404 when not connected', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->for($user)->create(['google_calendar_used' => false]);
+    $token = $user->createToken('test');
+
+    $this->postJson("/api/{$account->id}/calendar", [], [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNotFound();
+});
+
+test('create calendar entry returns 403 when write permission is disabled', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withGoogleCalendar()->withCalendarReadOnly()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $this->postJson("/api/{$account->id}/calendar", [
+        'summary' => 'New Meeting',
+        'start' => ['dateTime' => '2026-04-10T09:00:00+00:00', 'timeZone' => 'UTC'],
+        'end' => ['dateTime' => '2026-04-10T10:00:00+00:00', 'timeZone' => 'UTC'],
+    ], [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertForbidden();
+});
+
+test('create calendar entry returns 422 for missing summary', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withGoogleCalendar()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $this->postJson("/api/{$account->id}/calendar", [
+        'start' => ['dateTime' => '2026-04-10T09:00:00+00:00', 'timeZone' => 'UTC'],
+        'end' => ['dateTime' => '2026-04-10T10:00:00+00:00', 'timeZone' => 'UTC'],
+    ], [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['summary']);
+});
+
+test('create calendar entry returns 422 for bad dateTime format', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withGoogleCalendar()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $this->postJson("/api/{$account->id}/calendar", [
+        'summary' => 'New Meeting',
+        'start' => ['dateTime' => 'not-a-date', 'timeZone' => 'UTC'],
+        'end' => ['dateTime' => '2026-04-10T10:00:00+00:00', 'timeZone' => 'UTC'],
+    ], [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['start.dateTime']);
+});
+
+test('create calendar entry returns 201 with correct shape', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withGoogleCalendar()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $created = [
+        'id' => 'new-evt-1',
+        'title' => 'New Meeting',
+        'description' => 'A new event',
+        'start' => '2026-04-10T09:00:00+00:00',
+        'end' => '2026-04-10T10:00:00+00:00',
+        'location' => 'Conference Room A',
+        'attendees' => [],
+        'html_link' => 'https://calendar.google.com/event?eid=new-evt-1',
+    ];
+
+    $this->mock(CalendarService::class, function ($mock) use ($created) {
+        $mock->shouldReceive('createEntry')
+            ->once()
+            ->andReturn($created);
+    });
+
+    $this->postJson("/api/{$account->id}/calendar", [
+        'summary' => 'New Meeting',
+        'description' => 'A new event',
+        'location' => 'Conference Room A',
+        'start' => ['dateTime' => '2026-04-10T09:00:00+00:00', 'timeZone' => 'UTC'],
+        'end' => ['dateTime' => '2026-04-10T10:00:00+00:00', 'timeZone' => 'UTC'],
+    ], [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertCreated()
+        ->assertJsonPath('data.id', 'new-evt-1')
+        ->assertJsonPath('data.title', 'New Meeting')
+        ->assertJsonPath('data.description', 'A new event')
+        ->assertJsonPath('data.location', 'Conference Room A')
+        ->assertJsonPath('data.start', '2026-04-10T09:00:00+00:00')
+        ->assertJsonPath('data.end', '2026-04-10T10:00:00+00:00');
+});
+
+test('create calendar entry returns 503 on service error', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withGoogleCalendar()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $this->mock(CalendarService::class, function ($mock) {
+        $mock->shouldReceive('createEntry')
+            ->once()
+            ->andThrow(new \RuntimeException('Google API error'));
+    });
+
+    $this->postJson("/api/{$account->id}/calendar", [
+        'summary' => 'New Meeting',
+        'start' => ['dateTime' => '2026-04-10T09:00:00+00:00', 'timeZone' => 'UTC'],
+        'end' => ['dateTime' => '2026-04-10T10:00:00+00:00', 'timeZone' => 'UTC'],
+    ], [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertServiceUnavailable();
+});

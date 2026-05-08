@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Responders\Api\CreateCalendarEntryResponder;
 use App\Http\Responders\Api\ListAccountsResponder;
 use App\Http\Responders\Api\ListCalendarEntriesResponder;
 use App\Http\Responders\Api\ListFoldersResponder;
@@ -29,6 +30,8 @@ Route::middleware(['auth:sanctum', 'account.owner'])->group(function () {
             ->middleware('permission:google_calendar_read');
         Route::get('/{account}/calendar/{eventId}', ShowCalendarEntryResponder::class)
             ->middleware('permission:google_calendar_read');
+        Route::post('/{account}/calendar', CreateCalendarEntryResponder::class)
+            ->middleware('permission:google_calendar_write');
     });
 
     Route::middleware('service.connected:slack')->group(function () {
