@@ -166,6 +166,7 @@ This feature adds two new API endpoints so that API consumers can:
 
 ### Completed
 - Phase 1: AttachmentResource + ListAttachmentsResponder + route + tests
+- Phase 2: DownloadAttachmentResponder + route + tests
 
 ### In Progress
 - —
@@ -174,7 +175,6 @@ This feature adds two new API endpoints so that API consumers can:
 - —
 
 ### To Do
-- Phase 2: DownloadAttachmentResponder + route + tests
 - Phase 3: Docs update
 
 ## Technical Notes

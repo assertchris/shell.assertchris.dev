@@ -139,3 +139,126 @@ test('list attachments requires authentication', function () {
     $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/42/attachments")
         ->assertUnauthorized();
 });
+
+test('download attachment streams the binary content', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $binaryContent = '%PDF-1.4 fake pdf content';
+
+    $message = new FakeMessage(42, contents: makeMultipartMessage(
+        filename: 'invoice.pdf',
+        content: $binaryContent,
+        mimeType: 'application/pdf',
+    ));
+
+    $fakeMailbox = new FakeMailbox;
+    $fakeFolder = new FakeFolder('INBOX');
+
+    $this->mock(MailboxService::class, function ($mock) use ($fakeMailbox, $fakeFolder, $message) {
+        $mock->shouldReceive('connect')->once()->andReturn($fakeMailbox);
+        $mock->shouldReceive('getFolder')->once()->with($fakeMailbox, 'INBOX')->andReturn($fakeFolder);
+        $mock->shouldReceive('getMessage')->once()->with($fakeFolder, 42)->andReturn($message);
+    });
+
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/42/attachments/0", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertSuccessful()
+        ->assertDownload('invoice.pdf');
+});
+
+test('download attachment returns 404 for out-of-bounds index', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $message = new FakeMessage(42, contents: makeMultipartMessage(
+        filename: 'invoice.pdf',
+        content: 'content',
+        mimeType: 'application/pdf',
+    ));
+
+    $fakeMailbox = new FakeMailbox;
+    $fakeFolder = new FakeFolder('INBOX');
+
+    $this->mock(MailboxService::class, function ($mock) use ($fakeMailbox, $fakeFolder, $message) {
+        $mock->shouldReceive('connect')->once()->andReturn($fakeMailbox);
+        $mock->shouldReceive('getFolder')->once()->andReturn($fakeFolder);
+        $mock->shouldReceive('getMessage')->once()->andReturn($message);
+    });
+
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/42/attachments/99", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNotFound();
+});
+
+test('download attachment returns 404 for unknown folder', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $fakeMailbox = new FakeMailbox;
+
+    $this->mock(MailboxService::class, function ($mock) use ($fakeMailbox) {
+        $mock->shouldReceive('connect')->once()->andReturn($fakeMailbox);
+        $mock->shouldReceive('getFolder')->once()->andReturnNull();
+    });
+
+    $this->getJson("/api/{$account->id}/mailbox/NonExistent/messages/42/attachments/0", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNotFound();
+});
+
+test('download attachment returns 404 for unknown uid', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $fakeMailbox = new FakeMailbox;
+    $fakeFolder = new FakeFolder('INBOX');
+
+    $this->mock(MailboxService::class, function ($mock) use ($fakeMailbox, $fakeFolder) {
+        $mock->shouldReceive('connect')->once()->andReturn($fakeMailbox);
+        $mock->shouldReceive('getFolder')->once()->andReturn($fakeFolder);
+        $mock->shouldReceive('getMessage')->once()->andReturnNull();
+    });
+
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/999/attachments/0", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNotFound();
+});
+
+test('download attachment returns 404 for other user account', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $account = Account::factory()->for($otherUser)->create();
+    $token = $user->createToken('test');
+
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/42/attachments/0", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNotFound();
+});
+
+test('download attachment returns 404 when mail_used is false', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->for($user)->create(['mail_used' => false]);
+    $token = $user->createToken('test');
+
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/42/attachments/0", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNotFound();
+});
+
+test('download attachment requires authentication', function () {
+    $account = Account::factory()->create();
+
+    $this->getJson("/api/{$account->id}/mailbox/INBOX/messages/42/attachments/0")
+        ->assertUnauthorized();
+});
