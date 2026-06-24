@@ -2,6 +2,7 @@
 
 use App\Http\Responders\Api\CreateCalendarEntryResponder;
 use App\Http\Responders\Api\ListAccountsResponder;
+use App\Http\Responders\Api\ListAttachmentsResponder;
 use App\Http\Responders\Api\ListCalendarEntriesResponder;
 use App\Http\Responders\Api\ListFoldersResponder;
 use App\Http\Responders\Api\ListMessagesResponder;
@@ -23,6 +24,7 @@ Route::middleware(['auth:sanctum', 'account.owner'])->group(function () {
         Route::get('/{account}/mailbox', ListFoldersResponder::class);
         Route::get('/{account}/mailbox/{folder}/messages', ListMessagesResponder::class);
         Route::get('/{account}/mailbox/{folder}/messages/{uid}', ShowMessageResponder::class);
+        Route::get('/{account}/mailbox/{folder}/messages/{uid}/attachments', ListAttachmentsResponder::class);
     });
 
     Route::middleware('service.connected:calendar')->group(function () {
