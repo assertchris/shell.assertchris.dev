@@ -63,6 +63,17 @@ class CreateAccount extends CreateRecord
                             ->default(false)
                             ->live(),
                     ]),
+                Section::make('GitHub')
+                    ->schema([
+                        Toggle::make('github_used')
+                            ->default(false)
+                            ->live(),
+                        TextInput::make('github_pat')
+                            ->password()
+                            ->revealable()
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('github_used'))
+                            ->requiredIf('github_used', true),
+                    ]),
             ]);
     }
 
