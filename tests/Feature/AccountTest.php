@@ -107,3 +107,58 @@ test('mailOnly factory state clears google calendar fields', function () {
         ->and($account->google_calendar_refresh_token)->toBeNull()
         ->and($account->google_calendar_token_expires_at)->toBeNull();
 });
+
+test('account github_pat is encrypted at rest', function () {
+    $plaintext = fake()->sha256();
+    $account = Account::factory()->create(['github_used' => true, 'github_pat' => $plaintext]);
+
+    $raw = DB::table('accounts')->where('id', $account->id)->value('github_pat');
+
+    expect($raw)->not->toBe($plaintext)
+        ->and($account->fresh()->github_pat)->toBe($plaintext);
+});
+
+test('account github_used is cast to boolean', function () {
+    $account = Account::factory()->create(['github_used' => 1]);
+
+    expect($account->fresh()->github_used)->toBeTrue()->toBeBool();
+});
+
+test('isGitHubConnected returns true when github_used is true and pat is set', function () {
+    $account = Account::factory()->withGitHub()->create();
+
+    expect($account->isGitHubConnected())->toBeTrue();
+});
+
+test('isGitHubConnected returns false when github_used is false even if pat is set', function () {
+    $account = Account::factory()->create([
+        'github_used' => false,
+        'github_pat' => fake()->sha256(),
+    ]);
+
+    expect($account->isGitHubConnected())->toBeFalse();
+});
+
+test('isGitHubConnected returns false when github_pat is null', function () {
+    $account = Account::factory()->create([
+        'github_used' => true,
+        'github_pat' => null,
+    ]);
+
+    expect($account->isGitHubConnected())->toBeFalse();
+});
+
+test('toGitHubConfig returns decrypted pat under pat key', function () {
+    $plaintext = fake()->sha256();
+    $account = Account::factory()->create(['github_used' => true, 'github_pat' => $plaintext]);
+
+    expect($account->toGitHubConfig())->toBe(['pat' => $plaintext]);
+});
+
+test('withGitHub factory state produces a connectable account', function () {
+    $account = Account::factory()->withGitHub()->create();
+
+    expect($account->github_used)->toBeTrue()
+        ->and($account->github_pat)->not->toBeNull()
+        ->and($account->isGitHubConnected())->toBeTrue();
+});

@@ -96,4 +96,12 @@ class AccountFactory extends Factory
             'slack_write' => false,
         ]);
     }
+
+    public function withGitHub(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'github_used' => true,
+            'github_pat' => fake()->sha256(),
+        ]);
+    }
 }
