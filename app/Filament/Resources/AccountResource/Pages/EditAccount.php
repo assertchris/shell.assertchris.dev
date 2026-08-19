@@ -122,6 +122,18 @@ class EditAccount extends EditRecord
                             })
                             ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get, Account $record): bool => $get('slack_used') && $record->isSlackConnected()),
                     ]),
+                Section::make('GitHub')
+                    ->schema([
+                        Toggle::make('github_used')
+                            ->default(false)
+                            ->live(),
+                        TextInput::make('github_pat')
+                            ->password()
+                            ->revealable()
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('github_used'))
+                            ->dehydrateStateUsing(fn (?string $state, Account $record) => filled($state) ? $state : $record->github_pat)
+                            ->helperText('Leave blank to keep the current PAT.'),
+                    ]),
             ]);
     }
 

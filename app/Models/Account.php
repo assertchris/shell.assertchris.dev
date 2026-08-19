@@ -34,6 +34,8 @@ class Account extends Model
         'slack_access_token',
         'slack_team_id',
         'slack_team_name',
+        'github_used',
+        'github_pat',
         'is_active',
     ];
 
@@ -57,6 +59,8 @@ class Account extends Model
             'slack_used' => 'boolean',
             'slack_read' => 'boolean',
             'slack_write' => 'boolean',
+            'github_used' => 'boolean',
+            'github_pat' => 'encrypted',
             'is_active' => 'boolean',
         ];
     }
@@ -74,6 +78,19 @@ class Account extends Model
     public function isSlackConnected(): bool
     {
         return $this->slack_used && ! empty($this->slack_access_token);
+    }
+
+    public function isGitHubConnected(): bool
+    {
+        return $this->github_used && ! empty($this->github_pat);
+    }
+
+    /**
+     * @return array{pat: string}
+     */
+    public function toGitHubConfig(): array
+    {
+        return ['pat' => $this->github_pat];
     }
 
     /**
