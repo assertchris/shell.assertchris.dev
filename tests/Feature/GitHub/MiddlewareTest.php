@@ -3,6 +3,7 @@
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
@@ -48,6 +49,8 @@ test('github routes return 404 when github_pat is null even though github_used i
 });
 
 test('github routes return 200 when connected', function () {
+    Http::fake(['https://api.github.com/*' => Http::response([], 200)]);
+
     $user = User::factory()->create();
     $account = Account::factory()->withGitHub()->for($user)->create();
     $token = $user->createToken('test');
