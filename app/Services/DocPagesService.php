@@ -14,6 +14,7 @@ class DocPagesService
             'mailboxes' => ['title' => 'Mailboxes', 'file' => 'mailboxes.md'],
             'calendars' => ['title' => 'Calendars', 'file' => 'calendars.md'],
             'slack' => ['title' => 'Slack', 'file' => 'slack.md'],
+            'github' => ['title' => 'GitHub', 'file' => 'github.md'],
         ];
     }
 
