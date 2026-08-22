@@ -609,12 +609,12 @@ Cover:
 ### Completed
 - Research and planning
 - Phase 1: Schema, Model & Factory
+- Phase 2: Exceptions & JiraClient
 
 ### In Progress
 _(nothing)_
 
 ### To Do
-- Phase 2: Exceptions & JiraClient
 - Phase 3: JiraService — Read Operations
 - Phase 4: JiraService — Write Operations
 - Phase 5: Middleware & Routes
