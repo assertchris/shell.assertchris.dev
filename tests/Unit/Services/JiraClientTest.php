@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\Jira\JiraAuthException;
+use App\Exceptions\Jira\JiraClientException;
 use App\Exceptions\Jira\JiraForbiddenException;
 use App\Exceptions\Jira\JiraRateLimitException;
 use App\Services\JiraClient;
@@ -54,12 +55,17 @@ test('204 response returns empty array', function () {
     expect(true)->toBeTrue();
 });
 
-test('400 response throws RuntimeException', function () {
+test('400 response throws JiraClientException with status 400', function () {
     Http::fake(['https://test.atlassian.net/*' => Http::response('Bad request', 400)]);
 
     $client = new JiraClient('https://test.atlassian.net', 'user@example.com', 'token');
 
-    expect(fn () => $client->get('/invalid'))->toThrow(RuntimeException::class);
+    try {
+        $client->get('/invalid');
+        expect(false)->toBeTrue('Expected JiraClientException was not thrown');
+    } catch (JiraClientException $e) {
+        expect($e->statusCode)->toBe(400);
+    }
 });
 
 test('401 response throws JiraAuthException', function () {
@@ -104,12 +110,17 @@ test('429 response uses default retryAfter of 60 when header absent', function (
     }
 });
 
-test('500 response throws RuntimeException', function () {
+test('500 response throws JiraClientException with status 500', function () {
     Http::fake(['https://test.atlassian.net/*' => Http::response([], 500)]);
 
     $client = new JiraClient('https://test.atlassian.net', 'user@example.com', 'token');
 
-    expect(fn () => $client->get('/project/search'))->toThrow(RuntimeException::class);
+    try {
+        $client->get('/project/search');
+        expect(false)->toBeTrue('Expected JiraClientException was not thrown');
+    } catch (JiraClientException $e) {
+        expect($e->statusCode)->toBe(500);
+    }
 });
 
 test('agileGet() hits /rest/agile/1.0/ not /rest/api/3/', function () {
