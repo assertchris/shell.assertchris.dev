@@ -17,7 +17,7 @@ class ListMyMentionsResponder
     public function __invoke(Request $request, Account $account): AnonymousResourceCollection|JsonResponse
     {
         $validated = $request->validate([
-            'startAt' => ['integer', 'min:0'],
+            'nextPageToken' => ['nullable', 'string'],
             'maxResults' => ['integer', 'min:1', 'max:100'],
         ]);
 
@@ -33,9 +33,8 @@ class ListMyMentionsResponder
 
         return IssueResource::collection($data['issues'] ?? [])
             ->additional(['meta' => [
-                'start_at' => $data['startAt'] ?? 0,
-                'max_results' => $data['maxResults'] ?? 0,
-                'total' => $data['total'] ?? 0,
+                'next_page_token' => $data['nextPageToken'] ?? null,
+                'is_last' => $data['isLast'] ?? true,
             ]]);
     }
 }

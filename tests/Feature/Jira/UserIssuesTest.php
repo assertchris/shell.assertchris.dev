@@ -11,9 +11,8 @@ function makeUserIssueResponse(array $overrides = []): array
 {
     return array_merge([
         'issues' => [],
-        'startAt' => 0,
-        'maxResults' => 50,
-        'total' => 0,
+        'nextPageToken' => null,
+        'isLast' => true,
     ], $overrides);
 }
 
@@ -28,7 +27,7 @@ test('my assigned issues returns 200 with meta', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertOk()
-        ->assertJsonStructure(['data', 'meta' => ['start_at', 'max_results', 'total']]);
+        ->assertJsonStructure(['data', 'meta' => ['next_page_token', 'is_last']]);
 });
 
 test('my reported issues returns 200 with meta', function () {
@@ -42,7 +41,7 @@ test('my reported issues returns 200 with meta', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertOk()
-        ->assertJsonStructure(['data', 'meta' => ['start_at', 'max_results', 'total']]);
+        ->assertJsonStructure(['data', 'meta' => ['next_page_token', 'is_last']]);
 });
 
 test('my watched issues returns 200 with meta', function () {
@@ -56,7 +55,7 @@ test('my watched issues returns 200 with meta', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertOk()
-        ->assertJsonStructure(['data', 'meta' => ['start_at', 'max_results', 'total']]);
+        ->assertJsonStructure(['data', 'meta' => ['next_page_token', 'is_last']]);
 });
 
 test('issues mentioning me returns 200 with meta', function () {
@@ -70,7 +69,7 @@ test('issues mentioning me returns 200 with meta', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertOk()
-        ->assertJsonStructure(['data', 'meta' => ['start_at', 'max_results', 'total']]);
+        ->assertJsonStructure(['data', 'meta' => ['next_page_token', 'is_last']]);
 });
 
 test('issues with recent activity returns 200 with meta', function () {
@@ -84,5 +83,5 @@ test('issues with recent activity returns 200 with meta', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertOk()
-        ->assertJsonStructure(['data', 'meta' => ['start_at', 'max_results', 'total']]);
+        ->assertJsonStructure(['data', 'meta' => ['next_page_token', 'is_last']]);
 });
