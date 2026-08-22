@@ -666,7 +666,7 @@ _(nothing)_
 - `app/Http/Resources/Jira/` — 12 JSON resource classes
 
 ### Admin / CMS
-- `app/Filament/Resources/AccountResource.php` — add GitHub + Jira icon columns with clean service-name labels
+- `app/Filament/Resources/AccountResource.php` — add `github_used` and `jira_used` `IconColumn` entries; apply `->label('Mail')`, `->label('Calendar')`, `->label('Slack')`, `->label('GitHub')`, `->label('Jira')` so column headings show the service name only
 - `app/Filament/Resources/AccountResource/Pages/CreateAccount.php`
 - `app/Filament/Resources/AccountResource/Pages/EditAccount.php`
 
