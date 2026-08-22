@@ -3,12 +3,12 @@
 namespace App\Services;
 
 use App\Exceptions\Jira\JiraAuthException;
+use App\Exceptions\Jira\JiraClientException;
 use App\Exceptions\Jira\JiraForbiddenException;
 use App\Exceptions\Jira\JiraRateLimitException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use RuntimeException;
 
 class JiraClient
 {
@@ -101,11 +101,11 @@ class JiraClient
             200, 201 => $response->json() ?? [],
             204 => [],
             404 => [],
-            400 => throw new RuntimeException('Jira API error: '.$response->body()),
+            400 => throw new JiraClientException(400, 'Jira API error: '.$response->body()),
             401 => throw new JiraAuthException,
             403 => throw new JiraForbiddenException,
             429 => throw new JiraRateLimitException((int) ($response->header('Retry-After') ?: 60)),
-            default => throw new RuntimeException("Jira API error: {$response->status()}"),
+            default => throw new JiraClientException($response->status(), "Jira API error: {$response->status()}"),
         };
     }
 }

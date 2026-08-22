@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\Jira\JiraClientException;
 use App\Http\Middleware\EnforceTokenIpBinding;
 use App\Http\Middleware\EnsureAccountOwnership;
 use App\Http\Middleware\EnsurePermission;
@@ -7,6 +8,7 @@ use App\Http\Middleware\EnsureServiceConnected;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\JsonResponse;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -27,5 +29,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->renderable(function (JiraClientException $e): JsonResponse {
+            $status = $e->statusCode >= 400 && $e->statusCode < 600 ? $e->statusCode : 502;
+
+            return response()->json(['error' => $e->getMessage()], $status);
+        });
     })->create();
