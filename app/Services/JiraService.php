@@ -168,4 +168,75 @@ class JiraService
     {
         return $this->client()->get('/dashboard');
     }
+
+    /** @param array<string, mixed> $fields */
+    public function createIssue(array $fields): array
+    {
+        return $this->client()->post('/issue', ['fields' => $fields]);
+    }
+
+    /** @param array<string, mixed> $fields */
+    public function updateIssue(string $key, array $fields): void
+    {
+        $this->client()->put("/issue/{$key}", ['fields' => $fields]);
+    }
+
+    public function deleteIssue(string $key): void
+    {
+        $this->client()->delete("/issue/{$key}");
+    }
+
+    public function transitionIssue(string $key, string $transitionId): void
+    {
+        $this->client()->post("/issue/{$key}/transitions", ['transition' => ['id' => $transitionId]]);
+    }
+
+    public function assignIssue(string $key, ?string $accountId): void
+    {
+        $this->client()->put("/issue/{$key}/assignee", ['accountId' => $accountId]);
+    }
+
+    /** @param array<string, mixed> $adf */
+    public function addComment(string $key, array $adf): array
+    {
+        return $this->client()->post("/issue/{$key}/comment", ['body' => $adf]);
+    }
+
+    /** @param array<string, mixed> $adf */
+    public function updateComment(string $key, string $commentId, array $adf): array
+    {
+        return $this->client()->putJson("/issue/{$key}/comment/{$commentId}", ['body' => $adf]);
+    }
+
+    public function deleteComment(string $key, string $commentId): void
+    {
+        $this->client()->delete("/issue/{$key}/comment/{$commentId}");
+    }
+
+    /** @param array<string, mixed> $data */
+    public function addWorklog(string $key, array $data): array
+    {
+        return $this->client()->post("/issue/{$key}/worklog", $data);
+    }
+
+    /** @param array<string, mixed> $data */
+    public function updateWorklog(string $key, string $worklogId, array $data): array
+    {
+        return $this->client()->putJson("/issue/{$key}/worklog/{$worklogId}", $data);
+    }
+
+    public function deleteWorklog(string $key, string $worklogId): void
+    {
+        $this->client()->delete("/issue/{$key}/worklog/{$worklogId}");
+    }
+
+    public function addWatcher(string $key, string $accountId): void
+    {
+        $this->client()->postRaw("/issue/{$key}/watchers", json_encode($accountId));
+    }
+
+    public function removeWatcher(string $key, string $accountId): void
+    {
+        $this->client()->delete("/issue/{$key}/watchers", ['accountId' => $accountId]);
+    }
 }

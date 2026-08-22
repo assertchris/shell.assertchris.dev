@@ -611,12 +611,12 @@ Cover:
 - Phase 1: Schema, Model & Factory
 - Phase 2: Exceptions & JiraClient
 - Phase 3: JiraService — Read Operations
+- Phase 4: JiraService — Write Operations
 
 ### In Progress
 _(nothing)_
 
 ### To Do
-- Phase 4: JiraService — Write Operations
 - Phase 5: Middleware & Routes
 - Phase 6: Responders & JSON Resources
 - Phase 7: Filament Admin
