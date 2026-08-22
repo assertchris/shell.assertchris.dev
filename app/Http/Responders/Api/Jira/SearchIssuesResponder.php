@@ -18,13 +18,13 @@ class SearchIssuesResponder
     {
         $validated = $request->validate([
             'jql' => ['required', 'string'],
-            'startAt' => ['integer', 'min:0'],
+            'nextPageToken' => ['nullable', 'string'],
             'maxResults' => ['integer', 'min:1', 'max:100'],
         ]);
 
         try {
             $data = (new JiraService($account))->searchIssues($validated['jql'], array_filter([
-                'startAt' => $validated['startAt'] ?? null,
+                'nextPageToken' => $validated['nextPageToken'] ?? null,
                 'maxResults' => $validated['maxResults'] ?? null,
             ]));
         } catch (JiraRateLimitException $e) {
@@ -37,9 +37,8 @@ class SearchIssuesResponder
 
         return IssueResource::collection($data['issues'] ?? [])
             ->additional(['meta' => [
-                'start_at' => $data['startAt'] ?? 0,
-                'max_results' => $data['maxResults'] ?? 0,
-                'total' => $data['total'] ?? 0,
+                'next_page_token' => $data['nextPageToken'] ?? null,
+                'is_last' => $data['isLast'] ?? true,
             ]]);
     }
 }

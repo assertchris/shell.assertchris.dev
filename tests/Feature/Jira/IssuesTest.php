@@ -35,9 +35,8 @@ function makeJiraIssueData(array $overrides = []): array
 test('search issues returns 200 with meta', function () {
     Http::fake(['https://test.atlassian.net/*' => Http::response([
         'issues' => [makeJiraIssueData()],
-        'startAt' => 0,
-        'maxResults' => 50,
-        'total' => 1,
+        'nextPageToken' => null,
+        'isLast' => true,
     ], 200)]);
 
     $user = User::factory()->create();
@@ -48,28 +47,26 @@ test('search issues returns 200 with meta', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertOk()
-        ->assertJsonStructure(['data', 'meta' => ['start_at', 'max_results', 'total']]);
+        ->assertJsonStructure(['data', 'meta' => ['next_page_token', 'is_last']]);
 });
 
 test('search issues includes correct meta values', function () {
     Http::fake(['https://test.atlassian.net/*' => Http::response([
         'issues' => [makeJiraIssueData()],
-        'startAt' => 10,
-        'maxResults' => 25,
-        'total' => 100,
+        'nextPageToken' => 'abc123cursor',
+        'isLast' => false,
     ], 200)]);
 
     $user = User::factory()->create();
     $account = Account::factory()->withJira()->for($user)->create();
     $token = $user->createToken('test');
 
-    $this->getJson("/api/{$account->id}/jira/issues/search?jql=project=TEST&startAt=10&maxResults=25", [
+    $this->getJson("/api/{$account->id}/jira/issues/search?jql=project=TEST&maxResults=25", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertOk()
-        ->assertJsonPath('meta.start_at', 10)
-        ->assertJsonPath('meta.max_results', 25)
-        ->assertJsonPath('meta.total', 100);
+        ->assertJsonPath('meta.next_page_token', 'abc123cursor')
+        ->assertJsonPath('meta.is_last', false);
 });
 
 test('get single issue returns issue data', function () {

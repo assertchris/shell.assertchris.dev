@@ -44,7 +44,7 @@ class JiraService
     /** @param array<string, mixed> $params */
     public function searchIssues(string $jql, array $params = []): array
     {
-        return $this->client()->post('/search', array_merge(['jql' => $jql, 'fields' => self::DEFAULT_FIELDS], $params));
+        return $this->client()->post('/search/jql', array_merge(['jql' => $jql, 'fields' => self::DEFAULT_FIELDS], $params));
     }
 
     /** @param array<string, mixed> $params */
