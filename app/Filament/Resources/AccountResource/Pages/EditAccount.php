@@ -134,6 +134,26 @@ class EditAccount extends EditRecord
                             ->dehydrateStateUsing(fn (?string $state, Account $record) => filled($state) ? $state : $record->github_pat)
                             ->helperText('Leave blank to keep the current PAT.'),
                     ]),
+                Section::make('Jira')
+                    ->schema([
+                        Toggle::make('jira_used')->default(false)->live(),
+                        TextInput::make('jira_base_url')
+                            ->url()
+                            ->placeholder('https://mycompany.atlassian.net')
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->dehydrateStateUsing(fn (?string $state, Account $record) => filled($state) ? $state : $record->jira_base_url)
+                            ->helperText('Leave blank to keep the current URL.'),
+                        TextInput::make('jira_email')
+                            ->email()
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->dehydrateStateUsing(fn (?string $state, Account $record) => filled($state) ? $state : $record->jira_email)
+                            ->helperText('Leave blank to keep the current email.'),
+                        TextInput::make('jira_api_token')
+                            ->password()->revealable()
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->dehydrateStateUsing(fn (?string $state, Account $record) => filled($state) ? $state : $record->jira_api_token)
+                            ->helperText('Leave blank to keep the current token.'),
+                    ]),
             ]);
     }
 

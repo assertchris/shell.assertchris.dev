@@ -104,4 +104,14 @@ class AccountFactory extends Factory
             'github_pat' => fake()->sha256(),
         ]);
     }
+
+    public function withJira(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'jira_used' => true,
+            'jira_base_url' => 'https://test.atlassian.net',
+            'jira_email' => fake()->safeEmail(),
+            'jira_api_token' => fake()->sha256(),
+        ]);
+    }
 }

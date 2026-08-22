@@ -74,6 +74,23 @@ class CreateAccount extends CreateRecord
                             ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('github_used'))
                             ->requiredIf('github_used', true),
                     ]),
+                Section::make('Jira')
+                    ->schema([
+                        Toggle::make('jira_used')->default(false)->live(),
+                        TextInput::make('jira_base_url')
+                            ->url()
+                            ->placeholder('https://mycompany.atlassian.net')
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->requiredIf('jira_used', true),
+                        TextInput::make('jira_email')
+                            ->email()
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->requiredIf('jira_used', true),
+                        TextInput::make('jira_api_token')
+                            ->password()->revealable()
+                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->requiredIf('jira_used', true),
+                    ]),
             ]);
     }
 

@@ -36,6 +36,10 @@ class Account extends Model
         'slack_team_name',
         'github_used',
         'github_pat',
+        'jira_used',
+        'jira_base_url',
+        'jira_email',
+        'jira_api_token',
         'is_active',
     ];
 
@@ -61,6 +65,8 @@ class Account extends Model
             'slack_write' => 'boolean',
             'github_used' => 'boolean',
             'github_pat' => 'encrypted',
+            'jira_used' => 'boolean',
+            'jira_api_token' => 'encrypted',
             'is_active' => 'boolean',
         ];
     }
@@ -83,6 +89,14 @@ class Account extends Model
     public function isGitHubConnected(): bool
     {
         return $this->github_used && ! empty($this->github_pat);
+    }
+
+    public function isJiraConnected(): bool
+    {
+        return $this->jira_used
+            && ! empty($this->jira_base_url)
+            && ! empty($this->jira_email)
+            && ! empty($this->jira_api_token);
     }
 
     /**

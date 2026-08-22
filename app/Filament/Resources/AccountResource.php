@@ -34,10 +34,19 @@ class AccountResource extends Resource
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('mail_used')
+                    ->label('Mail')
                     ->boolean(),
                 IconColumn::make('google_calendar_used')
+                    ->label('Calendar')
                     ->boolean(),
                 IconColumn::make('slack_used')
+                    ->label('Slack')
+                    ->boolean(),
+                IconColumn::make('github_used')
+                    ->label('GitHub')
+                    ->boolean(),
+                IconColumn::make('jira_used')
+                    ->label('Jira')
                     ->boolean(),
                 IconColumn::make('is_active')
                     ->boolean(),
