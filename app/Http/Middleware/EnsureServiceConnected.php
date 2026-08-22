@@ -24,6 +24,7 @@ class EnsureServiceConnected
 
         $connected = match ($service) {
             'github' => $account->isGitHubConnected(),
+            'jira' => $account->isJiraConnected(),
             'slack' => $account->isSlackConnected(),
             'mail' => (bool) $account->mail_used,
             'calendar' => $account->isGoogleCalendarConnected(),

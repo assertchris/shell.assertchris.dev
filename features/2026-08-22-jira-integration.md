@@ -612,12 +612,12 @@ Cover:
 - Phase 2: Exceptions & JiraClient
 - Phase 3: JiraService — Read Operations
 - Phase 4: JiraService — Write Operations
+- Phase 5: Middleware & Routes
 
 ### In Progress
 _(nothing)_
 
 ### To Do
-- Phase 5: Middleware & Routes
 - Phase 6: Responders & JSON Resources
 - Phase 7: Filament Admin
 - Phase 8: Tests
