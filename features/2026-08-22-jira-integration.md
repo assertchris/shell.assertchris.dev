@@ -616,12 +616,13 @@ Cover:
 - Phase 6: Responders & JSON Resources
 - Phase 7: Filament Admin
 - Phase 8: Tests
+- Phase 9: Documentation
 
 ### In Progress
 _(nothing)_
 
 ### To Do
-- Phase 9: Documentation
+_(nothing)_
 
 ## Technical Notes
 
