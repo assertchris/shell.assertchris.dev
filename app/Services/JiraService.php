@@ -6,7 +6,8 @@ use App\Models\Account;
 
 class JiraService
 {
-    private const DEFAULT_FIELDS = 'summary,status,assignee,reporter,priority,issuetype,project,created,updated,description,comment,labels,fixVersions,components,attachment,parent,subtasks';
+    /** @var string[] */
+    private const DEFAULT_FIELDS = ['summary', 'status', 'assignee', 'reporter', 'priority', 'issuetype', 'project', 'created', 'updated', 'description', 'comment', 'labels', 'fixVersions', 'components', 'attachment', 'parent', 'subtasks'];
 
     public function __construct(private Account $account) {}
 
@@ -49,7 +50,7 @@ class JiraService
     /** @param array<string, mixed> $params */
     public function issue(string $key, array $params = []): array
     {
-        return $this->client()->get("/issue/{$key}", array_merge(['fields' => self::DEFAULT_FIELDS], $params));
+        return $this->client()->get("/issue/{$key}", array_merge(['fields' => implode(',', self::DEFAULT_FIELDS)], $params));
     }
 
     /** @param array<string, mixed> $params */
