@@ -15,6 +15,7 @@ class DocPagesService
             'calendars' => ['title' => 'Calendars', 'file' => 'calendars.md'],
             'slack' => ['title' => 'Slack', 'file' => 'slack.md'],
             'github' => ['title' => 'GitHub', 'file' => 'github.md'],
+            'jira' => ['title' => 'Jira', 'file' => 'jira.md'],
         ];
     }
 
