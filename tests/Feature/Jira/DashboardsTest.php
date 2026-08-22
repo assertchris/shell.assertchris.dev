@@ -7,20 +7,16 @@ use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
-function makeDashboardData(array $overrides = []): array
-{
-    return array_merge([
-        'id' => '10001',
-        'name' => 'My Dashboard',
-        'description' => 'A test dashboard',
-        'popularity' => 5,
-    ], $overrides);
-}
-
-test('list dashboards returns 200 with data', function () {
+test('list dashboards returns dashboard collection with data', function () {
     Http::fake(['https://test.atlassian.net/*' => Http::response([
-        'dashboards' => [makeDashboardData()],
-        'total' => 1,
+        'dashboards' => [
+            [
+                'id' => '10001',
+                'name' => 'My Dashboard',
+                'description' => 'Team overview',
+                'popularity' => 5,
+            ],
+        ],
     ], 200)]);
 
     $user = User::factory()->create();
@@ -34,19 +30,20 @@ test('list dashboards returns 200 with data', function () {
         ->assertJsonStructure(['data' => [['id', 'name']], 'meta' => ['total_count']]);
 });
 
-test('list dashboards includes total_count in meta', function () {
+test('list dashboards returns empty collection when none exist', function () {
     Http::fake(['https://test.atlassian.net/*' => Http::response([
-        'dashboards' => [makeDashboardData(), makeDashboardData(['id' => '10002', 'name' => 'Second'])],
-        'total' => 2,
+        'dashboards' => [],
     ], 200)]);
 
     $user = User::factory()->create();
     $account = Account::factory()->withJira()->for($user)->create();
     $token = $user->createToken('test');
 
-    $this->getJson("/api/{$account->id}/jira/dashboards", [
+    $response = $this->getJson("/api/{$account->id}/jira/dashboards", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
-    ])
-        ->assertOk()
-        ->assertJsonPath('meta.total_count', 2);
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data', [])
+        ->assertJsonPath('meta.total_count', 0);
 });
