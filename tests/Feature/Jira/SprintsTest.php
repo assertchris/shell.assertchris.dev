@@ -66,6 +66,30 @@ test('get sprint returns 404 when not found', function () {
         ->assertNotFound();
 });
 
+test('move issues to sprint returns 204', function () {
+    Http::fake(['https://test.atlassian.net/*' => Http::response(null, 204)]);
+
+    $user = User::factory()->create();
+    $account = Account::factory()->withJira()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $this->postJson("/api/{$account->id}/jira/sprints/1/issues", ['issue_keys' => ['TEST-1', 'TEST-2']], [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertNoContent();
+});
+
+test('move issues to sprint requires issue_keys', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->withJira()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $this->postJson("/api/{$account->id}/jira/sprints/1/issues", [], [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertUnprocessable();
+});
+
 test('list sprint issues returns collection with meta', function () {
     Http::fake(['https://test.atlassian.net/*' => Http::response([
         'issues' => [],

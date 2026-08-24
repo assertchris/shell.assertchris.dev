@@ -52,6 +52,7 @@ use App\Http\Responders\Api\Jira\ListProjectsResponder;
 use App\Http\Responders\Api\Jira\ListProjectVersionsResponder;
 use App\Http\Responders\Api\Jira\ListSprintIssuesResponder;
 use App\Http\Responders\Api\Jira\ListSprintsResponder;
+use App\Http\Responders\Api\Jira\MoveIssuesToSprintResponder;
 use App\Http\Responders\Api\Jira\SearchIssuesResponder as JiraSearchIssuesResponder;
 use App\Http\Responders\Api\Jira\TransitionIssueResponder;
 use App\Http\Responders\Api\Jira\UpdateCommentResponder;
@@ -160,6 +161,7 @@ Route::middleware(['auth:sanctum', 'account.owner'])->group(function () {
         Route::get('/boards/{boardId}/sprints', ListSprintsResponder::class);
         Route::get('/sprints/{sprintId}', GetSprintResponder::class);
         Route::get('/sprints/{sprintId}/issues', ListSprintIssuesResponder::class);
+        Route::post('/sprints/{sprintId}/issues', MoveIssuesToSprintResponder::class);
 
         // Users
         Route::get('/myself', GetMyselfResponder::class);

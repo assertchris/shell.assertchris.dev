@@ -140,6 +140,12 @@ class JiraService
         return $this->client()->agileGet("/sprint/{$sprintId}/issue", $params);
     }
 
+    /** @param string[] $issueKeys */
+    public function moveIssuesToSprint(int $sprintId, array $issueKeys): void
+    {
+        $this->client()->agilePost("/sprint/{$sprintId}/issue", ['issues' => $issueKeys]);
+    }
+
     public function myself(): array
     {
         return $this->client()->get('/myself');
