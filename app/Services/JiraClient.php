@@ -61,6 +61,15 @@ class JiraClient
      * @param  array<string, mixed>  $body
      * @return array<mixed>
      */
+    public function agilePost(string $path, array $body = []): array
+    {
+        return $this->handleResponse($this->agileHttp()->post($path, $body));
+    }
+
+    /**
+     * @param  array<string, mixed>  $body
+     * @return array<mixed>
+     */
     public function putJson(string $path, array $body = []): array
     {
         return $this->handleResponse($this->http()->put($path, $body));
