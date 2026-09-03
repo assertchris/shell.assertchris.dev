@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AccessTokenResource\Pages;
 
 use App\Filament\Resources\AccessTokenResource;
+use Carbon\Carbon;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -38,7 +39,7 @@ class CreateAccessToken extends CreateRecord
 
         $token = $user->createToken(
             name: $data['name'],
-            expiresAt: $data['expires_at'] ?? null,
+            expiresAt: filled($data['expires_at'] ?? null) ? Carbon::parse($data['expires_at']) : null,
         );
 
         $this->plainTextToken = $token->plainTextToken;
@@ -48,12 +49,20 @@ class CreateAccessToken extends CreateRecord
 
     protected ?string $plainTextToken = null;
 
-    protected function getCreatedNotification(): ?Notification
+    protected function afterCreate(): void
     {
-        return Notification::make()
+        Notification::make()
             ->success()
             ->title('Token created')
-            ->body("Copy your token now — it won't be shown again:\n\n`{$this->plainTextToken}`")
-            ->persistent();
+            ->body("Copy your token now — it won't be shown again:<br><br><code>{$this->plainTextToken}</code>")
+            ->persistent()
+            ->send();
+
+        $this->halt();
+    }
+
+    protected function getCreatedNotification(): ?Notification
+    {
+        return null;
     }
 }
