@@ -84,14 +84,13 @@ This feature will add full `description` support to the Jira issue endpoints so 
 ### Completed
 
 - Phase 1: Resource + Responders + Tests
+- Phase 2: Docs
 
 ### In Progress
 
 ### Blocked
 
 ### To Do
-
-- Phase 2: Docs
 
 ## Technical Notes
 

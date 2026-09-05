@@ -322,6 +322,7 @@ curl -s "https://your-domain.com/api/1/jira/issues/search?jql=project+%3D+MYAPP+
         "key": "MYAPP",
         "name": "My Application"
       },
+      "description": "Users are redirected to /home instead of the original destination after login.",
       "created": "2026-08-01T09:00:00.000+0000",
       "updated": "2026-08-20T14:30:00.000+0000",
       "labels": ["auth", "regression"],
@@ -636,6 +637,7 @@ Creates a new issue.
 | `fields.project.key` | string | Project key (required) |
 | `fields.issuetype.name` | string | Issue type name (required) |
 | `fields.summary` | string | Issue summary (required) |
+| `fields.description` | string\|null | Issue description (optional) |
 
 ```bash
 curl -s -X POST "https://your-domain.com/api/1/jira/issues" \
@@ -685,6 +687,7 @@ Updates fields on an existing issue.
 | `account` | integer | Account ID |
 | `key` | string | Issue key |
 | `fields` | object | Fields to update (required) |
+| `fields.description` | string\|null | Updated description (optional) |
 
 ```bash
 curl -s -X PUT "https://your-domain.com/api/1/jira/issues/MYAPP-42" \
