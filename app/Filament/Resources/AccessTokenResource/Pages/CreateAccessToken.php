@@ -51,12 +51,13 @@ class CreateAccessToken extends CreateRecord
 
     protected function afterCreate(): void
     {
-        Notification::make()
+        $notification = Notification::make()
             ->success()
             ->title('Token created')
             ->body("Copy your token now — it won't be shown again:<br><br><code>{$this->plainTextToken}</code>")
-            ->persistent()
-            ->send();
+            ->persistent();
+
+        $this->dispatch('notificationSent', notification: $notification->toArray());
 
         $this->halt();
     }
