@@ -20,6 +20,7 @@ class CreateIssueResponder
             'fields.project.key' => ['required', 'string'],
             'fields.issuetype.name' => ['required', 'string'],
             'fields.summary' => ['required', 'string'],
+            'fields.description' => ['sometimes', 'nullable', 'string'],
         ]);
 
         try {
