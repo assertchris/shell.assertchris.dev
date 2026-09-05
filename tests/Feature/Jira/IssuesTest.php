@@ -14,7 +14,7 @@ function makeJiraIssueData(array $overrides = []): array
         'key' => 'TEST-1',
         'fields' => [
             'summary' => 'Test issue',
-            'description' => 'Test issue description',
+            'description' => ['type' => 'doc', 'version' => 1, 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Test issue description']]]]],
             'status' => ['name' => 'Open'],
             'assignee' => null,
             'reporter' => null,
@@ -83,7 +83,8 @@ test('get single issue returns issue data', function () {
         ->assertOk()
         ->assertJsonPath('data.key', 'TEST-1')
         ->assertJsonPath('data.summary', 'Test issue')
-        ->assertJsonPath('data.description', 'Test issue description');
+        ->assertJsonPath('data.description.type', 'doc')
+        ->assertJsonPath('data.description.content.0.content.0.text', 'Test issue description');
 });
 
 test('get issue returns 404 when not found', function () {
@@ -208,7 +209,8 @@ test('search issues includes description in issue data', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertOk()
-        ->assertJsonPath('data.0.description', 'Test issue description');
+        ->assertJsonPath('data.0.description.type', 'doc')
+        ->assertJsonPath('data.0.description.content.0.content.0.text', 'Test issue description');
 });
 
 test('create issue passes description to jira', function () {
@@ -218,18 +220,21 @@ test('create issue passes description to jira', function () {
     $account = Account::factory()->withJira()->for($user)->create();
     $token = $user->createToken('test');
 
+    $adf = ['type' => 'doc', 'version' => 1, 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Test issue description']]]]];
+
     $this->postJson("/api/{$account->id}/jira/issues", [
         'fields' => [
             'project' => ['key' => 'TEST'],
             'issuetype' => ['name' => 'Bug'],
             'summary' => 'Test issue',
-            'description' => 'Test issue description',
+            'description' => $adf,
         ],
     ], [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertStatus(201)
-        ->assertJsonPath('data.description', 'Test issue description');
+        ->assertJsonPath('data.description.type', 'doc')
+        ->assertJsonPath('data.description.content.0.content.0.text', 'Test issue description');
 });
 
 test('update issue accepts description field', function () {
@@ -239,9 +244,11 @@ test('update issue accepts description field', function () {
     $account = Account::factory()->withJira()->for($user)->create();
     $token = $user->createToken('test');
 
+    $adf = ['type' => 'doc', 'version' => 1, 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Updated description']]]]];
+
     $this->putJson("/api/{$account->id}/jira/issues/TEST-1", [
         'fields' => [
-            'description' => 'Updated description',
+            'description' => $adf,
         ],
     ], [
         'Authorization' => 'Bearer '.$token->plainTextToken,

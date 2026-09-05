@@ -322,7 +322,11 @@ curl -s "https://your-domain.com/api/1/jira/issues/search?jql=project+%3D+MYAPP+
         "key": "MYAPP",
         "name": "My Application"
       },
-      "description": "Users are redirected to /home instead of the original destination after login.",
+      "description": {
+        "type": "doc",
+        "version": 1,
+        "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Users are redirected to /home instead of the original destination after login." }] }]
+      },
       "created": "2026-08-01T09:00:00.000+0000",
       "updated": "2026-08-20T14:30:00.000+0000",
       "labels": ["auth", "regression"],
@@ -637,7 +641,9 @@ Creates a new issue.
 | `fields.project.key` | string | Project key (required) |
 | `fields.issuetype.name` | string | Issue type name (required) |
 | `fields.summary` | string | Issue summary (required) |
-| `fields.description` | string\|null | Issue description (optional) |
+| `fields.description` | object\|null | Issue description as an [Atlassian Document Format (ADF)](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/) object (optional) |
+
+> **ADF required.** Jira Cloud REST API v3 stores `description` as a structured ADF document, not a plain string. Pass `null` to leave the description empty, or provide a well-formed ADF object. A minimal single-paragraph ADF body looks like: `{"type":"doc","version":1,"content":[{"type":"paragraph","content":[{"type":"text","text":"Your text here"}]}]}`.
 
 ```bash
 curl -s -X POST "https://your-domain.com/api/1/jira/issues" \
@@ -687,7 +693,7 @@ Updates fields on an existing issue.
 | `account` | integer | Account ID |
 | `key` | string | Issue key |
 | `fields` | object | Fields to update (required) |
-| `fields.description` | string\|null | Updated description (optional) |
+| `fields.description` | object\|null | Updated description as an [ADF](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/) object (optional). See POST endpoint for ADF format details. |
 
 ```bash
 curl -s -X PUT "https://your-domain.com/api/1/jira/issues/MYAPP-42" \

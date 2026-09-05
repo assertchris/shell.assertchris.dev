@@ -16,7 +16,7 @@ class UpdateIssueResponder
     {
         $validated = $request->validate([
             'fields' => ['required', 'array'],
-            'fields.description' => ['sometimes', 'nullable', 'string'],
+            'fields.description' => ['sometimes', 'nullable', 'array'],
         ]);
 
         try {
