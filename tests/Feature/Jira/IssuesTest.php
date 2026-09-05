@@ -14,6 +14,7 @@ function makeJiraIssueData(array $overrides = []): array
         'key' => 'TEST-1',
         'fields' => [
             'summary' => 'Test issue',
+            'description' => ['type' => 'doc', 'version' => 1, 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Test issue description']]]]],
             'status' => ['name' => 'Open'],
             'assignee' => null,
             'reporter' => null,
@@ -81,7 +82,9 @@ test('get single issue returns issue data', function () {
     ])
         ->assertOk()
         ->assertJsonPath('data.key', 'TEST-1')
-        ->assertJsonPath('data.summary', 'Test issue');
+        ->assertJsonPath('data.summary', 'Test issue')
+        ->assertJsonPath('data.description.type', 'doc')
+        ->assertJsonPath('data.description.content.0.content.0.text', 'Test issue description');
 });
 
 test('get issue returns 404 when not found', function () {
@@ -189,6 +192,68 @@ test('get issue attachments returns 200', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertOk();
+});
+
+test('search issues includes description in issue data', function () {
+    Http::fake(['https://test.atlassian.net/*' => Http::response([
+        'issues' => [makeJiraIssueData()],
+        'nextPageToken' => null,
+        'isLast' => true,
+    ], 200)]);
+
+    $user = User::factory()->create();
+    $account = Account::factory()->withJira()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $this->getJson("/api/{$account->id}/jira/issues/search?jql=project=TEST", [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertOk()
+        ->assertJsonPath('data.0.description.type', 'doc')
+        ->assertJsonPath('data.0.description.content.0.content.0.text', 'Test issue description');
+});
+
+test('create issue passes description to jira', function () {
+    Http::fake(['https://test.atlassian.net/*' => Http::response(makeJiraIssueData(), 201)]);
+
+    $user = User::factory()->create();
+    $account = Account::factory()->withJira()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $adf = ['type' => 'doc', 'version' => 1, 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Test issue description']]]]];
+
+    $this->postJson("/api/{$account->id}/jira/issues", [
+        'fields' => [
+            'project' => ['key' => 'TEST'],
+            'issuetype' => ['name' => 'Bug'],
+            'summary' => 'Test issue',
+            'description' => $adf,
+        ],
+    ], [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertStatus(201)
+        ->assertJsonPath('data.description.type', 'doc')
+        ->assertJsonPath('data.description.content.0.content.0.text', 'Test issue description');
+});
+
+test('update issue accepts description field', function () {
+    Http::fake(['https://test.atlassian.net/*' => Http::response([], 204)]);
+
+    $user = User::factory()->create();
+    $account = Account::factory()->withJira()->for($user)->create();
+    $token = $user->createToken('test');
+
+    $adf = ['type' => 'doc', 'version' => 1, 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Updated description']]]]];
+
+    $this->putJson("/api/{$account->id}/jira/issues/TEST-1", [
+        'fields' => [
+            'description' => $adf,
+        ],
+    ], [
+        'Authorization' => 'Bearer '.$token->plainTextToken,
+    ])
+        ->assertStatus(204);
 });
 
 test('429 from jira issues propagates as 429 response with retry-after', function () {

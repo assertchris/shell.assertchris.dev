@@ -33,6 +33,7 @@ class IssueResource extends JsonResource
                 'key' => $fields['project']['key'] ?? null,
                 'name' => $fields['project']['name'] ?? null,
             ],
+            'description' => $fields['description'] ?? null,
             'created' => $fields['created'] ?? null,
             'updated' => $fields['updated'] ?? null,
             'labels' => $fields['labels'] ?? [],
