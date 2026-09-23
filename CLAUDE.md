@@ -242,3 +242,10 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - IMPORTANT: Always use `search-docs` tool for version-specific Tailwind CSS documentation and updated code examples. Never rely on training data.
 - IMPORTANT: Activate `tailwindcss-development` every time you're working with a Tailwind CSS or styling-related task.
 </laravel-boost-guidelines>
+
+# Production Server
+
+- **SSH:** `ssh forge@shell.assertchris.dev` (IP: 128.199.32.8)
+- **App directory:** `~/shell.assertchris.dev/current`
+- **OS:** Ubuntu 22.04.4 LTS
+- SSH key at `/home/friday/.ssh/id_ed25519` is already trusted
