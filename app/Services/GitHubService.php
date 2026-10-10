@@ -46,10 +46,21 @@ class GitHubService
 
     public function pull(string $owner, string $repo, int $number): array
     {
-        return TaggedCache::for(
+        $cache = TaggedCache::for(
             tags: ['github', "github:{$this->account->id}", "github:{$this->account->id}:pr:{$owner}:{$repo}:{$number}"],
             context: ['type' => 'pull', 'owner' => $owner, 'repo' => $repo, 'number' => $number],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}"));
+        );
+
+        $cached = $cache->get();
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $pull = $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}");
+        $ttl = ($pull['state'] ?? '') === 'open' ? now()->addSeconds(60) : now()->addMinutes(5);
+        $cache->put($pull, $ttl);
+
+        return $pull;
     }
 
     public function pullFiles(string $owner, string $repo, int $number): array

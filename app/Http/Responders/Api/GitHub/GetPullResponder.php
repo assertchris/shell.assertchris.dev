@@ -2,7 +2,6 @@
 
 namespace App\Http\Responders\Api\GitHub;
 
-use AC\LaravelTaggedCache\TaggedCache;
 use App\Exceptions\GitHub\GitHubRateLimitException;
 use App\Http\Resources\GitHub\GitHubPullResource;
 use App\Models\Account;
@@ -21,13 +20,6 @@ class GetPullResponder
 
             if (empty($data)) {
                 abort(404);
-            }
-
-            if (($data['state'] ?? '') === 'open') {
-                TaggedCache::for(
-                    tags: ['github', "github:{$account->id}", "github:{$account->id}:pr:{$owner}:{$repo}:{$pullNumber}"],
-                    context: ['type' => 'pull', 'owner' => $owner, 'repo' => $repo, 'number' => $pullNumber],
-                )->put($data, now()->addSeconds(60));
             }
 
             return new GitHubPullResource($data);
