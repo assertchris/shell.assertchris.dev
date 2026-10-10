@@ -115,7 +115,7 @@ test('listEntries maps items to the expected shape', function () {
     $service->shouldAllowMockingProtectedMethods();
     $service->shouldReceive('connect')->andReturn($calendarService);
 
-    $account = Account::factory()->withGoogleCalendar()->make();
+    $account = Account::factory()->withGoogleCalendar()->create();
 
     $result = $service->listEntries($account);
 
@@ -156,7 +156,7 @@ test('listEntries falls back to date for all-day events', function () {
     $service->shouldAllowMockingProtectedMethods();
     $service->shouldReceive('connect')->andReturn($calendarService);
 
-    $account = Account::factory()->withGoogleCalendar()->make();
+    $account = Account::factory()->withGoogleCalendar()->create();
 
     $result = $service->listEntries($account);
 
@@ -194,7 +194,7 @@ test('getEntry maps a single event to the expected shape', function () {
     $service->shouldAllowMockingProtectedMethods();
     $service->shouldReceive('connect')->andReturn($calendarService);
 
-    $account = Account::factory()->withGoogleCalendar()->make();
+    $account = Account::factory()->withGoogleCalendar()->create();
 
     $result = $service->getEntry($account, 'event-3');
 
@@ -237,7 +237,7 @@ test('getEntry handles event with no attendees', function () {
     $service->shouldAllowMockingProtectedMethods();
     $service->shouldReceive('connect')->andReturn($calendarService);
 
-    $account = Account::factory()->withGoogleCalendar()->make();
+    $account = Account::factory()->withGoogleCalendar()->create();
 
     $result = $service->getEntry($account, 'event-4');
 
