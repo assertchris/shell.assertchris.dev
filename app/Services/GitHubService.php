@@ -34,10 +34,14 @@ class GitHubService
     /** @param array<string, mixed> $params */
     public function pulls(string $owner, string $repo, array $params = []): array
     {
+        $ttl = ($params['state'] ?? 'open') === 'open'
+            ? now()->addSeconds(60)
+            : now()->addMinutes(5);
+
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: array_merge(['type' => 'pulls', 'owner' => $owner, 'repo' => $repo], $params),
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls", $params));
+        )->remember($ttl, fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls", $params));
     }
 
     public function pull(string $owner, string $repo, int $number): array

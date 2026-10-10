@@ -201,7 +201,7 @@ class JiraService
     {
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
-            context: ['type' => 'myself'],
+            context: ['account' => $this->account->id],
         )->remember(now()->addMinutes(30), fn () => $this->client()->get('/myself'));
     }
 
@@ -225,7 +225,7 @@ class JiraService
     {
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
-            context: ['type' => 'filters'],
+            context: ['account' => $this->account->id, 'type' => 'filters'],
         )->remember(now()->addMinutes(15), fn () => $this->client()->get('/filter/favourite'));
     }
 
@@ -241,7 +241,7 @@ class JiraService
     {
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
-            context: ['type' => 'dashboards'],
+            context: ['account' => $this->account->id, 'type' => 'dashboards'],
         )->remember(now()->addMinutes(15), fn () => $this->client()->get('/dashboard'));
     }
 

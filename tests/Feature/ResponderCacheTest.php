@@ -20,6 +20,7 @@ function responderAuth(string $service = 'jira'): array
     $user = User::factory()->create();
     $account = match ($service) {
         'calendar' => Account::factory()->withGoogleCalendar()->for($user)->create(),
+        'github' => Account::factory()->withGitHub()->for($user)->create(),
         'slack' => Account::factory()->withSlack()->for($user)->create(),
         default => Account::factory()->withJira()->for($user)->create(),
     };
@@ -384,6 +385,102 @@ test('deleteIssue flushes both issue-scoped and account-scoped tags', function (
     expect(
         TaggedCache::for(tags: ['jira', "jira:{$account->id}"], context: ['type' => 'myself'])->get()
     )->toBeNull();
+});
+
+// GitHub ListPullsResponder
+
+test('listPulls serves open PRs from cache on second call (60s TTL)', function () {
+    [, $account, $token] = responderAuth('github');
+
+    $prData = [[
+        'number' => 1,
+        'title' => 'Open PR',
+        'state' => 'open',
+        'draft' => false,
+        'html_url' => 'https://github.com/octocat/hello/pull/1',
+        'user' => ['login' => 'dev', 'avatar_url' => null],
+        'created_at' => '2026-01-01T00:00:00Z',
+        'updated_at' => '2026-01-01T00:00:00Z',
+        'merged_at' => null,
+        'head' => ['ref' => 'feature', 'sha' => 'abc123'],
+        'base' => ['ref' => 'main', 'sha' => 'def456'],
+    ]];
+
+    $context = [
+        'type' => 'pulls',
+        'owner' => 'octocat',
+        'repo' => 'hello',
+        'state' => 'open',
+        'page' => 1,
+        'per_page' => 30,
+    ];
+
+    TaggedCache::for(
+        tags: ['github', "github:{$account->id}"],
+        context: $context,
+    )->put($prData, now()->addSeconds(60));
+
+    Http::fake(); // No real GitHub calls should be made
+
+    $this->getJson(
+        "/api/{$account->id}/github/repos/octocat/hello/pulls?state=open",
+        responderHeaders($token),
+    )->assertSuccessful()
+        ->assertJsonPath('data.0.number', 1);
+
+    Http::assertNothingSent();
+});
+
+test('listPulls serves closed PRs from cache on second call (5min TTL)', function () {
+    [, $account, $token] = responderAuth('github');
+
+    $prData = [[
+        'number' => 2,
+        'title' => 'Closed PR',
+        'state' => 'closed',
+        'draft' => false,
+        'html_url' => 'https://github.com/octocat/hello/pull/2',
+        'user' => ['login' => 'dev', 'avatar_url' => null],
+        'created_at' => '2026-01-01T00:00:00Z',
+        'updated_at' => '2026-01-01T00:00:00Z',
+        'merged_at' => '2026-01-02T00:00:00Z',
+        'head' => ['ref' => 'fix', 'sha' => 'abc123'],
+        'base' => ['ref' => 'main', 'sha' => 'def456'],
+    ]];
+
+    $context = [
+        'type' => 'pulls',
+        'owner' => 'octocat',
+        'repo' => 'hello',
+        'state' => 'closed',
+        'page' => 1,
+        'per_page' => 30,
+    ];
+
+    TaggedCache::for(
+        tags: ['github', "github:{$account->id}"],
+        context: $context,
+    )->put($prData, now()->addMinutes(5));
+
+    Http::fake(); // No real GitHub calls should be made
+
+    $this->getJson(
+        "/api/{$account->id}/github/repos/octocat/hello/pulls?state=closed",
+        responderHeaders($token),
+    )->assertSuccessful()
+        ->assertJsonPath('data.0.number', 2);
+
+    Http::assertNothingSent();
+
+    // Cache survives past 60s (confirming 5-min TTL was used, not 60s)
+    $this->travel(61)->seconds();
+
+    expect(
+        TaggedCache::for(
+            tags: ['github', "github:{$account->id}"],
+            context: $context,
+        )->get()
+    )->not->toBeNull();
 });
 
 // Jira MoveIssuesToSprintResponder

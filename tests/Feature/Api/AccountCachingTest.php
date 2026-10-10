@@ -44,6 +44,33 @@ test('route model binding serves account from cache after first request', functi
     DB::disableQueryLog();
 });
 
+test('AccountObserver invalidates list accounts cache when account is saved', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->for($user)->create(['name' => 'Original Name']);
+    $token = $user->createToken('test');
+    $headers = ['Authorization' => 'Bearer '.$token->plainTextToken];
+
+    // Warm the cache via HTTP GET
+    $this->getJson('/api/accounts', $headers)->assertSuccessful();
+
+    expect(
+        TaggedCache::for(tags: ['accounts', "account:user:{$user->id}"], context: ['userId' => $user->id])->get()
+    )->not->toBeNull();
+
+    // Update the account (triggers AccountObserver::saved() which flushes tags)
+    $account->update(['name' => 'Updated Name']);
+
+    // Cache should now be invalidated
+    expect(
+        TaggedCache::for(tags: ['accounts', "account:user:{$user->id}"], context: ['userId' => $user->id])->get()
+    )->toBeNull();
+
+    // Second HTTP GET should return updated data (cache miss, re-queries DB)
+    $this->getJson('/api/accounts', $headers)
+        ->assertSuccessful()
+        ->assertJsonFragment(['name' => 'Updated Name']);
+});
+
 test('list accounts uses cache on second call', function () {
     $user = User::factory()->create();
     Account::factory()->for($user)->create(['name' => 'Active Account']);
