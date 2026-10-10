@@ -75,9 +75,9 @@ test('open pull list is cached', function () {
     Http::assertSentCount(1);
 });
 
-test('closed pull list is not cached', function () {
+test('closed pull list is cached', function () {
     Cache::flush();
-    Http::fake(['https://api.github.com/repos/owner/repo/pulls*' => Http::response([], 200)]);
+    Http::fake(['https://api.github.com/repos/owner/repo/pulls*' => Http::response([makePullData(['state' => 'closed'])], 200)]);
 
     $user = User::factory()->create();
     $account = Account::factory()->withGitHub()->for($user)->create();
@@ -89,7 +89,7 @@ test('closed pull list is not cached', function () {
     $this->getJson($url, $headers)->assertOk();
     $this->getJson($url, $headers)->assertOk();
 
-    Http::assertSentCount(2);
+    Http::assertSentCount(1);
 });
 
 test('get single PR returns pull data', function () {
