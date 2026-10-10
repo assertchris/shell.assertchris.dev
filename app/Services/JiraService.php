@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Models\Account;
-use App\Support\CacheKey;
 
 class JiraService
 {
@@ -24,144 +24,186 @@ class JiraService
     /** @param array<string, mixed> $params */
     public function projects(array $params = []): array
     {
-        return CacheKey::hashed($params, 'jira', $this->account->id, 'projects')
-            ->remember(now()->addMinutes(15), fn () => $this->client()->get('/project/search', $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: array_merge(['type' => 'projects'], $params),
+        )->remember(now()->addMinutes(15), fn () => $this->client()->get('/project/search', $params));
     }
 
     public function project(string $key): array
     {
-        return CacheKey::for('jira', $this->account->id, 'project', $key)
-            ->remember(now()->addMinutes(15), fn () => $this->client()->get("/project/{$key}"));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: ['type' => 'project', 'key' => $key],
+        )->remember(now()->addMinutes(15), fn () => $this->client()->get("/project/{$key}"));
     }
 
     public function projectComponents(string $key): array
     {
-        return CacheKey::for('jira', $this->account->id, 'project', $key, 'components')
-            ->remember(now()->addMinutes(15), fn () => $this->client()->get("/project/{$key}/components"));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: ['type' => 'project-components', 'key' => $key],
+        )->remember(now()->addMinutes(15), fn () => $this->client()->get("/project/{$key}/components"));
     }
 
     public function projectVersions(string $key): array
     {
-        return CacheKey::for('jira', $this->account->id, 'project', $key, 'versions')
-            ->remember(now()->addMinutes(15), fn () => $this->client()->get("/project/{$key}/versions"));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: ['type' => 'project-versions', 'key' => $key],
+        )->remember(now()->addMinutes(15), fn () => $this->client()->get("/project/{$key}/versions"));
     }
 
     /** @param array<string, mixed> $params */
     public function searchIssues(string $jql, array $params = []): array
     {
-        return CacheKey::hashed(array_merge(['jql' => $jql], $params), 'jira', $this->account->id, 'search')
-            ->remember(now()->addMinutes(5), fn () => $this->client()->post('/search/jql', array_merge(['jql' => $jql, 'fields' => self::DEFAULT_FIELDS], $params)));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: array_merge(['type' => 'search', 'jql' => $jql], $params),
+        )->remember(now()->addMinutes(5), fn () => $this->client()->post('/search/jql', array_merge(['jql' => $jql, 'fields' => self::DEFAULT_FIELDS], $params)));
     }
 
     /** @param array<string, mixed> $params */
     public function issue(string $key, array $params = []): array
     {
-        return CacheKey::for('jira', $this->account->id, 'issue', $key)
-            ->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}", array_merge(['fields' => implode(',', self::DEFAULT_FIELDS)], $params)));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
+            context: ['type' => 'issue', 'key' => $key],
+        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}", array_merge(['fields' => implode(',', self::DEFAULT_FIELDS)], $params)));
     }
 
     /** @param array<string, mixed> $params */
     public function issueComments(string $key, array $params = []): array
     {
-        return CacheKey::for('jira', $this->account->id, 'issue', $key, 'comments')
-            ->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/comment", $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
+            context: ['type' => 'comments', 'key' => $key],
+        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/comment", $params));
     }
 
     public function issueWorklogs(string $key): array
     {
-        return CacheKey::for('jira', $this->account->id, 'issue', $key, 'worklogs')
-            ->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/worklog"));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
+            context: ['type' => 'worklogs', 'key' => $key],
+        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/worklog"));
     }
 
     /** @param array<string, mixed> $params */
     public function issueChangelog(string $key, array $params = []): array
     {
-        return CacheKey::for('jira', $this->account->id, 'issue', $key, 'changelog')
-            ->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/changelog", $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
+            context: ['type' => 'changelog', 'key' => $key],
+        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/changelog", $params));
     }
 
     public function issueTransitions(string $key): array
     {
-        return CacheKey::for('jira', $this->account->id, 'issue', $key, 'transitions')
-            ->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/transitions"));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
+            context: ['type' => 'transitions', 'key' => $key],
+        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/transitions"));
     }
 
     public function issueAttachments(string $key): array
     {
-        return CacheKey::for('jira', $this->account->id, 'issue', $key, 'attachments')
-            ->remember(now()->addMinutes(5), function () use ($key) {
-                $result = $this->client()->get("/issue/{$key}", ['fields' => 'attachment']);
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
+            context: ['type' => 'attachments', 'key' => $key],
+        )->remember(now()->addMinutes(5), function () use ($key) {
+            $result = $this->client()->get("/issue/{$key}", ['fields' => 'attachment']);
 
-                return $result['fields']['attachment'] ?? [];
-            });
+            return $result['fields']['attachment'] ?? [];
+        });
     }
 
     /** @param array<string, mixed> $params */
     public function myAssignedIssues(array $params = []): array
     {
-        return CacheKey::hashed($params, 'jira', $this->account->id, 'user', 'assigned')
-            ->remember(now()->addMinutes(5), fn () => $this->searchIssues('assignee = currentUser() ORDER BY updated DESC', $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: array_merge(['type' => 'assigned'], $params),
+        )->remember(now()->addMinutes(5), fn () => $this->searchIssues('assignee = currentUser() ORDER BY updated DESC', $params));
     }
 
     /** @param array<string, mixed> $params */
     public function myReportedIssues(array $params = []): array
     {
-        return CacheKey::hashed($params, 'jira', $this->account->id, 'user', 'reported')
-            ->remember(now()->addMinutes(5), fn () => $this->searchIssues('reporter = currentUser() ORDER BY updated DESC', $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: array_merge(['type' => 'reported'], $params),
+        )->remember(now()->addMinutes(5), fn () => $this->searchIssues('reporter = currentUser() ORDER BY updated DESC', $params));
     }
 
     /** @param array<string, mixed> $params */
     public function myWatchedIssues(array $params = []): array
     {
-        return CacheKey::hashed($params, 'jira', $this->account->id, 'user', 'watching')
-            ->remember(now()->addMinutes(5), fn () => $this->searchIssues('watcher = currentUser() ORDER BY updated DESC', $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: array_merge(['type' => 'watching'], $params),
+        )->remember(now()->addMinutes(5), fn () => $this->searchIssues('watcher = currentUser() ORDER BY updated DESC', $params));
     }
 
     /** @param array<string, mixed> $params */
     public function issuesMentioningMe(array $params = []): array
     {
-        return CacheKey::hashed($params, 'jira', $this->account->id, 'user', 'mentions')
-            ->remember(now()->addMinutes(5), fn () => $this->searchIssues('text ~ currentUser() ORDER BY updated DESC', $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: array_merge(['type' => 'mentions'], $params),
+        )->remember(now()->addMinutes(5), fn () => $this->searchIssues('text ~ currentUser() ORDER BY updated DESC', $params));
     }
 
     /** @param array<string, mixed> $params */
     public function issuesWithRecentActivity(array $params = []): array
     {
-        return CacheKey::hashed($params, 'jira', $this->account->id, 'user', 'activity')
-            ->remember(now()->addMinutes(5), fn () => $this->searchIssues('assignee = currentUser() AND updated >= -7d ORDER BY updated DESC', $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: array_merge(['type' => 'activity'], $params),
+        )->remember(now()->addMinutes(5), fn () => $this->searchIssues('assignee = currentUser() AND updated >= -7d ORDER BY updated DESC', $params));
     }
 
     /** @param array<string, mixed> $params */
     public function boards(array $params = []): array
     {
-        return CacheKey::hashed($params, 'jira', $this->account->id, 'boards')
-            ->remember(now()->addMinutes(15), fn () => $this->client()->agileGet('/board', $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: array_merge(['type' => 'boards'], $params),
+        )->remember(now()->addMinutes(15), fn () => $this->client()->agileGet('/board', $params));
     }
 
     public function board(int $boardId): array
     {
-        return CacheKey::for('jira', $this->account->id, 'board', $boardId)
-            ->remember(now()->addMinutes(15), fn () => $this->client()->agileGet("/board/{$boardId}"));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: ['type' => 'board', 'boardId' => $boardId],
+        )->remember(now()->addMinutes(15), fn () => $this->client()->agileGet("/board/{$boardId}"));
     }
 
     /** @param array<string, mixed> $params */
     public function boardSprints(int $boardId, array $params = []): array
     {
-        return CacheKey::hashed($params, 'jira', $this->account->id, 'board', $boardId, 'sprints')
-            ->remember(now()->addMinutes(15), fn () => $this->client()->agileGet("/board/{$boardId}/sprint", $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: array_merge(['type' => 'board-sprints', 'boardId' => $boardId], $params),
+        )->remember(now()->addMinutes(15), fn () => $this->client()->agileGet("/board/{$boardId}/sprint", $params));
     }
 
     public function sprint(int $sprintId): array
     {
-        return CacheKey::for('jira', $this->account->id, 'sprint', $sprintId)
-            ->remember(now()->addMinutes(10), fn () => $this->client()->agileGet("/sprint/{$sprintId}"));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:sprint:{$sprintId}"],
+            context: ['type' => 'sprint', 'sprintId' => $sprintId],
+        )->remember(now()->addMinutes(10), fn () => $this->client()->agileGet("/sprint/{$sprintId}"));
     }
 
     /** @param array<string, mixed> $params */
     public function sprintIssues(int $sprintId, array $params = []): array
     {
-        return CacheKey::hashed($params, 'jira', $this->account->id, 'sprint', $sprintId, 'issues')
-            ->remember(now()->addMinutes(5), fn () => $this->client()->agileGet("/sprint/{$sprintId}/issue", $params));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:sprint:{$sprintId}"],
+            context: array_merge(['type' => 'sprint-issues', 'sprintId' => $sprintId], $params),
+        )->remember(now()->addMinutes(5), fn () => $this->client()->agileGet("/sprint/{$sprintId}/issue", $params));
     }
 
     /** @param string[] $issueKeys */
@@ -172,38 +214,50 @@ class JiraService
 
     public function myself(): array
     {
-        return CacheKey::for('jira', $this->account->id, 'myself')
-            ->remember(now()->addMinutes(30), fn () => $this->client()->get('/myself'));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: ['type' => 'myself'],
+        )->remember(now()->addMinutes(30), fn () => $this->client()->get('/myself'));
     }
 
     public function user(string $accountId): array
     {
-        return CacheKey::for('jira', $this->account->id, 'user-profile', $accountId)
-            ->remember(now()->addMinutes(15), fn () => $this->client()->get('/user', ['accountId' => $accountId]));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: ['type' => 'user-profile', 'userId' => $accountId],
+        )->remember(now()->addMinutes(15), fn () => $this->client()->get('/user', ['accountId' => $accountId]));
     }
 
     public function assignableUsers(string $projectKey): array
     {
-        return CacheKey::for('jira', $this->account->id, 'assignable', $projectKey)
-            ->remember(now()->addMinutes(15), fn () => $this->client()->get('/user/assignable/search', ['project' => $projectKey]));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: ['type' => 'assignable', 'projectKey' => $projectKey],
+        )->remember(now()->addMinutes(15), fn () => $this->client()->get('/user/assignable/search', ['project' => $projectKey]));
     }
 
     public function filters(): array
     {
-        return CacheKey::for('jira', $this->account->id, 'filters')
-            ->remember(now()->addMinutes(15), fn () => $this->client()->get('/filter/favourite'));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: ['type' => 'filters'],
+        )->remember(now()->addMinutes(15), fn () => $this->client()->get('/filter/favourite'));
     }
 
     public function filter(int $id): array
     {
-        return CacheKey::for('jira', $this->account->id, 'filter', $id)
-            ->remember(now()->addMinutes(15), fn () => $this->client()->get("/filter/{$id}"));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: ['type' => 'filter', 'id' => $id],
+        )->remember(now()->addMinutes(15), fn () => $this->client()->get("/filter/{$id}"));
     }
 
     public function dashboards(): array
     {
-        return CacheKey::for('jira', $this->account->id, 'dashboards')
-            ->remember(now()->addMinutes(15), fn () => $this->client()->get('/dashboard'));
+        return TaggedCache::for(
+            tags: ['jira', "jira:{$this->account->id}"],
+            context: ['type' => 'dashboards'],
+        )->remember(now()->addMinutes(15), fn () => $this->client()->get('/dashboard'));
     }
 
     /** @param array<string, mixed> $fields */

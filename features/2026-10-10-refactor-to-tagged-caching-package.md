@@ -159,12 +159,13 @@ Once every call site has moved over:
 - Package research (`assertchris/laravel-tagged-cache` v1.0)
 - Phase 1: Install Package and Confirm Cache Store
 - Phase 2: Define Tag Strategy and Migrate Models
+- Phase 3: Migrate Services
 
 ### In Progress
 - Nothing yet
 
 ### To Do
-- Phases 3–6
+- Phases 4–6
 
 ## Technical Notes
 
