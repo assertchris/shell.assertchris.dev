@@ -245,7 +245,5 @@ protected function isAccessible(User $user, ?string $path = null): bool
 
 # Production Server
 
-- **SSH:** `ssh forge@shell.assertchris.dev` (IP: 128.199.32.8)
-- **App directory:** `~/shell.assertchris.dev/current`
-- **OS:** Ubuntu 22.04.4 LTS
-- SSH key at `/home/friday/.ssh/id_ed25519` is already trusted
+- **Platform:** Laravel Cloud
+- **Domain:** `shell.assertchris.dev`
