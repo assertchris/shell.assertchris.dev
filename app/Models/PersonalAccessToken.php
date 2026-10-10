@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Support\CacheKey;
+use AC\LaravelTaggedCache\TaggedCache;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 
 class PersonalAccessToken extends SanctumPersonalAccessToken
@@ -33,7 +33,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
         $rawToken = str_contains($token, '|') ? explode('|', $token, 2)[1] : $token;
         $hash = hash('sha256', $rawToken);
 
-        $cachedToken = CacheKey::for('token', $hash)
+        $cachedToken = TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])
             ->remember(now()->addDays(7), fn () => parent::findToken($token));
 
         if ($cachedToken) {

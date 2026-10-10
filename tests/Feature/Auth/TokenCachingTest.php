@@ -1,13 +1,17 @@
 <?php
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Models\PersonalAccessToken;
 use App\Models\User;
-use App\Support\CacheKey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    Config::set('cache.default', 'array');
+});
 
 /**
  * Pre-seed the token's last_ip_address so EnforceTokenIpBinding middleware
@@ -31,7 +35,7 @@ test('second identical auth request skips personal_access_tokens DB query', func
     $this->getJson('/api/status', ['Authorization' => 'Bearer '.$plainText])->assertSuccessful();
 
     // Verify cache is warm
-    expect(Cache::has((string) CacheKey::for('token', $hash)))->toBeTrue();
+    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -87,7 +91,7 @@ test('security field change writes to DB and busts cache', function () {
     // Warm the token cache
     $this->getJson('/api/status', ['Authorization' => 'Bearer '.$tokenResult->plainTextToken])->assertSuccessful();
 
-    expect(Cache::has((string) CacheKey::for('token', $hash)))->toBeTrue();
+    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->not->toBeNull();
 
     $pat = PersonalAccessToken::where('token', $hash)->first();
 
@@ -102,7 +106,7 @@ test('security field change writes to DB and busts cache', function () {
         ->values();
 
     expect($queries)->not->toBeEmpty();
-    expect(Cache::has((string) CacheKey::for('token', $hash)))->toBeFalse();
+    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->toBeNull();
 
     DB::disableQueryLog();
 });
@@ -118,10 +122,10 @@ test('token deletion busts cache', function () {
     // Warm the token cache
     $this->getJson('/api/status', ['Authorization' => 'Bearer '.$tokenResult->plainTextToken])->assertSuccessful();
 
-    expect(Cache::has((string) CacheKey::for('token', $hash)))->toBeTrue();
+    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->not->toBeNull();
 
     $pat = PersonalAccessToken::where('token', $hash)->first();
     $pat->delete();
 
-    expect(Cache::has((string) CacheKey::for('token', $hash)))->toBeFalse();
+    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->toBeNull();
 });

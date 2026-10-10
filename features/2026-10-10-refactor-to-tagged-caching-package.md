@@ -158,12 +158,13 @@ Once every call site has moved over:
 - Codebase audit (all cache sites identified)
 - Package research (`assertchris/laravel-tagged-cache` v1.0)
 - Phase 1: Install Package and Confirm Cache Store
+- Phase 2: Define Tag Strategy and Migrate Models
 
 ### In Progress
 - Nothing yet
 
 ### To Do
-- Phases 2–6
+- Phases 3–6
 
 ## Technical Notes
 

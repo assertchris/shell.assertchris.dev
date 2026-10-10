@@ -1,12 +1,16 @@
 <?php
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Models\User;
-use App\Support\CacheKey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    Config::set('cache.default', 'array');
+});
 
 test('findCached caches the user and second call skips DB', function () {
     $user = User::factory()->create();
@@ -14,7 +18,7 @@ test('findCached caches the user and second call skips DB', function () {
     // Warm the cache
     User::findCached($user->id);
 
-    expect(Cache::has((string) CacheKey::for('user', $user->id)))->toBeTrue();
+    expect(TaggedCache::for(tags: ['users', "user:{$user->id}"], context: ['id' => $user->id])->get())->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -36,10 +40,10 @@ test('saved observer busts the user cache', function () {
     // Warm the cache
     User::findCached($user->id);
 
-    expect(Cache::has((string) CacheKey::for('user', $user->id)))->toBeTrue();
+    expect(TaggedCache::for(tags: ['users', "user:{$user->id}"], context: ['id' => $user->id])->get())->not->toBeNull();
 
     $user->name = 'Updated Name';
     $user->save();
 
-    expect(Cache::has((string) CacheKey::for('user', $user->id)))->toBeFalse();
+    expect(TaggedCache::for(tags: ['users', "user:{$user->id}"], context: ['id' => $user->id])->get())->toBeNull();
 });
