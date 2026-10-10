@@ -160,12 +160,13 @@ Once every call site has moved over:
 - Phase 1: Install Package and Confirm Cache Store
 - Phase 2: Define Tag Strategy and Migrate Models
 - Phase 3: Migrate Services
+- Phase 4: Simplify Responders and Observers
 
 ### In Progress
 - Nothing yet
 
 ### To Do
-- Phases 4–6
+- Phases 5–6
 
 ## Technical Notes
 

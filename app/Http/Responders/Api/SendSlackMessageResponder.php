@@ -2,9 +2,9 @@
 
 namespace App\Http\Responders\Api;
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Models\Account;
 use App\Services\SlackService;
-use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -22,7 +22,7 @@ class SendSlackMessageResponder
         try {
             $result = $this->slackService->sendMessage($account, $channelId, $request->input('text'));
 
-            CacheKey::hashed([], 'slack', $account->id, 'messages', $channelId)->forget();
+            TaggedCache::for(tags: ["slack:{$account->id}"])->flush();
 
             return response()->json(['ts' => $result['ts']]);
         } catch (\Throwable $e) {

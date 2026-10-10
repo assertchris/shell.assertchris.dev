@@ -2,8 +2,8 @@
 
 namespace App\Http\Responders\Api;
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Http\Resources\AccountResource;
-use App\Support\CacheKey;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -13,8 +13,10 @@ class ListAccountsResponder
     {
         $userId = $request->user()->id;
 
-        $accounts = CacheKey::for('accounts', 'user', $userId)
-            ->remember(now()->addDays(7), fn () => $request->user()->accounts()->where('is_active', true)->get());
+        $accounts = TaggedCache::for(
+            tags: ['accounts', "account:user:{$userId}"],
+            context: ['userId' => $userId],
+        )->remember(now()->addDays(7), fn () => $request->user()->accounts()->where('is_active', true)->get());
 
         return AccountResource::collection($accounts);
     }

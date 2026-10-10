@@ -2,12 +2,12 @@
 
 namespace App\Http\Responders\Api\Jira;
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Exceptions\Jira\JiraAuthException;
 use App\Exceptions\Jira\JiraForbiddenException;
 use App\Exceptions\Jira\JiraRateLimitException;
 use App\Models\Account;
 use App\Services\JiraService;
-use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -30,7 +30,7 @@ class MoveIssuesToSprintResponder
             return response()->json(['error' => 'Jira access forbidden.'], 403);
         }
 
-        CacheKey::hashed([], 'jira', $account->id, 'sprint', $sprintId, 'issues')->forget();
+        TaggedCache::for(tags: ["jira:{$account->id}:sprint:{$sprintId}"])->flush();
 
         return response()->json([], 204);
     }
