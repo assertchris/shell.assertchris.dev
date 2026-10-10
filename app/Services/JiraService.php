@@ -26,7 +26,7 @@ class JiraService
     {
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
-            context: array_merge(['type' => 'projects'], $params),
+            context: array_merge($params, ['type' => 'projects']),
         )->remember(now()->addMinutes(15), fn () => $this->client()->get('/project/search', $params));
     }
 
@@ -59,7 +59,7 @@ class JiraService
     {
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
-            context: array_merge(['type' => 'search', 'jql' => $jql], $params),
+            context: array_merge($params, ['type' => 'search', 'jql' => $jql]),
         )->remember(now()->addMinutes(5), fn () => $this->client()->post('/search/jql', array_merge(['jql' => $jql, 'fields' => self::DEFAULT_FIELDS], $params)));
     }
 
@@ -153,7 +153,7 @@ class JiraService
     {
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
-            context: array_merge(['type' => 'boards'], $params),
+            context: array_merge($params, ['type' => 'boards']),
         )->remember(now()->addMinutes(15), fn () => $this->client()->agileGet('/board', $params));
     }
 
@@ -170,7 +170,7 @@ class JiraService
     {
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
-            context: array_merge(['type' => 'board-sprints', 'boardId' => $boardId], $params),
+            context: array_merge($params, ['type' => 'board-sprints', 'boardId' => $boardId]),
         )->remember(now()->addMinutes(15), fn () => $this->client()->agileGet("/board/{$boardId}/sprint", $params));
     }
 
@@ -186,8 +186,8 @@ class JiraService
     public function sprintIssues(int $sprintId, array $params = []): array
     {
         return TaggedCache::for(
-            tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:sprint:{$sprintId}"],
-            context: array_merge(['type' => 'sprint-issues', 'sprintId' => $sprintId], $params),
+            tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:sprint:{$sprintId}", "jira:{$this->account->id}:sprint:{$sprintId}:issues"],
+            context: array_merge($params, ['type' => 'sprint-issues', 'sprintId' => $sprintId]),
         )->remember(now()->addMinutes(5), fn () => $this->client()->agileGet("/sprint/{$sprintId}/issue", $params));
     }
 

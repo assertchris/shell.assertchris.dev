@@ -485,24 +485,33 @@ test('listPulls serves closed PRs from cache on second call (5min TTL)', functio
 
 // Jira MoveIssuesToSprintResponder
 
-test('moveIssuesToSprint flushes sprint-scoped tag', function () {
+test('moveIssuesToSprint flushes sprint issues tag without clearing sprint metadata', function () {
     [, $account, $token] = responderAuth();
 
     Http::fake(['https://test.atlassian.net/*' => Http::response(null, 204)]);
 
     TaggedCache::for(
-        tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42"],
+        tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42", "jira:{$account->id}:sprint:42:issues"],
         context: ['type' => 'sprint-issues', 'sprintId' => 42],
     )->put(['issues' => []], now()->addMinutes(5));
 
+    TaggedCache::for(
+        tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42"],
+        context: ['type' => 'sprint', 'sprintId' => 42],
+    )->put(['id' => 42, 'name' => 'Sprint 1'], now()->addMinutes(10));
+
     expect(
-        TaggedCache::for(tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42"], context: ['type' => 'sprint-issues', 'sprintId' => 42])->get()
+        TaggedCache::for(tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42", "jira:{$account->id}:sprint:42:issues"], context: ['type' => 'sprint-issues', 'sprintId' => 42])->get()
     )->not->toBeNull();
 
     $this->postJson("/api/{$account->id}/jira/sprints/42/issues", ['issue_keys' => ['PROJ-1', 'PROJ-2']], responderHeaders($token))
         ->assertNoContent();
 
     expect(
-        TaggedCache::for(tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42"], context: ['type' => 'sprint-issues', 'sprintId' => 42])->get()
+        TaggedCache::for(tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42", "jira:{$account->id}:sprint:42:issues"], context: ['type' => 'sprint-issues', 'sprintId' => 42])->get()
     )->toBeNull();
+
+    expect(
+        TaggedCache::for(tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42"], context: ['type' => 'sprint', 'sprintId' => 42])->get()
+    )->not->toBeNull();
 });

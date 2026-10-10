@@ -30,7 +30,7 @@ class MoveIssuesToSprintResponder
             return response()->json(['error' => 'Jira access forbidden.'], 403);
         }
 
-        TaggedCache::for(tags: ["jira:{$account->id}:sprint:{$sprintId}"])->flush();
+        TaggedCache::for(tags: ["jira:{$account->id}:sprint:{$sprintId}:issues"])->flush();
 
         return response()->json([], 204);
     }

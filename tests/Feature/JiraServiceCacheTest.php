@@ -90,7 +90,7 @@ test('JiraService::sprintIssues uses sprint-scoped tag', function () {
     $account = Account::factory()->create();
 
     TaggedCache::for(
-        tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42"],
+        tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42", "jira:{$account->id}:sprint:42:issues"],
         context: ['type' => 'sprint-issues', 'sprintId' => 42],
     )->put(['issues' => []], now()->addMinutes(5));
 
@@ -101,27 +101,39 @@ test('JiraService::sprintIssues uses sprint-scoped tag', function () {
     expect($result)->toBe(['issues' => []]);
 });
 
-test('JiraService sprint-scoped tag flush clears sprint issues cache', function () {
+test('JiraService sprint-issues tag flush clears sprint issues cache without clearing sprint metadata', function () {
     $account = Account::factory()->create();
 
     TaggedCache::for(
-        tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42"],
+        tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42", "jira:{$account->id}:sprint:42:issues"],
         context: ['type' => 'sprint-issues', 'sprintId' => 42],
     )->put(['issues' => []], now()->addMinutes(5));
 
+    TaggedCache::for(
+        tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42"],
+        context: ['type' => 'sprint', 'sprintId' => 42],
+    )->put(['id' => 42, 'name' => 'Sprint 1'], now()->addMinutes(10));
+
     expect(
         TaggedCache::for(
-            tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42"],
+            tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42", "jira:{$account->id}:sprint:42:issues"],
             context: ['type' => 'sprint-issues', 'sprintId' => 42],
         )->get()
     )->not->toBeNull();
 
-    TaggedCache::for(tags: ["jira:{$account->id}:sprint:42"])->flush();
+    TaggedCache::for(tags: ["jira:{$account->id}:sprint:42:issues"])->flush();
+
+    expect(
+        TaggedCache::for(
+            tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42", "jira:{$account->id}:sprint:42:issues"],
+            context: ['type' => 'sprint-issues', 'sprintId' => 42],
+        )->get()
+    )->toBeNull();
 
     expect(
         TaggedCache::for(
             tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:sprint:42"],
-            context: ['type' => 'sprint-issues', 'sprintId' => 42],
+            context: ['type' => 'sprint', 'sprintId' => 42],
         )->get()
-    )->toBeNull();
+    )->not->toBeNull();
 });

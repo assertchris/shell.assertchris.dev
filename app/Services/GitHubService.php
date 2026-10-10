@@ -19,7 +19,7 @@ class GitHubService
     {
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
-            context: array_merge(['type' => 'repos'], $params),
+            context: array_merge($params, ['type' => 'repos']),
         )->remember(now()->addMinutes(5), fn () => $this->client()->get('/user/repos', $params));
     }
 
@@ -40,7 +40,7 @@ class GitHubService
 
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
-            context: array_merge(['type' => 'pulls', 'owner' => $owner, 'repo' => $repo], $params),
+            context: array_merge($params, ['type' => 'pulls', 'owner' => $owner, 'repo' => $repo]),
         )->remember($ttl, fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls", $params));
     }
 
@@ -108,7 +108,7 @@ class GitHubService
     {
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
-            context: array_merge(['type' => 'search-pulls', 'q' => $q], $params),
+            context: array_merge($params, ['type' => 'search-pulls', 'q' => $q]),
         )->remember(now()->addMinutes(5), fn () => $this->client()->get('/search/issues', array_merge($params, ['q' => "{$q} is:pr"])));
     }
 
@@ -117,7 +117,7 @@ class GitHubService
     {
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
-            context: array_merge(['type' => 'search-issues', 'q' => $q], $params),
+            context: array_merge($params, ['type' => 'search-issues', 'q' => $q]),
         )->remember(now()->addMinutes(5), fn () => $this->client()->get('/search/issues', array_merge($params, ['q' => "{$q} is:issue"])));
     }
 
@@ -126,7 +126,7 @@ class GitHubService
     {
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
-            context: array_merge(['type' => 'issues'], $params),
+            context: array_merge($params, ['type' => 'issues']),
         )->remember(now()->addMinutes(5), fn () => $this->client()->get('/issues', $params));
     }
 
@@ -135,7 +135,7 @@ class GitHubService
     {
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
-            context: array_merge(['type' => 'user-issues'], $params),
+            context: array_merge($params, ['type' => 'user-issues']),
         )->remember(now()->addMinutes(5), fn () => $this->client()->get('/user/issues', $params));
     }
 
@@ -144,7 +144,7 @@ class GitHubService
     {
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
-            context: array_merge(['type' => 'repo-issues', 'owner' => $owner, 'repo' => $repo], $params),
+            context: array_merge($params, ['type' => 'repo-issues', 'owner' => $owner, 'repo' => $repo]),
         )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/issues", $params));
     }
 
@@ -169,7 +169,7 @@ class GitHubService
     {
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
-            context: array_merge(['type' => 'notifications'], $params),
+            context: array_merge($params, ['type' => 'notifications']),
         )->remember(now()->addMinutes(5), fn () => $this->client()->get('/notifications', $params));
     }
 
