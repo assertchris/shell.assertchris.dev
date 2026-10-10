@@ -179,15 +179,6 @@ return [
             'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
         ],
 
-        'valkey' => [
-            'url' => env('VALKEY_URL'),
-            'host' => env('VALKEY_HOST', '127.0.0.1'),
-            'username' => env('VALKEY_USERNAME'),
-            'password' => env('VALKEY_PASSWORD'),
-            'port' => env('VALKEY_PORT', '6379'),
-            'database' => env('VALKEY_CACHE_DB', '2'),
-        ],
-
     ],
 
 ];

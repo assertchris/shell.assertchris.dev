@@ -78,12 +78,6 @@ return [
             'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
         ],
 
-        'valkey' => [
-            'driver' => 'redis',
-            'connection' => env('REDIS_CACHE_CONNECTION', 'valkey'),
-            'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
-        ],
-
         'dynamodb' => [
             'driver' => 'dynamodb',
             'key' => env('AWS_ACCESS_KEY_ID'),
