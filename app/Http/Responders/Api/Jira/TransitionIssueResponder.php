@@ -7,6 +7,7 @@ use App\Exceptions\Jira\JiraForbiddenException;
 use App\Exceptions\Jira\JiraRateLimitException;
 use App\Models\Account;
 use App\Services\JiraService;
+use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -27,6 +28,9 @@ class TransitionIssueResponder
         } catch (JiraForbiddenException) {
             return response()->json(['error' => 'Jira access forbidden.'], 403);
         }
+
+        CacheKey::for('jira', $account->id, 'issue', $key)->forget();
+        CacheKey::for('jira', $account->id, 'issue', $key, 'transitions')->forget();
 
         return response()->json([], 204);
     }

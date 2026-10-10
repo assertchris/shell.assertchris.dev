@@ -5,6 +5,7 @@ namespace App\Http\Responders\Api;
 use App\Http\Resources\CalendarEntryResource;
 use App\Models\Account;
 use App\Services\CalendarService;
+use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -30,6 +31,8 @@ class CreateCalendarEntryResponder
 
         try {
             $entry = $this->calendarService->createEntry($account, $validated);
+
+            CacheKey::hashed([], 'calendar', $account->id, 'entries')->forget();
 
             return (new CalendarEntryResource($entry))
                 ->response()

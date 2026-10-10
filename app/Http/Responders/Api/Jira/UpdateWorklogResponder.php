@@ -8,6 +8,7 @@ use App\Exceptions\Jira\JiraRateLimitException;
 use App\Http\Resources\Jira\WorklogResource;
 use App\Models\Account;
 use App\Services\JiraService;
+use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -32,6 +33,8 @@ class UpdateWorklogResponder
         } catch (JiraForbiddenException) {
             return response()->json(['error' => 'Jira access forbidden.'], 403);
         }
+
+        CacheKey::for('jira', $account->id, 'issue', $key, 'worklogs')->forget();
 
         return new WorklogResource($data);
     }
