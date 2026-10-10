@@ -21,7 +21,7 @@ class PersonalAccessTokenObserver
             $cache = TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash]);
             $cached = $cache->get();
 
-            if ($cached) {
+            if ($cached !== null) {
                 $cached->last_used_at = $token->last_used_at;
                 $cache->put($cached, now()->addDays(7));
             }

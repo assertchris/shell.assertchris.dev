@@ -58,7 +58,7 @@ test('SlackService::listMessages uses tagged cache', function () {
     $cached = ['messages' => [['ts' => '1234', 'user' => 'U001', 'text' => 'hi']], 'next_cursor' => null];
 
     TaggedCache::for(
-        tags: ['slack', "slack:{$account->id}"],
+        tags: ['slack', "slack:{$account->id}", "slack:{$account->id}:channel:C001"],
         context: ['type' => 'messages', 'channelId' => 'C001', 'limit' => 50, 'cursor' => null],
     )->put($cached, now()->addMinutes(3));
 
