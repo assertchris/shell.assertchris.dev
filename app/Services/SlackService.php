@@ -63,7 +63,7 @@ class SlackService
     public function listMessages(Account $account, string $channelId, int $limit = 50, ?string $cursor = null): array
     {
         return TaggedCache::for(
-            tags: ['slack', "slack:{$account->id}"],
+            tags: ['slack', "slack:{$account->id}", "slack:{$account->id}:channel:{$channelId}"],
             context: ['type' => 'messages', 'channelId' => $channelId, 'limit' => $limit, 'cursor' => $cursor],
         )->remember(now()->addMinutes(3), function () use ($account, $channelId, $limit, $cursor) {
             $params = [

@@ -102,16 +102,16 @@ test('createCalendarEntry flushes calendar account tag', function () {
 
 // SendSlackMessageResponder
 
-test('sendSlackMessage flushes slack account tag', function () {
+test('sendSlackMessage flushes channel-scoped slack tag', function () {
     [, $account, $token] = responderAuth('slack');
 
     TaggedCache::for(
-        tags: ['slack', "slack:{$account->id}"],
+        tags: ['slack', "slack:{$account->id}", "slack:{$account->id}:channel:C001"],
         context: ['type' => 'messages', 'channelId' => 'C001'],
     )->put(['messages' => []], now()->addMinutes(5));
 
     expect(
-        TaggedCache::for(tags: ['slack', "slack:{$account->id}"], context: ['type' => 'messages', 'channelId' => 'C001'])->get()
+        TaggedCache::for(tags: ['slack', "slack:{$account->id}", "slack:{$account->id}:channel:C001"], context: ['type' => 'messages', 'channelId' => 'C001'])->get()
     )->not->toBeNull();
 
     $this->mock(SlackService::class, function ($mock) {
@@ -122,7 +122,7 @@ test('sendSlackMessage flushes slack account tag', function () {
         ->assertSuccessful();
 
     expect(
-        TaggedCache::for(tags: ['slack', "slack:{$account->id}"], context: ['type' => 'messages', 'channelId' => 'C001'])->get()
+        TaggedCache::for(tags: ['slack', "slack:{$account->id}", "slack:{$account->id}:channel:C001"], context: ['type' => 'messages', 'channelId' => 'C001'])->get()
     )->toBeNull();
 });
 
@@ -229,6 +229,26 @@ test('deleteWorklog flushes issue-scoped tag', function () {
 
     expect(
         TaggedCache::for(tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:issue:PROJ-5"], context: ['type' => 'worklogs', 'key' => 'PROJ-5'])->get()
+    )->toBeNull();
+});
+
+// Jira UpdateWorklogResponder
+
+test('updateWorklog flushes issue-scoped tag', function () {
+    [, $account, $token] = responderAuth();
+
+    Http::fake(['https://test.atlassian.net/*' => Http::response(['id' => '30003', 'author' => ['accountId' => 'a', 'displayName' => 'A'], 'timeSpent' => '2h', 'started' => '2026-10-10T09:00:00.000+0000', 'created' => '2026-10-10T09:00:00.000+0000', 'updated' => '2026-10-10T09:00:00.000+0000'], 200)]);
+
+    TaggedCache::for(
+        tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:issue:PROJ-6"],
+        context: ['type' => 'worklogs', 'key' => 'PROJ-6'],
+    )->put([], now()->addMinutes(5));
+
+    $this->putJson("/api/{$account->id}/jira/issues/PROJ-6/worklogs/30003", ['time_spent' => '2h', 'started' => '2026-10-10T09:00:00.000+0000'], responderHeaders($token))
+        ->assertOk();
+
+    expect(
+        TaggedCache::for(tags: ['jira', "jira:{$account->id}", "jira:{$account->id}:issue:PROJ-6"], context: ['type' => 'worklogs', 'key' => 'PROJ-6'])->get()
     )->toBeNull();
 });
 

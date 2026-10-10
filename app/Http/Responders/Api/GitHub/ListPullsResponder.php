@@ -2,6 +2,7 @@
 
 namespace App\Http\Responders\Api\GitHub;
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Exceptions\GitHub\GitHubRateLimitException;
 use App\Http\Resources\GitHub\GitHubPullResource;
 use App\Models\Account;
@@ -28,6 +29,13 @@ class ListPullsResponder
             $params = ['state' => $state, 'page' => $page, 'per_page' => $perPage];
 
             $data = (new GitHubService($account))->pulls($owner, $repo, $params);
+
+            if ($state === 'open') {
+                TaggedCache::for(
+                    tags: ['github', "github:{$account->id}"],
+                    context: array_merge(['type' => 'pulls', 'owner' => $owner, 'repo' => $repo], $params),
+                )->put($data, 60);
+            }
 
             return GitHubPullResource::collection($data)
                 ->additional(['meta' => ['total_count' => count($data)]]);

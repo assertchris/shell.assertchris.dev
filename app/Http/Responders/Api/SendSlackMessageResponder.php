@@ -22,7 +22,7 @@ class SendSlackMessageResponder
         try {
             $result = $this->slackService->sendMessage($account, $channelId, $request->input('text'));
 
-            TaggedCache::for(tags: ["slack:{$account->id}"])->flush();
+            TaggedCache::for(tags: ["slack:{$account->id}:channel:{$channelId}"])->flush();
 
             return response()->json(['ts' => $result['ts']]);
         } catch (\Throwable $e) {

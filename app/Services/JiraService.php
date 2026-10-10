@@ -121,46 +121,31 @@ class JiraService
     /** @param array<string, mixed> $params */
     public function myAssignedIssues(array $params = []): array
     {
-        return TaggedCache::for(
-            tags: ['jira', "jira:{$this->account->id}"],
-            context: array_merge(['type' => 'assigned'], $params),
-        )->remember(now()->addMinutes(5), fn () => $this->searchIssues('assignee = currentUser() ORDER BY updated DESC', $params));
+        return $this->searchIssues('assignee = currentUser() ORDER BY updated DESC', $params);
     }
 
     /** @param array<string, mixed> $params */
     public function myReportedIssues(array $params = []): array
     {
-        return TaggedCache::for(
-            tags: ['jira', "jira:{$this->account->id}"],
-            context: array_merge(['type' => 'reported'], $params),
-        )->remember(now()->addMinutes(5), fn () => $this->searchIssues('reporter = currentUser() ORDER BY updated DESC', $params));
+        return $this->searchIssues('reporter = currentUser() ORDER BY updated DESC', $params);
     }
 
     /** @param array<string, mixed> $params */
     public function myWatchedIssues(array $params = []): array
     {
-        return TaggedCache::for(
-            tags: ['jira', "jira:{$this->account->id}"],
-            context: array_merge(['type' => 'watching'], $params),
-        )->remember(now()->addMinutes(5), fn () => $this->searchIssues('watcher = currentUser() ORDER BY updated DESC', $params));
+        return $this->searchIssues('watcher = currentUser() ORDER BY updated DESC', $params);
     }
 
     /** @param array<string, mixed> $params */
     public function issuesMentioningMe(array $params = []): array
     {
-        return TaggedCache::for(
-            tags: ['jira', "jira:{$this->account->id}"],
-            context: array_merge(['type' => 'mentions'], $params),
-        )->remember(now()->addMinutes(5), fn () => $this->searchIssues('text ~ currentUser() ORDER BY updated DESC', $params));
+        return $this->searchIssues('text ~ currentUser() ORDER BY updated DESC', $params);
     }
 
     /** @param array<string, mixed> $params */
     public function issuesWithRecentActivity(array $params = []): array
     {
-        return TaggedCache::for(
-            tags: ['jira', "jira:{$this->account->id}"],
-            context: array_merge(['type' => 'activity'], $params),
-        )->remember(now()->addMinutes(5), fn () => $this->searchIssues('assignee = currentUser() AND updated >= -7d ORDER BY updated DESC', $params));
+        return $this->searchIssues('assignee = currentUser() AND updated >= -7d ORDER BY updated DESC', $params);
     }
 
     /** @param array<string, mixed> $params */
