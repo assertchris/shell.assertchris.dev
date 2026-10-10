@@ -7,7 +7,6 @@ use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Cache;
 
 class Account extends Model
 {
@@ -76,11 +75,8 @@ class Account extends Model
 
     public function resolveRouteBinding($value, $field = null): ?static
     {
-        return Cache::remember(
-            CacheKey::for('account', $value),
-            now()->addDays(7),
-            fn () => static::find($value),
-        );
+        return CacheKey::for('account', $value)
+            ->remember(now()->addDays(7), fn () => static::find($value));
     }
 
     public function user(): BelongsTo

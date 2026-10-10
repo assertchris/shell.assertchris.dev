@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Models\PersonalAccessToken;
 use App\Support\CacheKey;
-use Illuminate\Support\Facades\Cache;
 
 class PersonalAccessTokenObserver
 {
@@ -19,11 +18,11 @@ class PersonalAccessTokenObserver
 
         if (! $hasSecurityChange && in_array('last_used_at', $dirty, true)) {
             $hash = $token->token;
-            $cached = Cache::get(CacheKey::for('token', $hash));
+            $cached = CacheKey::for('token', $hash)->get();
 
             if ($cached) {
                 $cached->last_used_at = $token->last_used_at;
-                Cache::put(CacheKey::for('token', $hash), $cached, now()->addDays(7));
+                CacheKey::for('token', $hash)->put($cached, now()->addDays(7));
             }
 
             return false;
@@ -34,11 +33,11 @@ class PersonalAccessTokenObserver
 
     public function saved(PersonalAccessToken $token): void
     {
-        Cache::forget(CacheKey::for('token', $token->token));
+        CacheKey::for('token', $token->token)->forget();
     }
 
     public function deleted(PersonalAccessToken $token): void
     {
-        Cache::forget(CacheKey::for('token', $token->token));
+        CacheKey::for('token', $token->token)->forget();
     }
 }

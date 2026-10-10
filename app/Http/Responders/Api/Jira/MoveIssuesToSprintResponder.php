@@ -10,7 +10,6 @@ use App\Services\JiraService;
 use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class MoveIssuesToSprintResponder
 {
@@ -31,7 +30,7 @@ class MoveIssuesToSprintResponder
             return response()->json(['error' => 'Jira access forbidden.'], 403);
         }
 
-        Cache::forget(CacheKey::hashed([], 'jira', $account->id, 'sprint', $sprintId, 'issues'));
+        CacheKey::hashed([], 'jira', $account->id, 'sprint', $sprintId, 'issues')->forget();
 
         return response()->json([], 204);
     }

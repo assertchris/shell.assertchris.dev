@@ -10,7 +10,6 @@ use App\Services\JiraService;
 use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class DeleteCommentResponder
 {
@@ -26,7 +25,7 @@ class DeleteCommentResponder
             return response()->json(['error' => 'Jira access forbidden.'], 403);
         }
 
-        Cache::forget(CacheKey::for('jira', $account->id, 'issue', $key, 'comments'));
+        CacheKey::for('jira', $account->id, 'issue', $key, 'comments')->forget();
 
         return response()->json([], 204);
     }

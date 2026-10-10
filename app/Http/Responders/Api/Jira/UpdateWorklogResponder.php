@@ -11,7 +11,6 @@ use App\Services\JiraService;
 use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class UpdateWorklogResponder
 {
@@ -35,7 +34,7 @@ class UpdateWorklogResponder
             return response()->json(['error' => 'Jira access forbidden.'], 403);
         }
 
-        Cache::forget(CacheKey::for('jira', $account->id, 'issue', $key, 'worklogs'));
+        CacheKey::for('jira', $account->id, 'issue', $key, 'worklogs')->forget();
 
         return new WorklogResource($data);
     }

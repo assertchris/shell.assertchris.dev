@@ -13,7 +13,7 @@ test('listEntries is served from cache on second call', function () {
     $account = Account::factory()->withGoogleCalendar()->for(User::factory()->create())->create();
 
     $cached = ['items' => [['id' => 'evt1', 'title' => 'Standup', 'start' => null, 'end' => null, 'location' => null]], 'nextPageToken' => null];
-    $cacheKey = CacheKey::hashed(['maxResults' => 50, 'pageToken' => null], 'calendar', $account->id, 'entries');
+    $cacheKey = (string) CacheKey::hashed(['maxResults' => 50, 'pageToken' => null], 'calendar', $account->id, 'entries');
     Cache::put($cacheKey, $cached, now()->addMinutes(5));
 
     $service = $this->partialMock(CalendarService::class, function ($mock) {
@@ -31,7 +31,7 @@ test('createEntry busts the listEntries cache key', function () {
     $account = Account::factory()->withGoogleCalendar()->for($user)->create();
     $token = $user->createToken('test');
 
-    $cacheKey = CacheKey::hashed([], 'calendar', $account->id, 'entries');
+    $cacheKey = (string) CacheKey::hashed([], 'calendar', $account->id, 'entries');
     Cache::put($cacheKey, ['items' => [], 'nextPageToken' => null], now()->addMinutes(5));
 
     expect(Cache::has($cacheKey))->toBeTrue();

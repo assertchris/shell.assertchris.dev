@@ -8,7 +8,6 @@ use Google\Client;
 use Google\Service\Calendar;
 use Google\Service\Calendar\Event;
 use Google\Service\Calendar\EventDateTime;
-use Illuminate\Support\Facades\Cache;
 
 class CalendarService
 {
@@ -55,10 +54,8 @@ class CalendarService
      */
     public function listEntries(Account $account, int $maxResults = 50, ?string $pageToken = null): array
     {
-        return Cache::remember(
-            CacheKey::hashed(['maxResults' => $maxResults, 'pageToken' => $pageToken], 'calendar', $account->id, 'entries'),
-            now()->addMinutes(5),
-            function () use ($account, $maxResults, $pageToken) {
+        return CacheKey::hashed(['maxResults' => $maxResults, 'pageToken' => $pageToken], 'calendar', $account->id, 'entries')
+            ->remember(now()->addMinutes(5), function () use ($account, $maxResults, $pageToken) {
                 $calendar = $this->connect($account);
 
                 $params = [
@@ -89,8 +86,7 @@ class CalendarService
                     'items' => $items,
                     'nextPageToken' => $events->getNextPageToken(),
                 ];
-            }
-        );
+            });
     }
 
     /**
@@ -150,10 +146,8 @@ class CalendarService
      */
     public function getEntry(Account $account, string $eventId): array
     {
-        return Cache::remember(
-            CacheKey::for('calendar', $account->id, 'event', $eventId),
-            now()->addMinutes(10),
-            function () use ($account, $eventId) {
+        return CacheKey::for('calendar', $account->id, 'event', $eventId)
+            ->remember(now()->addMinutes(10), function () use ($account, $eventId) {
                 $calendar = $this->connect($account);
 
                 $event = $calendar->events->get('primary', $eventId);
@@ -177,7 +171,6 @@ class CalendarService
                     'attendees' => $attendees,
                     'html_link' => $event->getHtmlLink(),
                 ];
-            }
-        );
+            });
     }
 }

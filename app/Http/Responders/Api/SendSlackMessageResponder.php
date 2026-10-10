@@ -7,7 +7,6 @@ use App\Services\SlackService;
 use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SendSlackMessageResponder
@@ -23,7 +22,7 @@ class SendSlackMessageResponder
         try {
             $result = $this->slackService->sendMessage($account, $channelId, $request->input('text'));
 
-            Cache::forget(CacheKey::hashed([], 'slack', $account->id, 'messages', $channelId));
+            CacheKey::hashed([], 'slack', $account->id, 'messages', $channelId)->forget();
 
             return response()->json(['ts' => $result['ts']]);
         } catch (\Throwable $e) {

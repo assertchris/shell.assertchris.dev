@@ -29,9 +29,9 @@ test('updateIssue busts issue and user-assigned and user-activity cache keys', f
     [, $account, $token] = jiraAuth();
     $key = 'PROJ-1';
 
-    $issueKey = CacheKey::for('jira', $account->id, 'issue', $key);
-    $assignedKey = CacheKey::hashed([], 'jira', $account->id, 'user', 'assigned');
-    $activityKey = CacheKey::hashed([], 'jira', $account->id, 'user', 'activity');
+    $issueKey = (string) CacheKey::for('jira', $account->id, 'issue', $key);
+    $assignedKey = (string) CacheKey::hashed([], 'jira', $account->id, 'user', 'assigned');
+    $activityKey = (string) CacheKey::hashed([], 'jira', $account->id, 'user', 'activity');
 
     Cache::put($issueKey, ['id' => '10000'], now()->addMinutes(5));
     Cache::put($assignedKey, [], now()->addMinutes(5));
@@ -53,8 +53,8 @@ test('transitionIssue busts issue and issue transitions cache keys', function ()
     [, $account, $token] = jiraAuth();
     $key = 'PROJ-2';
 
-    $issueKey = CacheKey::for('jira', $account->id, 'issue', $key);
-    $transitionsKey = CacheKey::for('jira', $account->id, 'issue', $key, 'transitions');
+    $issueKey = (string) CacheKey::for('jira', $account->id, 'issue', $key);
+    $transitionsKey = (string) CacheKey::for('jira', $account->id, 'issue', $key, 'transitions');
 
     Cache::put($issueKey, ['id' => '10001'], now()->addMinutes(5));
     Cache::put($transitionsKey, [], now()->addMinutes(5));
@@ -72,8 +72,8 @@ test('assignIssue busts issue and user-assigned cache keys', function () {
     [, $account, $token] = jiraAuth();
     $key = 'PROJ-3';
 
-    $issueKey = CacheKey::for('jira', $account->id, 'issue', $key);
-    $assignedKey = CacheKey::hashed([], 'jira', $account->id, 'user', 'assigned');
+    $issueKey = (string) CacheKey::for('jira', $account->id, 'issue', $key);
+    $assignedKey = (string) CacheKey::hashed([], 'jira', $account->id, 'user', 'assigned');
 
     Cache::put($issueKey, ['id' => '10002'], now()->addMinutes(5));
     Cache::put($assignedKey, [], now()->addMinutes(5));
@@ -92,7 +92,7 @@ test('addComment busts issue comments cache key', function () {
     [, $account, $token] = jiraAuth();
     $key = 'PROJ-4';
 
-    $commentsKey = CacheKey::for('jira', $account->id, 'issue', $key, 'comments');
+    $commentsKey = (string) CacheKey::for('jira', $account->id, 'issue', $key, 'comments');
     Cache::put($commentsKey, [], now()->addMinutes(5));
 
     $this->postJson("/api/{$account->id}/jira/issues/{$key}/comments", ['body' => $body], jiraHeaders($token))
@@ -108,7 +108,7 @@ test('updateComment busts issue comments cache key', function () {
     [, $account, $token] = jiraAuth();
     $key = 'PROJ-5';
 
-    $commentsKey = CacheKey::for('jira', $account->id, 'issue', $key, 'comments');
+    $commentsKey = (string) CacheKey::for('jira', $account->id, 'issue', $key, 'comments');
     Cache::put($commentsKey, [], now()->addMinutes(5));
 
     $this->putJson("/api/{$account->id}/jira/issues/{$key}/comments/20002", ['body' => $body], jiraHeaders($token))
@@ -123,7 +123,7 @@ test('deleteComment busts issue comments cache key', function () {
     [, $account, $token] = jiraAuth();
     $key = 'PROJ-6';
 
-    $commentsKey = CacheKey::for('jira', $account->id, 'issue', $key, 'comments');
+    $commentsKey = (string) CacheKey::for('jira', $account->id, 'issue', $key, 'comments');
     Cache::put($commentsKey, [], now()->addMinutes(5));
 
     $this->deleteJson("/api/{$account->id}/jira/issues/{$key}/comments/20003", [], jiraHeaders($token))
@@ -138,7 +138,7 @@ test('addWorklog busts issue worklogs cache key', function () {
     [, $account, $token] = jiraAuth();
     $key = 'PROJ-7';
 
-    $worklogsKey = CacheKey::for('jira', $account->id, 'issue', $key, 'worklogs');
+    $worklogsKey = (string) CacheKey::for('jira', $account->id, 'issue', $key, 'worklogs');
     Cache::put($worklogsKey, [], now()->addMinutes(5));
 
     $this->postJson("/api/{$account->id}/jira/issues/{$key}/worklogs", ['time_spent' => '1h', 'started' => '2026-10-10T09:00:00.000+0000'], jiraHeaders($token))
@@ -153,7 +153,7 @@ test('deleteWorklog busts issue worklogs cache key', function () {
     [, $account, $token] = jiraAuth();
     $key = 'PROJ-8';
 
-    $worklogsKey = CacheKey::for('jira', $account->id, 'issue', $key, 'worklogs');
+    $worklogsKey = (string) CacheKey::for('jira', $account->id, 'issue', $key, 'worklogs');
     Cache::put($worklogsKey, [], now()->addMinutes(5));
 
     $this->deleteJson("/api/{$account->id}/jira/issues/{$key}/worklogs/30002", [], jiraHeaders($token))
@@ -167,9 +167,9 @@ test('createIssue busts assigned reported and activity cache keys', function () 
 
     [, $account, $token] = jiraAuth();
 
-    $assignedKey = CacheKey::hashed([], 'jira', $account->id, 'user', 'assigned');
-    $reportedKey = CacheKey::hashed([], 'jira', $account->id, 'user', 'reported');
-    $activityKey = CacheKey::hashed([], 'jira', $account->id, 'user', 'activity');
+    $assignedKey = (string) CacheKey::hashed([], 'jira', $account->id, 'user', 'assigned');
+    $reportedKey = (string) CacheKey::hashed([], 'jira', $account->id, 'user', 'reported');
+    $activityKey = (string) CacheKey::hashed([], 'jira', $account->id, 'user', 'activity');
 
     Cache::put($assignedKey, [], now()->addMinutes(5));
     Cache::put($reportedKey, [], now()->addMinutes(5));
@@ -194,10 +194,10 @@ test('deleteIssue busts issue and all three user view cache keys', function () {
     [, $account, $token] = jiraAuth();
     $key = 'PROJ-10';
 
-    $issueKey = CacheKey::for('jira', $account->id, 'issue', $key);
-    $assignedKey = CacheKey::hashed([], 'jira', $account->id, 'user', 'assigned');
-    $reportedKey = CacheKey::hashed([], 'jira', $account->id, 'user', 'reported');
-    $activityKey = CacheKey::hashed([], 'jira', $account->id, 'user', 'activity');
+    $issueKey = (string) CacheKey::for('jira', $account->id, 'issue', $key);
+    $assignedKey = (string) CacheKey::hashed([], 'jira', $account->id, 'user', 'assigned');
+    $reportedKey = (string) CacheKey::hashed([], 'jira', $account->id, 'user', 'reported');
+    $activityKey = (string) CacheKey::hashed([], 'jira', $account->id, 'user', 'activity');
 
     Cache::put($issueKey, ['id' => '10010'], now()->addMinutes(5));
     Cache::put($assignedKey, [], now()->addMinutes(5));
@@ -219,7 +219,7 @@ test('moveIssuesToSprint busts sprint issues cache key', function () {
     [, $account, $token] = jiraAuth();
     $sprintId = 42;
 
-    $sprintKey = CacheKey::hashed([], 'jira', $account->id, 'sprint', $sprintId, 'issues');
+    $sprintKey = (string) CacheKey::hashed([], 'jira', $account->id, 'sprint', $sprintId, 'issues');
     Cache::put($sprintKey, [], now()->addMinutes(5));
 
     $this->postJson("/api/{$account->id}/jira/sprints/{$sprintId}/issues", ['issue_keys' => ['PROJ-1', 'PROJ-2']], jiraHeaders($token))

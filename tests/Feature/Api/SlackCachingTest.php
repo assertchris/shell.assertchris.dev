@@ -38,7 +38,7 @@ test('sendMessage busts the default listMessages cache key for the channel', fun
     $token = $user->createToken('test');
     $channelId = 'C001';
 
-    $bustKey = CacheKey::hashed([], 'slack', $account->id, 'messages', $channelId);
+    $bustKey = (string) CacheKey::hashed([], 'slack', $account->id, 'messages', $channelId);
     Cache::put($bustKey, ['messages' => [], 'next_cursor' => null], now()->addMinutes(3));
 
     expect(Cache::has($bustKey))->toBeTrue();

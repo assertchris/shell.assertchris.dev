@@ -9,7 +9,6 @@ use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CreateCalendarEntryResponder
@@ -33,7 +32,7 @@ class CreateCalendarEntryResponder
         try {
             $entry = $this->calendarService->createEntry($account, $validated);
 
-            Cache::forget(CacheKey::hashed([], 'calendar', $account->id, 'entries'));
+            CacheKey::hashed([], 'calendar', $account->id, 'entries')->forget();
 
             return (new CalendarEntryResource($entry))
                 ->response()

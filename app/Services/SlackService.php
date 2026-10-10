@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Support\CacheKey;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class SlackService
@@ -19,10 +18,8 @@ class SlackService
      */
     public function listChannels(Account $account, ?string $cursor = null): array
     {
-        return Cache::remember(
-            CacheKey::hashed(['cursor' => $cursor], 'slack', $account->id, 'channels'),
-            now()->addMinutes(15),
-            function () use ($account, $cursor) {
+        return CacheKey::hashed(['cursor' => $cursor], 'slack', $account->id, 'channels')
+            ->remember(now()->addMinutes(15), function () use ($account, $cursor) {
                 $params = [
                     'limit' => 200,
                     'exclude_archived' => true,
@@ -55,8 +52,7 @@ class SlackService
                     },
                     $response->json('channels') ?? []
                 );
-            }
-        );
+            });
     }
 
     /**
@@ -64,10 +60,8 @@ class SlackService
      */
     public function listMessages(Account $account, string $channelId, int $limit = 50, ?string $cursor = null): array
     {
-        return Cache::remember(
-            CacheKey::hashed(['limit' => $limit, 'cursor' => $cursor], 'slack', $account->id, 'messages', $channelId),
-            now()->addMinutes(3),
-            function () use ($account, $channelId, $limit, $cursor) {
+        return CacheKey::hashed(['limit' => $limit, 'cursor' => $cursor], 'slack', $account->id, 'messages', $channelId)
+            ->remember(now()->addMinutes(3), function () use ($account, $channelId, $limit, $cursor) {
                 $params = [
                     'channel' => $channelId,
                     'limit' => $limit,
@@ -97,8 +91,7 @@ class SlackService
                     'messages' => $messages,
                     'next_cursor' => $response->json('response_metadata.next_cursor') ?: null,
                 ];
-            }
-        );
+            });
     }
 
     /**
@@ -106,10 +99,8 @@ class SlackService
      */
     public function listUsers(Account $account, ?string $cursor = null): array
     {
-        return Cache::remember(
-            CacheKey::hashed(['cursor' => $cursor], 'slack', $account->id, 'users'),
-            now()->addMinutes(30),
-            function () use ($account, $cursor) {
+        return CacheKey::hashed(['cursor' => $cursor], 'slack', $account->id, 'users')
+            ->remember(now()->addMinutes(30), function () use ($account, $cursor) {
                 $params = ['limit' => 200];
 
                 if ($cursor !== null) {
@@ -142,8 +133,7 @@ class SlackService
                     'users' => $users,
                     'next_cursor' => $response->json('response_metadata.next_cursor') ?: null,
                 ];
-            }
-        );
+            });
     }
 
     /**

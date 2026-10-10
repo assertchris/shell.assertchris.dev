@@ -6,9 +6,9 @@ use App\Exceptions\GitHub\GitHubRateLimitException;
 use App\Http\Resources\GitHub\GitHubPullResource;
 use App\Models\Account;
 use App\Services\GitHubService;
+use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class GetPullResponder
 {
@@ -17,9 +17,9 @@ class GetPullResponder
         $pullNumber = (int) $number;
 
         try {
-            $cacheKey = "github.pull.{$account->id}.{$owner}.{$repo}.{$pullNumber}";
+            $cacheKey = CacheKey::for('github', 'pull', $account->id, $owner, $repo, $pullNumber);
 
-            $data = Cache::remember($cacheKey, 60, fn () => (new GitHubService($account))->pull($owner, $repo, $pullNumber));
+            $data = $cacheKey->remember(60, fn () => (new GitHubService($account))->pull($owner, $repo, $pullNumber));
 
             if (empty($data)) {
                 abort(404);
@@ -28,7 +28,7 @@ class GetPullResponder
             $state = $data['state'] ?? 'open';
 
             if ($state !== 'open') {
-                Cache::put($cacheKey, $data, 300);
+                $cacheKey->put($data, 300);
             }
 
             return new GitHubPullResource($data);

@@ -19,7 +19,7 @@ test('route model binding serves account from cache after first request', functi
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ]);
 
-    expect(Cache::has(CacheKey::for('account', $account->id)))->toBeTrue();
+    expect(Cache::has((string) CacheKey::for('account', $account->id)))->toBeTrue();
 
     DB::enableQueryLog();
 
@@ -48,7 +48,7 @@ test('list accounts uses cache on second call', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])->assertSuccessful();
 
-    expect(Cache::has(CacheKey::for('accounts', 'user', $user->id)))->toBeTrue();
+    expect(Cache::has((string) CacheKey::for('accounts', 'user', $user->id)))->toBeTrue();
 
     DB::enableQueryLog();
 
@@ -72,15 +72,15 @@ test('AccountObserver busts account and accounts:user keys on save', function ()
     $account = Account::factory()->for($user)->create();
 
     // Warm both cache entries
-    Cache::put(CacheKey::for('account', $account->id), $account, now()->addDays(7));
-    Cache::put(CacheKey::for('accounts', 'user', $user->id), collect([$account]), now()->addDays(7));
+    Cache::put((string) CacheKey::for('account', $account->id), $account, now()->addDays(7));
+    Cache::put((string) CacheKey::for('accounts', 'user', $user->id), collect([$account]), now()->addDays(7));
 
-    expect(Cache::has(CacheKey::for('account', $account->id)))->toBeTrue();
-    expect(Cache::has(CacheKey::for('accounts', 'user', $user->id)))->toBeTrue();
+    expect(Cache::has((string) CacheKey::for('account', $account->id)))->toBeTrue();
+    expect(Cache::has((string) CacheKey::for('accounts', 'user', $user->id)))->toBeTrue();
 
     $account->name = 'Updated';
     $account->save();
 
-    expect(Cache::has(CacheKey::for('account', $account->id)))->toBeFalse();
-    expect(Cache::has(CacheKey::for('accounts', 'user', $user->id)))->toBeFalse();
+    expect(Cache::has((string) CacheKey::for('account', $account->id)))->toBeFalse();
+    expect(Cache::has((string) CacheKey::for('accounts', 'user', $user->id)))->toBeFalse();
 });

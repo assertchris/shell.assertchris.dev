@@ -10,7 +10,6 @@ use App\Services\JiraService;
 use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class TransitionIssueResponder
 {
@@ -30,8 +29,8 @@ class TransitionIssueResponder
             return response()->json(['error' => 'Jira access forbidden.'], 403);
         }
 
-        Cache::forget(CacheKey::for('jira', $account->id, 'issue', $key));
-        Cache::forget(CacheKey::for('jira', $account->id, 'issue', $key, 'transitions'));
+        CacheKey::for('jira', $account->id, 'issue', $key)->forget();
+        CacheKey::for('jira', $account->id, 'issue', $key, 'transitions')->forget();
 
         return response()->json([], 204);
     }

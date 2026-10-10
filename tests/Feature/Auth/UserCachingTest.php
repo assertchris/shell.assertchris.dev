@@ -14,7 +14,7 @@ test('findCached caches the user and second call skips DB', function () {
     // Warm the cache
     User::findCached($user->id);
 
-    expect(Cache::has(CacheKey::for('user', $user->id)))->toBeTrue();
+    expect(Cache::has((string) CacheKey::for('user', $user->id)))->toBeTrue();
 
     DB::enableQueryLog();
 
@@ -36,10 +36,10 @@ test('saved observer busts the user cache', function () {
     // Warm the cache
     User::findCached($user->id);
 
-    expect(Cache::has(CacheKey::for('user', $user->id)))->toBeTrue();
+    expect(Cache::has((string) CacheKey::for('user', $user->id)))->toBeTrue();
 
     $user->name = 'Updated Name';
     $user->save();
 
-    expect(Cache::has(CacheKey::for('user', $user->id)))->toBeFalse();
+    expect(Cache::has((string) CacheKey::for('user', $user->id)))->toBeFalse();
 });

@@ -10,7 +10,6 @@ use App\Services\JiraService;
 use App\Support\CacheKey;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class DeleteIssueResponder
 {
@@ -26,10 +25,10 @@ class DeleteIssueResponder
             return response()->json(['error' => 'Jira access forbidden.'], 403);
         }
 
-        Cache::forget(CacheKey::for('jira', $account->id, 'issue', $key));
-        Cache::forget(CacheKey::hashed([], 'jira', $account->id, 'user', 'assigned'));
-        Cache::forget(CacheKey::hashed([], 'jira', $account->id, 'user', 'reported'));
-        Cache::forget(CacheKey::hashed([], 'jira', $account->id, 'user', 'activity'));
+        CacheKey::for('jira', $account->id, 'issue', $key)->forget();
+        CacheKey::hashed([], 'jira', $account->id, 'user', 'assigned')->forget();
+        CacheKey::hashed([], 'jira', $account->id, 'user', 'reported')->forget();
+        CacheKey::hashed([], 'jira', $account->id, 'user', 'activity')->forget();
 
         return response()->json([], 204);
     }
