@@ -157,12 +157,13 @@ Once every call site has moved over:
 ### Completed
 - Codebase audit (all cache sites identified)
 - Package research (`assertchris/laravel-tagged-cache` v1.0)
+- Phase 1: Install Package and Confirm Cache Store
 
 ### In Progress
 - Nothing yet
 
 ### To Do
-- Phases 1–6
+- Phases 2–6
 
 ## Technical Notes
 
