@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Models\Account;
+use App\Support\CacheKey;
 use Google\Client;
 use Google\Service\Calendar;
 use Google\Service\Calendar\Event;
 use Google\Service\Calendar\EventDateTime;
+use Illuminate\Support\Facades\Cache;
 
 class CalendarService
 {
@@ -53,36 +55,42 @@ class CalendarService
      */
     public function listEntries(Account $account, int $maxResults = 50, ?string $pageToken = null): array
     {
-        $calendar = $this->connect($account);
+        return Cache::remember(
+            CacheKey::hashed(['maxResults' => $maxResults, 'pageToken' => $pageToken], 'calendar', $account->id, 'entries'),
+            now()->addMinutes(5),
+            function () use ($account, $maxResults, $pageToken) {
+                $calendar = $this->connect($account);
 
-        $params = [
-            'maxResults' => $maxResults,
-            'singleEvents' => true,
-            'orderBy' => 'startTime',
-            'timeMin' => now()->toRfc3339String(),
-        ];
+                $params = [
+                    'maxResults' => $maxResults,
+                    'singleEvents' => true,
+                    'orderBy' => 'startTime',
+                    'timeMin' => now()->toRfc3339String(),
+                ];
 
-        if ($pageToken !== null) {
-            $params['pageToken'] = $pageToken;
-        }
+                if ($pageToken !== null) {
+                    $params['pageToken'] = $pageToken;
+                }
 
-        $events = $calendar->events->listEvents('primary', $params);
+                $events = $calendar->events->listEvents('primary', $params);
 
-        $items = array_map(
-            fn ($event) => [
-                'id' => $event->getId(),
-                'title' => $event->getSummary(),
-                'start' => $event->getStart()?->getDateTime() ?? $event->getStart()?->getDate(),
-                'end' => $event->getEnd()?->getDateTime() ?? $event->getEnd()?->getDate(),
-                'location' => $event->getLocation(),
-            ],
-            $events->getItems() ?? []
+                $items = array_map(
+                    fn ($event) => [
+                        'id' => $event->getId(),
+                        'title' => $event->getSummary(),
+                        'start' => $event->getStart()?->getDateTime() ?? $event->getStart()?->getDate(),
+                        'end' => $event->getEnd()?->getDateTime() ?? $event->getEnd()?->getDate(),
+                        'location' => $event->getLocation(),
+                    ],
+                    $events->getItems() ?? []
+                );
+
+                return [
+                    'items' => $items,
+                    'nextPageToken' => $events->getNextPageToken(),
+                ];
+            }
         );
-
-        return [
-            'items' => $items,
-            'nextPageToken' => $events->getNextPageToken(),
-        ];
     }
 
     /**
@@ -142,28 +150,34 @@ class CalendarService
      */
     public function getEntry(Account $account, string $eventId): array
     {
-        $calendar = $this->connect($account);
+        return Cache::remember(
+            CacheKey::for('calendar', $account->id, 'event', $eventId),
+            now()->addMinutes(10),
+            function () use ($account, $eventId) {
+                $calendar = $this->connect($account);
 
-        $event = $calendar->events->get('primary', $eventId);
+                $event = $calendar->events->get('primary', $eventId);
 
-        $attendees = array_map(
-            fn ($attendee) => [
-                'email' => $attendee->getEmail(),
-                'name' => $attendee->getDisplayName(),
-                'responseStatus' => $attendee->getResponseStatus(),
-            ],
-            $event->getAttendees() ?? []
+                $attendees = array_map(
+                    fn ($attendee) => [
+                        'email' => $attendee->getEmail(),
+                        'name' => $attendee->getDisplayName(),
+                        'responseStatus' => $attendee->getResponseStatus(),
+                    ],
+                    $event->getAttendees() ?? []
+                );
+
+                return [
+                    'id' => $event->getId(),
+                    'title' => $event->getSummary(),
+                    'description' => $event->getDescription(),
+                    'start' => $event->getStart()?->getDateTime() ?? $event->getStart()?->getDate(),
+                    'end' => $event->getEnd()?->getDateTime() ?? $event->getEnd()?->getDate(),
+                    'location' => $event->getLocation(),
+                    'attendees' => $attendees,
+                    'html_link' => $event->getHtmlLink(),
+                ];
+            }
         );
-
-        return [
-            'id' => $event->getId(),
-            'title' => $event->getSummary(),
-            'description' => $event->getDescription(),
-            'start' => $event->getStart()?->getDateTime() ?? $event->getStart()?->getDate(),
-            'end' => $event->getEnd()?->getDateTime() ?? $event->getEnd()?->getDate(),
-            'location' => $event->getLocation(),
-            'attendees' => $attendees,
-            'html_link' => $event->getHtmlLink(),
-        ];
     }
 }
