@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Support\CacheKey;
+use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 class Account extends Model
 {
-    /** @use HasFactory<\Database\Factories\AccountFactory> */
+    /** @use HasFactory<AccountFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -69,6 +72,15 @@ class Account extends Model
             'jira_api_token' => 'encrypted',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function resolveRouteBinding($value, $field = null): ?static
+    {
+        return Cache::remember(
+            CacheKey::for('account', $value),
+            now()->addDays(7),
+            fn () => static::find($value),
+        );
     }
 
     public function user(): BelongsTo
