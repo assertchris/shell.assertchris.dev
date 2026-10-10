@@ -162,12 +162,13 @@ Once every call site has moved over:
 - Phase 3: Migrate Services
 - Phase 4: Simplify Responders and Observers
 - Phase 5: Delete CacheKey and CacheOperation
+- Phase 6: Final Cleanup and Test Pass
 
 ### In Progress
 - Nothing yet
 
 ### To Do
-- Phase 6
+- Nothing
 
 ## Technical Notes
 
