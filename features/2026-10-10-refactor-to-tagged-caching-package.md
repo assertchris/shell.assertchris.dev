@@ -161,12 +161,13 @@ Once every call site has moved over:
 - Phase 2: Define Tag Strategy and Migrate Models
 - Phase 3: Migrate Services
 - Phase 4: Simplify Responders and Observers
+- Phase 5: Delete CacheKey and CacheOperation
 
 ### In Progress
 - Nothing yet
 
 ### To Do
-- Phases 5–6
+- Phase 6
 
 ## Technical Notes
 

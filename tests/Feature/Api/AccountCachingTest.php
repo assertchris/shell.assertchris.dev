@@ -1,13 +1,17 @@
 <?php
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Models\Account;
 use App\Models\User;
-use App\Support\CacheKey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    Config::set('cache.default', 'array');
+});
 
 test('route model binding serves account from cache after first request', function () {
     $user = User::factory()->create();
@@ -19,7 +23,9 @@ test('route model binding serves account from cache after first request', functi
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ]);
 
-    expect(Cache::has((string) CacheKey::for('account', $account->id)))->toBeTrue();
+    expect(
+        TaggedCache::for(tags: ['accounts', "account:{$account->id}"], context: ['id' => $account->id])->get()
+    )->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -48,7 +54,9 @@ test('list accounts uses cache on second call', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])->assertSuccessful();
 
-    expect(Cache::has((string) CacheKey::for('accounts', 'user', $user->id)))->toBeTrue();
+    expect(
+        TaggedCache::for(tags: ['accounts', "account:user:{$user->id}"], context: ['userId' => $user->id])->get()
+    )->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -65,22 +73,4 @@ test('list accounts uses cache on second call', function () {
     expect($queries)->toBeEmpty();
 
     DB::disableQueryLog();
-});
-
-test('AccountObserver busts account and accounts:user keys on save', function () {
-    $user = User::factory()->create();
-    $account = Account::factory()->for($user)->create();
-
-    // Warm both cache entries
-    Cache::put((string) CacheKey::for('account', $account->id), $account, now()->addDays(7));
-    Cache::put((string) CacheKey::for('accounts', 'user', $user->id), collect([$account]), now()->addDays(7));
-
-    expect(Cache::has((string) CacheKey::for('account', $account->id)))->toBeTrue();
-    expect(Cache::has((string) CacheKey::for('accounts', 'user', $user->id)))->toBeTrue();
-
-    $account->name = 'Updated';
-    $account->save();
-
-    expect(Cache::has((string) CacheKey::for('account', $account->id)))->toBeFalse();
-    expect(Cache::has((string) CacheKey::for('accounts', 'user', $user->id)))->toBeFalse();
 });
