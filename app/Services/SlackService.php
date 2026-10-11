@@ -21,7 +21,7 @@ class SlackService
         return TaggedCache::for(
             tags: ['slack', "slack:{$account->id}"],
             context: ['type' => 'channels', 'cursor' => $cursor],
-        )->remember(now()->addMinutes(15), function () use ($account, $cursor) {
+        )->remember(config('cache.ttl.slack.channels'), function () use ($account, $cursor) {
             $params = [
                 'limit' => 200,
                 'exclude_archived' => true,
@@ -65,7 +65,7 @@ class SlackService
         return TaggedCache::for(
             tags: ['slack', "slack:{$account->id}", "slack:{$account->id}:channel:{$channelId}"],
             context: ['type' => 'messages', 'channelId' => $channelId, 'limit' => $limit, 'cursor' => $cursor],
-        )->remember(now()->addMinutes(3), function () use ($account, $channelId, $limit, $cursor) {
+        )->remember(config('cache.ttl.slack.messages'), function () use ($account, $channelId, $limit, $cursor) {
             $params = [
                 'channel' => $channelId,
                 'limit' => $limit,
@@ -106,7 +106,7 @@ class SlackService
         return TaggedCache::for(
             tags: ['slack', "slack:{$account->id}"],
             context: ['type' => 'users', 'cursor' => $cursor],
-        )->remember(now()->addMinutes(30), function () use ($account, $cursor) {
+        )->remember(config('cache.ttl.slack.users'), function () use ($account, $cursor) {
             $params = ['limit' => 200];
 
             if ($cursor !== null) {

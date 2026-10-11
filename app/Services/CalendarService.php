@@ -57,7 +57,7 @@ class CalendarService
         return TaggedCache::for(
             tags: ['calendar', "calendar:{$account->id}"],
             context: ['type' => 'entries', 'maxResults' => $maxResults, 'pageToken' => $pageToken],
-        )->remember(now()->addMinutes(5), function () use ($account, $maxResults, $pageToken) {
+        )->remember(config('cache.ttl.calendar.events'), function () use ($account, $maxResults, $pageToken) {
             $calendar = $this->connect($account);
 
             $params = [
@@ -151,7 +151,7 @@ class CalendarService
         return TaggedCache::for(
             tags: ['calendar', "calendar:{$account->id}"],
             context: ['type' => 'event', 'eventId' => $eventId],
-        )->remember(now()->addMinutes(10), function () use ($account, $eventId) {
+        )->remember(config('cache.ttl.calendar.event'), function () use ($account, $eventId) {
             $calendar = $this->connect($account);
 
             $event = $calendar->events->get('primary', $eventId);

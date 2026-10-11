@@ -76,7 +76,7 @@ class Account extends Model
     public function resolveRouteBinding($value, $field = null): ?static
     {
         return TaggedCache::for(tags: ['accounts'], context: ['id' => (int) $value])
-            ->remember(now()->addDays(7), fn () => static::find($value));
+            ->remember(config('cache.ttl.models'), fn () => static::find($value));
     }
 
     public function user(): BelongsTo

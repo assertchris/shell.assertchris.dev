@@ -26,7 +26,7 @@ class User extends Authenticatable implements FilamentUser
     public static function findCached(int $id): ?static
     {
         return TaggedCache::for(tags: ['users'], context: ['id' => $id])
-            ->remember(now()->addDays(7), fn () => static::find($id));
+            ->remember(config('cache.ttl.models'), fn () => static::find($id));
     }
 
     /** @return HasMany<Account, $this> */

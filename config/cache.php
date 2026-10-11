@@ -114,4 +114,43 @@ return [
 
     'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Cache TTLs (seconds)
+    |--------------------------------------------------------------------------
+    |
+    | Centralised TTL values used across models, services, and responders.
+    | All values are in seconds.
+    |
+    */
+
+    'ttl' => [
+
+        'models' => 604800, // 7 days — accounts, users, tokens
+
+        'github' => [
+            'default' => 300,   // 5 minutes
+            'pr_open' => 60,    // 1 minute — open PRs/lists expire faster
+        ],
+
+        'jira' => [
+            'issue' => 300,  // 5 minutes  — issues, search results, sprint issues
+            'sprint' => 600,  // 10 minutes — sprint metadata
+            'metadata' => 900,  // 15 minutes — projects, boards, users, filters, dashboards
+            'myself' => 1800, // 30 minutes — authenticated user profile
+        ],
+
+        'slack' => [
+            'messages' => 180,  // 3 minutes
+            'channels' => 900,  // 15 minutes
+            'users' => 1800, // 30 minutes
+        ],
+
+        'calendar' => [
+            'events' => 300,    // 5 minutes  — event list
+            'event' => 600,    // 10 minutes — single event
+        ],
+
+    ],
+
 ];

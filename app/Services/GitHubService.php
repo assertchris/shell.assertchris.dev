@@ -20,7 +20,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: array_merge($params, ['type' => 'repos']),
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get('/user/repos', $params));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get('/user/repos', $params));
     }
 
     public function repo(string $owner, string $repo): array
@@ -28,15 +28,15 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: ['type' => 'repo', 'owner' => $owner, 'repo' => $repo],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}"));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get("/repos/{$owner}/{$repo}"));
     }
 
     /** @param array<string, mixed> $params */
     public function pulls(string $owner, string $repo, array $params = []): array
     {
         $ttl = ($params['state'] ?? 'open') === 'open'
-            ? now()->addSeconds(60)
-            : now()->addMinutes(5);
+            ? config('cache.ttl.github.pr_open')
+            : config('cache.ttl.github.default');
 
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
@@ -57,7 +57,7 @@ class GitHubService
         }
 
         $pull = $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}");
-        $ttl = ($pull['state'] ?? '') === 'open' ? now()->addSeconds(60) : now()->addMinutes(5);
+        $ttl = ($pull['state'] ?? '') === 'open' ? config('cache.ttl.github.pr_open') : config('cache.ttl.github.default');
         $cache->put($pull, $ttl);
 
         return $pull;
@@ -68,7 +68,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}", "github:{$this->account->id}:pr:{$owner}:{$repo}:{$number}"],
             context: ['type' => 'pull-files', 'owner' => $owner, 'repo' => $repo, 'number' => $number],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}/files"));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}/files"));
     }
 
     public function pullCommits(string $owner, string $repo, int $number): array
@@ -76,7 +76,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}", "github:{$this->account->id}:pr:{$owner}:{$repo}:{$number}"],
             context: ['type' => 'pull-commits', 'owner' => $owner, 'repo' => $repo, 'number' => $number],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}/commits"));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}/commits"));
     }
 
     public function pullReviews(string $owner, string $repo, int $number): array
@@ -84,7 +84,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}", "github:{$this->account->id}:pr:{$owner}:{$repo}:{$number}"],
             context: ['type' => 'pull-reviews', 'owner' => $owner, 'repo' => $repo, 'number' => $number],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}/reviews"));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}/reviews"));
     }
 
     public function pullReviewComments(string $owner, string $repo, int $number, int $reviewId): array
@@ -92,7 +92,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}", "github:{$this->account->id}:pr:{$owner}:{$repo}:{$number}"],
             context: ['type' => 'pull-review-comments', 'owner' => $owner, 'repo' => $repo, 'number' => $number, 'reviewId' => $reviewId],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}/reviews/{$reviewId}/comments"));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}/reviews/{$reviewId}/comments"));
     }
 
     public function pullRequestedReviewers(string $owner, string $repo, int $number): array
@@ -100,7 +100,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}", "github:{$this->account->id}:pr:{$owner}:{$repo}:{$number}"],
             context: ['type' => 'pull-reviewers', 'owner' => $owner, 'repo' => $repo, 'number' => $number],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}/requested_reviewers"));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get("/repos/{$owner}/{$repo}/pulls/{$number}/requested_reviewers"));
     }
 
     /** @param array<string, mixed> $params */
@@ -109,7 +109,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: array_merge($params, ['type' => 'search-pulls', 'q' => $q]),
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get('/search/issues', array_merge($params, ['q' => "{$q} is:pr"])));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get('/search/issues', array_merge($params, ['q' => "{$q} is:pr"])));
     }
 
     /** @param array<string, mixed> $params */
@@ -118,7 +118,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: array_merge($params, ['type' => 'search-issues', 'q' => $q]),
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get('/search/issues', array_merge($params, ['q' => "{$q} is:issue"])));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get('/search/issues', array_merge($params, ['q' => "{$q} is:issue"])));
     }
 
     /** @param array<string, mixed> $params */
@@ -127,7 +127,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: array_merge($params, ['type' => 'issues']),
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get('/issues', $params));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get('/issues', $params));
     }
 
     /** @param array<string, mixed> $params */
@@ -136,7 +136,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: array_merge($params, ['type' => 'user-issues']),
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get('/user/issues', $params));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get('/user/issues', $params));
     }
 
     /** @param array<string, mixed> $params */
@@ -145,7 +145,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: array_merge($params, ['type' => 'repo-issues', 'owner' => $owner, 'repo' => $repo]),
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/issues", $params));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get("/repos/{$owner}/{$repo}/issues", $params));
     }
 
     public function issue(string $owner, string $repo, int $number): array
@@ -153,7 +153,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: ['type' => 'issue', 'owner' => $owner, 'repo' => $repo, 'number' => $number],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/issues/{$number}"));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get("/repos/{$owner}/{$repo}/issues/{$number}"));
     }
 
     public function issueComments(string $owner, string $repo, int $number): array
@@ -161,7 +161,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: ['type' => 'issue-comments', 'owner' => $owner, 'repo' => $repo, 'number' => $number],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/repos/{$owner}/{$repo}/issues/{$number}/comments"));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get("/repos/{$owner}/{$repo}/issues/{$number}/comments"));
     }
 
     /** @param array<string, mixed> $params */
@@ -170,7 +170,7 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: array_merge($params, ['type' => 'notifications']),
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get('/notifications', $params));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get('/notifications', $params));
     }
 
     public function notification(string $threadId): array
@@ -178,6 +178,6 @@ class GitHubService
         return TaggedCache::for(
             tags: ['github', "github:{$this->account->id}"],
             context: ['type' => 'notification', 'threadId' => $threadId],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/notifications/threads/{$threadId}"));
+        )->remember(config('cache.ttl.github.default'), fn () => $this->client()->get("/notifications/threads/{$threadId}"));
     }
 }

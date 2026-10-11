@@ -23,7 +23,7 @@ class PersonalAccessTokenObserver
 
             if ($cached !== null) {
                 $cached->last_used_at = $token->last_used_at;
-                $cache->put($cached, now()->addDays(7));
+                $cache->put($cached, config('cache.ttl.models'));
             }
 
             return false;

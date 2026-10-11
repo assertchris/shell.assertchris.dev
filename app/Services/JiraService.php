@@ -27,7 +27,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: array_merge($params, ['type' => 'projects']),
-        )->remember(now()->addMinutes(15), fn () => $this->client()->get('/project/search', $params));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->get('/project/search', $params));
     }
 
     public function project(string $key): array
@@ -35,7 +35,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: ['type' => 'project', 'key' => $key],
-        )->remember(now()->addMinutes(15), fn () => $this->client()->get("/project/{$key}"));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->get("/project/{$key}"));
     }
 
     public function projectComponents(string $key): array
@@ -43,7 +43,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: ['type' => 'project-components', 'key' => $key],
-        )->remember(now()->addMinutes(15), fn () => $this->client()->get("/project/{$key}/components"));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->get("/project/{$key}/components"));
     }
 
     public function projectVersions(string $key): array
@@ -51,7 +51,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: ['type' => 'project-versions', 'key' => $key],
-        )->remember(now()->addMinutes(15), fn () => $this->client()->get("/project/{$key}/versions"));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->get("/project/{$key}/versions"));
     }
 
     /** @param array<string, mixed> $params */
@@ -60,7 +60,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: array_merge($params, ['type' => 'search', 'jql' => $jql]),
-        )->remember(now()->addMinutes(5), fn () => $this->client()->post('/search/jql', array_merge(['jql' => $jql, 'fields' => self::DEFAULT_FIELDS], $params)));
+        )->remember(config('cache.ttl.jira.issue'), fn () => $this->client()->post('/search/jql', array_merge(['jql' => $jql, 'fields' => self::DEFAULT_FIELDS], $params)));
     }
 
     /** @param array<string, mixed> $params */
@@ -69,7 +69,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
             context: ['type' => 'issue', 'key' => $key],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}", array_merge(['fields' => implode(',', self::DEFAULT_FIELDS)], $params)));
+        )->remember(config('cache.ttl.jira.issue'), fn () => $this->client()->get("/issue/{$key}", array_merge(['fields' => implode(',', self::DEFAULT_FIELDS)], $params)));
     }
 
     /** @param array<string, mixed> $params */
@@ -78,7 +78,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
             context: ['type' => 'comments', 'key' => $key],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/comment", $params));
+        )->remember(config('cache.ttl.jira.issue'), fn () => $this->client()->get("/issue/{$key}/comment", $params));
     }
 
     public function issueWorklogs(string $key): array
@@ -86,7 +86,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
             context: ['type' => 'worklogs', 'key' => $key],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/worklog"));
+        )->remember(config('cache.ttl.jira.issue'), fn () => $this->client()->get("/issue/{$key}/worklog"));
     }
 
     /** @param array<string, mixed> $params */
@@ -95,7 +95,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
             context: ['type' => 'changelog', 'key' => $key],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/changelog", $params));
+        )->remember(config('cache.ttl.jira.issue'), fn () => $this->client()->get("/issue/{$key}/changelog", $params));
     }
 
     public function issueTransitions(string $key): array
@@ -103,7 +103,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
             context: ['type' => 'transitions', 'key' => $key],
-        )->remember(now()->addMinutes(5), fn () => $this->client()->get("/issue/{$key}/transitions"));
+        )->remember(config('cache.ttl.jira.issue'), fn () => $this->client()->get("/issue/{$key}/transitions"));
     }
 
     public function issueAttachments(string $key): array
@@ -111,7 +111,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:issue:{$key}"],
             context: ['type' => 'attachments', 'key' => $key],
-        )->remember(now()->addMinutes(5), function () use ($key) {
+        )->remember(config('cache.ttl.jira.issue'), function () use ($key) {
             $result = $this->client()->get("/issue/{$key}", ['fields' => 'attachment']);
 
             return $result['fields']['attachment'] ?? [];
@@ -154,7 +154,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: array_merge($params, ['type' => 'boards']),
-        )->remember(now()->addMinutes(15), fn () => $this->client()->agileGet('/board', $params));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->agileGet('/board', $params));
     }
 
     public function board(int $boardId): array
@@ -162,7 +162,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: ['type' => 'board', 'boardId' => $boardId],
-        )->remember(now()->addMinutes(15), fn () => $this->client()->agileGet("/board/{$boardId}"));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->agileGet("/board/{$boardId}"));
     }
 
     /** @param array<string, mixed> $params */
@@ -171,7 +171,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: array_merge($params, ['type' => 'board-sprints', 'boardId' => $boardId]),
-        )->remember(now()->addMinutes(15), fn () => $this->client()->agileGet("/board/{$boardId}/sprint", $params));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->agileGet("/board/{$boardId}/sprint", $params));
     }
 
     public function sprint(int $sprintId): array
@@ -179,7 +179,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:sprint:{$sprintId}"],
             context: ['type' => 'sprint', 'sprintId' => $sprintId],
-        )->remember(now()->addMinutes(10), fn () => $this->client()->agileGet("/sprint/{$sprintId}"));
+        )->remember(config('cache.ttl.jira.sprint'), fn () => $this->client()->agileGet("/sprint/{$sprintId}"));
     }
 
     /** @param array<string, mixed> $params */
@@ -188,7 +188,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}", "jira:{$this->account->id}:sprint:{$sprintId}", "jira:{$this->account->id}:sprint:{$sprintId}:issues"],
             context: array_merge($params, ['type' => 'sprint-issues', 'sprintId' => $sprintId]),
-        )->remember(now()->addMinutes(5), fn () => $this->client()->agileGet("/sprint/{$sprintId}/issue", $params));
+        )->remember(config('cache.ttl.jira.issue'), fn () => $this->client()->agileGet("/sprint/{$sprintId}/issue", $params));
     }
 
     /** @param string[] $issueKeys */
@@ -202,7 +202,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: ['type' => 'myself'],
-        )->remember(now()->addMinutes(30), fn () => $this->client()->get('/myself'));
+        )->remember(config('cache.ttl.jira.myself'), fn () => $this->client()->get('/myself'));
     }
 
     public function user(string $accountId): array
@@ -210,7 +210,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: ['type' => 'user-profile', 'userId' => $accountId],
-        )->remember(now()->addMinutes(15), fn () => $this->client()->get('/user', ['accountId' => $accountId]));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->get('/user', ['accountId' => $accountId]));
     }
 
     public function assignableUsers(string $projectKey): array
@@ -218,7 +218,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: ['type' => 'assignable', 'projectKey' => $projectKey],
-        )->remember(now()->addMinutes(15), fn () => $this->client()->get('/user/assignable/search', ['project' => $projectKey]));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->get('/user/assignable/search', ['project' => $projectKey]));
     }
 
     public function filters(): array
@@ -226,7 +226,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: ['type' => 'filters'],
-        )->remember(now()->addMinutes(15), fn () => $this->client()->get('/filter/favourite'));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->get('/filter/favourite'));
     }
 
     public function filter(int $id): array
@@ -234,7 +234,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: ['type' => 'filter', 'id' => $id],
-        )->remember(now()->addMinutes(15), fn () => $this->client()->get("/filter/{$id}"));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->get("/filter/{$id}"));
     }
 
     public function dashboards(): array
@@ -242,7 +242,7 @@ class JiraService
         return TaggedCache::for(
             tags: ['jira', "jira:{$this->account->id}"],
             context: ['type' => 'dashboards'],
-        )->remember(now()->addMinutes(15), fn () => $this->client()->get('/dashboard'));
+        )->remember(config('cache.ttl.jira.metadata'), fn () => $this->client()->get('/dashboard'));
     }
 
     /** @param array<string, mixed> $fields */

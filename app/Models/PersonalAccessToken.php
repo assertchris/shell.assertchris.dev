@@ -34,7 +34,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
         $hash = hash('sha256', $rawToken);
 
         $cachedToken = TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])
-            ->remember(now()->addDays(7), fn () => parent::findToken($token));
+            ->remember(config('cache.ttl.models'), fn () => parent::findToken($token));
 
         if ($cachedToken) {
             $cachedToken->setRelation('tokenable', User::findCached($cachedToken->tokenable_id));

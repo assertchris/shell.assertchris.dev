@@ -16,7 +16,7 @@ class ListAccountsResponder
         $accounts = TaggedCache::for(
             tags: ['accounts', "account:user:{$userId}"],
             context: ['userId' => $userId],
-        )->remember(now()->addDays(7), fn () => $request->user()->accounts()->where('is_active', true)->get());
+        )->remember(config('cache.ttl.models'), fn () => $request->user()->accounts()->where('is_active', true)->get());
 
         return AccountResource::collection($accounts);
     }
