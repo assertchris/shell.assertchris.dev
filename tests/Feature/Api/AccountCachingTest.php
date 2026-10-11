@@ -1,13 +1,17 @@
 <?php
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Models\Account;
 use App\Models\User;
-use App\Support\CacheKey;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    Config::set('cache.default', 'array');
+});
 
 test('route model binding serves account from cache after first request', function () {
     $user = User::factory()->create();
@@ -19,7 +23,9 @@ test('route model binding serves account from cache after first request', functi
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ]);
 
-    expect(Cache::has((string) CacheKey::for('account', $account->id)))->toBeTrue();
+    expect(
+        TaggedCache::for(tags: ['accounts'], context: ['id' => $account->id])->get()
+    )->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -38,6 +44,33 @@ test('route model binding serves account from cache after first request', functi
     DB::disableQueryLog();
 });
 
+test('AccountObserver invalidates list accounts cache when account is saved', function () {
+    $user = User::factory()->create();
+    $account = Account::factory()->for($user)->create(['name' => 'Original Name']);
+    $token = $user->createToken('test');
+    $headers = ['Authorization' => 'Bearer '.$token->plainTextToken];
+
+    // Warm the cache via HTTP GET
+    $this->getJson('/api/accounts', $headers)->assertSuccessful();
+
+    expect(
+        TaggedCache::for(tags: ['accounts', "account:user:{$user->id}"], context: ['userId' => $user->id])->get()
+    )->not->toBeNull();
+
+    // Update the account (triggers AccountObserver::saved() which flushes tags)
+    $account->update(['name' => 'Updated Name']);
+
+    // Cache should now be invalidated
+    expect(
+        TaggedCache::for(tags: ['accounts', "account:user:{$user->id}"], context: ['userId' => $user->id])->get()
+    )->toBeNull();
+
+    // Second HTTP GET should return updated data (cache miss, re-queries DB)
+    $this->getJson('/api/accounts', $headers)
+        ->assertSuccessful()
+        ->assertJsonFragment(['name' => 'Updated Name']);
+});
+
 test('list accounts uses cache on second call', function () {
     $user = User::factory()->create();
     Account::factory()->for($user)->create(['name' => 'Active Account']);
@@ -48,7 +81,9 @@ test('list accounts uses cache on second call', function () {
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])->assertSuccessful();
 
-    expect(Cache::has((string) CacheKey::for('accounts', 'user', $user->id)))->toBeTrue();
+    expect(
+        TaggedCache::for(tags: ['accounts', "account:user:{$user->id}"], context: ['userId' => $user->id])->get()
+    )->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -65,22 +100,4 @@ test('list accounts uses cache on second call', function () {
     expect($queries)->toBeEmpty();
 
     DB::disableQueryLog();
-});
-
-test('AccountObserver busts account and accounts:user keys on save', function () {
-    $user = User::factory()->create();
-    $account = Account::factory()->for($user)->create();
-
-    // Warm both cache entries
-    Cache::put((string) CacheKey::for('account', $account->id), $account, now()->addDays(7));
-    Cache::put((string) CacheKey::for('accounts', 'user', $user->id), collect([$account]), now()->addDays(7));
-
-    expect(Cache::has((string) CacheKey::for('account', $account->id)))->toBeTrue();
-    expect(Cache::has((string) CacheKey::for('accounts', 'user', $user->id)))->toBeTrue();
-
-    $account->name = 'Updated';
-    $account->save();
-
-    expect(Cache::has((string) CacheKey::for('account', $account->id)))->toBeFalse();
-    expect(Cache::has((string) CacheKey::for('accounts', 'user', $user->id)))->toBeFalse();
 });

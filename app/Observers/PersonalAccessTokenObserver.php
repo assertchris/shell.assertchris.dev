@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Models\PersonalAccessToken;
-use App\Support\CacheKey;
 
 class PersonalAccessTokenObserver
 {
@@ -18,11 +18,12 @@ class PersonalAccessTokenObserver
 
         if (! $hasSecurityChange && in_array('last_used_at', $dirty, true)) {
             $hash = $token->token;
-            $cached = CacheKey::for('token', $hash)->get();
+            $cache = TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash]);
+            $cached = $cache->get();
 
-            if ($cached) {
+            if ($cached !== null) {
                 $cached->last_used_at = $token->last_used_at;
-                CacheKey::for('token', $hash)->put($cached, now()->addDays(7));
+                $cache->put($cached, config('cache.ttl.models'));
             }
 
             return false;
@@ -33,11 +34,11 @@ class PersonalAccessTokenObserver
 
     public function saved(PersonalAccessToken $token): void
     {
-        CacheKey::for('token', $token->token)->forget();
+        TaggedCache::for(tags: ['tokens'], context: ['hash' => $token->token])->forget();
     }
 
     public function deleted(PersonalAccessToken $token): void
     {
-        CacheKey::for('token', $token->token)->forget();
+        TaggedCache::for(tags: ['tokens'], context: ['hash' => $token->token])->forget();
     }
 }

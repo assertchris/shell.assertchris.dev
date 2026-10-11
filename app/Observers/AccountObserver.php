@@ -2,26 +2,26 @@
 
 namespace App\Observers;
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Models\Account;
-use App\Support\CacheKey;
 
 class AccountObserver
 {
     public function saved(Account $account): void
     {
-        CacheKey::for('account', $account->id)->forget();
-        CacheKey::for('accounts', 'user', $account->user_id)->forget();
+        TaggedCache::for(tags: ['accounts'], context: ['id' => $account->id])->forget();
+        TaggedCache::for(tags: ["account:user:{$account->user_id}"])->flush();
 
         $originalUserId = $account->getOriginal('user_id');
 
         if ($originalUserId && $originalUserId !== $account->user_id) {
-            CacheKey::for('accounts', 'user', $originalUserId)->forget();
+            TaggedCache::for(tags: ["account:user:{$originalUserId}"])->flush();
         }
     }
 
     public function deleted(Account $account): void
     {
-        CacheKey::for('account', $account->id)->forget();
-        CacheKey::for('accounts', 'user', $account->user_id)->forget();
+        TaggedCache::for(tags: ['accounts'], context: ['id' => $account->id])->forget();
+        TaggedCache::for(tags: ["account:user:{$account->user_id}"])->flush();
     }
 }

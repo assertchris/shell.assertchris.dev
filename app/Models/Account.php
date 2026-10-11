@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Support\CacheKey;
+use AC\LaravelTaggedCache\TaggedCache;
 use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -75,8 +75,8 @@ class Account extends Model
 
     public function resolveRouteBinding($value, $field = null): ?static
     {
-        return CacheKey::for('account', $value)
-            ->remember(now()->addDays(7), fn () => static::find($value));
+        return TaggedCache::for(tags: ['accounts'], context: ['id' => (int) $value])
+            ->remember(config('cache.ttl.models'), fn () => static::find($value));
     }
 
     public function user(): BelongsTo

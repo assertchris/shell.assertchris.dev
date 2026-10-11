@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use AC\LaravelTaggedCache\TaggedCache;
 use App\Models\Account;
-use App\Support\CacheKey;
 use Illuminate\Support\Facades\Http;
 
 class SlackService
@@ -18,41 +18,43 @@ class SlackService
      */
     public function listChannels(Account $account, ?string $cursor = null): array
     {
-        return CacheKey::hashed(['cursor' => $cursor], 'slack', $account->id, 'channels')
-            ->remember(now()->addMinutes(15), function () use ($account, $cursor) {
-                $params = [
-                    'limit' => 200,
-                    'exclude_archived' => true,
-                    'types' => 'public_channel,private_channel,im,mpim',
-                ];
+        return TaggedCache::for(
+            tags: ['slack', "slack:{$account->id}"],
+            context: ['type' => 'channels', 'cursor' => $cursor],
+        )->remember(config('cache.ttl.slack.channels'), function () use ($account, $cursor) {
+            $params = [
+                'limit' => 200,
+                'exclude_archived' => true,
+                'types' => 'public_channel,private_channel,im,mpim',
+            ];
 
-                if ($cursor !== null) {
-                    $params['cursor'] = $cursor;
-                }
+            if ($cursor !== null) {
+                $params['cursor'] = $cursor;
+            }
 
-                $response = Http::withToken($account->slack_access_token)
-                    ->get('https://slack.com/api/conversations.list', $params);
+            $response = Http::withToken($account->slack_access_token)
+                ->get('https://slack.com/api/conversations.list', $params);
 
-                if (! $response->json('ok')) {
-                    throw new \RuntimeException($response->json('error'));
-                }
+            if (! $response->json('ok')) {
+                throw new \RuntimeException($response->json('error'));
+            }
 
-                return array_map(
-                    function (array $channel) {
-                        $name = isset($channel['user'])
-                            ? 'dm:'.$channel['user']
-                            : ($channel['name'] ?? '');
+            return array_map(
+                function (array $channel) {
+                    $name = isset($channel['user'])
+                        ? 'dm:'.$channel['user']
+                        : ($channel['name'] ?? '');
 
-                        return [
-                            'id' => $channel['id'],
-                            'name' => $name,
-                            'is_private' => $channel['is_private'],
-                            'num_members' => $channel['num_members'] ?? 0,
-                        ];
-                    },
-                    $response->json('channels') ?? []
-                );
-            });
+                    return [
+                        'id' => $channel['id'],
+                        'name' => $name,
+                        'is_private' => $channel['is_private'],
+                        'num_members' => $channel['num_members'] ?? 0,
+                    ];
+                },
+                $response->json('channels') ?? []
+            );
+        });
     }
 
     /**
@@ -60,38 +62,40 @@ class SlackService
      */
     public function listMessages(Account $account, string $channelId, int $limit = 50, ?string $cursor = null): array
     {
-        return CacheKey::hashed(['limit' => $limit, 'cursor' => $cursor], 'slack', $account->id, 'messages', $channelId)
-            ->remember(now()->addMinutes(3), function () use ($account, $channelId, $limit, $cursor) {
-                $params = [
-                    'channel' => $channelId,
-                    'limit' => $limit,
-                ];
+        return TaggedCache::for(
+            tags: ['slack', "slack:{$account->id}", "slack:{$account->id}:channel:{$channelId}"],
+            context: ['type' => 'messages', 'channelId' => $channelId, 'limit' => $limit, 'cursor' => $cursor],
+        )->remember(config('cache.ttl.slack.messages'), function () use ($account, $channelId, $limit, $cursor) {
+            $params = [
+                'channel' => $channelId,
+                'limit' => $limit,
+            ];
 
-                if ($cursor !== null) {
-                    $params['cursor'] = $cursor;
-                }
+            if ($cursor !== null) {
+                $params['cursor'] = $cursor;
+            }
 
-                $response = Http::withToken($account->slack_access_token)
-                    ->get('https://slack.com/api/conversations.history', $params);
+            $response = Http::withToken($account->slack_access_token)
+                ->get('https://slack.com/api/conversations.history', $params);
 
-                if (! $response->json('ok')) {
-                    throw new \RuntimeException($response->json('error'));
-                }
+            if (! $response->json('ok')) {
+                throw new \RuntimeException($response->json('error'));
+            }
 
-                $messages = array_map(
-                    fn (array $message) => [
-                        'ts' => $message['ts'],
-                        'user' => $message['user'] ?? '',
-                        'text' => $message['text'] ?? '',
-                    ],
-                    $response->json('messages') ?? []
-                );
+            $messages = array_map(
+                fn (array $message) => [
+                    'ts' => $message['ts'],
+                    'user' => $message['user'] ?? '',
+                    'text' => $message['text'] ?? '',
+                ],
+                $response->json('messages') ?? []
+            );
 
-                return [
-                    'messages' => $messages,
-                    'next_cursor' => $response->json('response_metadata.next_cursor') ?: null,
-                ];
-            });
+            return [
+                'messages' => $messages,
+                'next_cursor' => $response->json('response_metadata.next_cursor') ?: null,
+            ];
+        });
     }
 
     /**
@@ -99,41 +103,43 @@ class SlackService
      */
     public function listUsers(Account $account, ?string $cursor = null): array
     {
-        return CacheKey::hashed(['cursor' => $cursor], 'slack', $account->id, 'users')
-            ->remember(now()->addMinutes(30), function () use ($account, $cursor) {
-                $params = ['limit' => 200];
+        return TaggedCache::for(
+            tags: ['slack', "slack:{$account->id}"],
+            context: ['type' => 'users', 'cursor' => $cursor],
+        )->remember(config('cache.ttl.slack.users'), function () use ($account, $cursor) {
+            $params = ['limit' => 200];
 
-                if ($cursor !== null) {
-                    $params['cursor'] = $cursor;
-                }
+            if ($cursor !== null) {
+                $params['cursor'] = $cursor;
+            }
 
-                $response = Http::withToken($account->slack_access_token)
-                    ->get('https://slack.com/api/users.list', $params);
+            $response = Http::withToken($account->slack_access_token)
+                ->get('https://slack.com/api/users.list', $params);
 
-                if (! $response->json('ok')) {
-                    throw new \RuntimeException($response->json('error'));
-                }
+            if (! $response->json('ok')) {
+                throw new \RuntimeException($response->json('error'));
+            }
 
-                $members = array_filter(
-                    $response->json('members') ?? [],
-                    fn (array $member) => ! ($member['deleted'] ?? false)
-                );
+            $members = array_filter(
+                $response->json('members') ?? [],
+                fn (array $member) => ! ($member['deleted'] ?? false)
+            );
 
-                $users = array_map(
-                    fn (array $member) => [
-                        'id' => $member['id'],
-                        'name' => $member['name'],
-                        'real_name' => $member['real_name'] ?? '',
-                        'is_bot' => $member['is_bot'] ?? false,
-                    ],
-                    array_values($members)
-                );
+            $users = array_map(
+                fn (array $member) => [
+                    'id' => $member['id'],
+                    'name' => $member['name'],
+                    'real_name' => $member['real_name'] ?? '',
+                    'is_bot' => $member['is_bot'] ?? false,
+                ],
+                array_values($members)
+            );
 
-                return [
-                    'users' => $users,
-                    'next_cursor' => $response->json('response_metadata.next_cursor') ?: null,
-                ];
-            });
+            return [
+                'users' => $users,
+                'next_cursor' => $response->json('response_metadata.next_cursor') ?: null,
+            ];
+        });
     }
 
     /**

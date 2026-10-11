@@ -3,7 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Support\CacheKey;
+use AC\LaravelTaggedCache\TaggedCache;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -25,8 +25,8 @@ class User extends Authenticatable implements FilamentUser
 
     public static function findCached(int $id): ?static
     {
-        return CacheKey::for('user', $id)
-            ->remember(now()->addDays(7), fn () => static::find($id));
+        return TaggedCache::for(tags: ['users'], context: ['id' => $id])
+            ->remember(config('cache.ttl.models'), fn () => static::find($id));
     }
 
     /** @return HasMany<Account, $this> */

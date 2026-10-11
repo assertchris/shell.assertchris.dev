@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.4",
         "assertchris/cloudflare-security-rule-sync": "1.0.1",
+        "assertchris/laravel-tagged-cache": "1.0",
         "barryvdh/laravel-ide-helper": "3.7.0",
         "directorytree/imapengine-laravel": "1.3.0",
         "filament/filament": "5.8.4",

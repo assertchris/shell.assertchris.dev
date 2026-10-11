@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2005f1d716487ad3cc4553204ad264ec",
+    "content-hash": "82dae4880cb5e2fe41febcf3c5f25b09",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -119,6 +119,47 @@
                 "source": "https://github.com/assertchris/cloudflare-security-rule-sync/tree/v1.0.1"
             },
             "time": "2026-09-23T18:06:39+00:00"
+        },
+        {
+            "name": "assertchris/laravel-tagged-cache",
+            "version": "v1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/assertchris/laravel-tagged-cache.git",
+                "reference": "c1ec0361a6f50df23bca88565e3a3919906c2ab3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/assertchris/laravel-tagged-cache/zipball/c1ec0361a6f50df23bca88565e3a3919906c2ab3",
+                "reference": "c1ec0361a6f50df23bca88565e3a3919906c2ab3",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/cache": ">=10.0",
+                "illuminate/support": ">=10.0",
+                "php": ">=8.2"
+            },
+            "require-dev": {
+                "laravel/pint": "1.32.1",
+                "orchestra/testbench": "11.2.0",
+                "pestphp/pest": "5.2.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "AC\\LaravelTaggedCache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A fluent tag-aware cache reference helper for Laravel.",
+            "support": {
+                "issues": "https://github.com/assertchris/laravel-tagged-cache/issues",
+                "source": "https://github.com/assertchris/laravel-tagged-cache/tree/v1.0"
+            },
+            "time": "2026-10-10T19:19:47+00:00"
         },
         {
             "name": "barryvdh/laravel-ide-helper",
