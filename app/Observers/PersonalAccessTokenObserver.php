@@ -18,7 +18,7 @@ class PersonalAccessTokenObserver
 
         if (! $hasSecurityChange && in_array('last_used_at', $dirty, true)) {
             $hash = $token->token;
-            $cache = TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash]);
+            $cache = TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash]);
             $cached = $cache->get();
 
             if ($cached !== null) {
@@ -34,11 +34,11 @@ class PersonalAccessTokenObserver
 
     public function saved(PersonalAccessToken $token): void
     {
-        TaggedCache::for(tags: ["token:{$token->token}"])->flush();
+        TaggedCache::for(tags: ['tokens'], context: ['hash' => $token->token])->forget();
     }
 
     public function deleted(PersonalAccessToken $token): void
     {
-        TaggedCache::for(tags: ["token:{$token->token}"])->flush();
+        TaggedCache::for(tags: ['tokens'], context: ['hash' => $token->token])->forget();
     }
 }

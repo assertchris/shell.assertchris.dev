@@ -24,7 +24,7 @@ test('account resolveRouteBinding caches and second call skips DB', function () 
     // Warm the cache
     $model->resolveRouteBinding($account->id);
 
-    expect(TaggedCache::for(tags: ['accounts', "account:{$account->id}"], context: ['id' => $account->id])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['accounts'], context: ['id' => $account->id])->get())->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -48,7 +48,7 @@ test('user findCached caches and second call skips DB', function () {
     // Warm the cache
     User::findCached($user->id);
 
-    expect(TaggedCache::for(tags: ['users', "user:{$user->id}"], context: ['id' => $user->id])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['users'], context: ['id' => $user->id])->get())->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -75,7 +75,7 @@ test('token findToken caches and second call skips DB', function () {
     // Warm the cache
     PersonalAccessToken::findToken($tokenResult->plainTextToken);
 
-    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get())->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -96,15 +96,15 @@ test('token findToken caches and second call skips DB', function () {
 test('AccountObserver saved flushes single-account cache entry', function () {
     $account = Account::factory()->create();
 
-    TaggedCache::for(tags: ['accounts', "account:{$account->id}"], context: ['id' => $account->id])
+    TaggedCache::for(tags: ['accounts'], context: ['id' => $account->id])
         ->put($account, now()->addDays(7));
 
-    expect(TaggedCache::for(tags: ['accounts', "account:{$account->id}"], context: ['id' => $account->id])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['accounts'], context: ['id' => $account->id])->get())->not->toBeNull();
 
     $account->name = 'Updated';
     $account->save();
 
-    expect(TaggedCache::for(tags: ['accounts', "account:{$account->id}"], context: ['id' => $account->id])->get())->toBeNull();
+    expect(TaggedCache::for(tags: ['accounts'], context: ['id' => $account->id])->get())->toBeNull();
 });
 
 test('AccountObserver saved flushes accounts-list cache entry via account:user tag', function () {
@@ -169,7 +169,7 @@ test('token saving hook patches last_used_at in cache and returns false to skip 
 
     expect($queries)->toBeEmpty();
 
-    $cached = TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get();
+    $cached = TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get();
     expect($cached)->not->toBeNull();
     expect($cached->last_used_at->toDateTimeString())->toBe($newLastUsedAt->toDateTimeString());
 
@@ -185,12 +185,12 @@ test('token saved hook clears cache entry', function () {
     // Warm the cache
     PersonalAccessToken::findToken($tokenResult->plainTextToken);
 
-    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get())->not->toBeNull();
 
     $pat = PersonalAccessToken::where('token', $hash)->first();
     $pat->forceFill(['last_ip_address' => '9.9.9.9'])->save();
 
-    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->toBeNull();
+    expect(TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get())->toBeNull();
 });
 
 test('token deleted hook clears cache entry', function () {
@@ -202,10 +202,10 @@ test('token deleted hook clears cache entry', function () {
     // Warm the cache
     PersonalAccessToken::findToken($tokenResult->plainTextToken);
 
-    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get())->not->toBeNull();
 
     $pat = PersonalAccessToken::where('token', $hash)->first();
     $pat->delete();
 
-    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->toBeNull();
+    expect(TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get())->toBeNull();
 });

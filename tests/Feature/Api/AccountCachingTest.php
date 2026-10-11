@@ -24,7 +24,7 @@ test('route model binding serves account from cache after first request', functi
     ]);
 
     expect(
-        TaggedCache::for(tags: ['accounts', "account:{$account->id}"], context: ['id' => $account->id])->get()
+        TaggedCache::for(tags: ['accounts'], context: ['id' => $account->id])->get()
     )->not->toBeNull();
 
     DB::enableQueryLog();

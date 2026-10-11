@@ -9,11 +9,11 @@ class UserObserver
 {
     public function saved(User $user): void
     {
-        TaggedCache::for(tags: ["user:{$user->id}"])->flush();
+        TaggedCache::for(tags: ['users'], context: ['id' => $user->id])->forget();
     }
 
     public function deleted(User $user): void
     {
-        TaggedCache::for(tags: ["user:{$user->id}"])->flush();
+        TaggedCache::for(tags: ['users'], context: ['id' => $user->id])->forget();
     }
 }

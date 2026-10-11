@@ -18,7 +18,7 @@ test('findCached caches the user and second call skips DB', function () {
     // Warm the cache
     User::findCached($user->id);
 
-    expect(TaggedCache::for(tags: ['users', "user:{$user->id}"], context: ['id' => $user->id])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['users'], context: ['id' => $user->id])->get())->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -40,10 +40,10 @@ test('saved observer busts the user cache', function () {
     // Warm the cache
     User::findCached($user->id);
 
-    expect(TaggedCache::for(tags: ['users', "user:{$user->id}"], context: ['id' => $user->id])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['users'], context: ['id' => $user->id])->get())->not->toBeNull();
 
     $user->name = 'Updated Name';
     $user->save();
 
-    expect(TaggedCache::for(tags: ['users', "user:{$user->id}"], context: ['id' => $user->id])->get())->toBeNull();
+    expect(TaggedCache::for(tags: ['users'], context: ['id' => $user->id])->get())->toBeNull();
 });

@@ -9,7 +9,7 @@ class AccountObserver
 {
     public function saved(Account $account): void
     {
-        TaggedCache::for(tags: ["account:{$account->id}"])->flush();
+        TaggedCache::for(tags: ['accounts'], context: ['id' => $account->id])->forget();
         TaggedCache::for(tags: ["account:user:{$account->user_id}"])->flush();
 
         $originalUserId = $account->getOriginal('user_id');
@@ -21,7 +21,7 @@ class AccountObserver
 
     public function deleted(Account $account): void
     {
-        TaggedCache::for(tags: ["account:{$account->id}"])->flush();
+        TaggedCache::for(tags: ['accounts'], context: ['id' => $account->id])->forget();
         TaggedCache::for(tags: ["account:user:{$account->user_id}"])->flush();
     }
 }

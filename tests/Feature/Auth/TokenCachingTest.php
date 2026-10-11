@@ -35,7 +35,7 @@ test('second identical auth request skips personal_access_tokens DB query', func
     $this->getJson('/api/status', ['Authorization' => 'Bearer '.$plainText])->assertSuccessful();
 
     // Verify cache is warm
-    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get())->not->toBeNull();
 
     DB::enableQueryLog();
 
@@ -91,7 +91,7 @@ test('security field change writes to DB and busts cache', function () {
     // Warm the token cache
     $this->getJson('/api/status', ['Authorization' => 'Bearer '.$tokenResult->plainTextToken])->assertSuccessful();
 
-    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get())->not->toBeNull();
 
     $pat = PersonalAccessToken::where('token', $hash)->first();
 
@@ -106,7 +106,7 @@ test('security field change writes to DB and busts cache', function () {
         ->values();
 
     expect($queries)->not->toBeEmpty();
-    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->toBeNull();
+    expect(TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get())->toBeNull();
 
     DB::disableQueryLog();
 });
@@ -122,10 +122,10 @@ test('token deletion busts cache', function () {
     // Warm the token cache
     $this->getJson('/api/status', ['Authorization' => 'Bearer '.$tokenResult->plainTextToken])->assertSuccessful();
 
-    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->not->toBeNull();
+    expect(TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get())->not->toBeNull();
 
     $pat = PersonalAccessToken::where('token', $hash)->first();
     $pat->delete();
 
-    expect(TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])->get())->toBeNull();
+    expect(TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])->get())->toBeNull();
 });

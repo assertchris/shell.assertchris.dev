@@ -33,7 +33,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
         $rawToken = str_contains($token, '|') ? explode('|', $token, 2)[1] : $token;
         $hash = hash('sha256', $rawToken);
 
-        $cachedToken = TaggedCache::for(tags: ['tokens', "token:{$hash}"], context: ['hash' => $hash])
+        $cachedToken = TaggedCache::for(tags: ['tokens'], context: ['hash' => $hash])
             ->remember(now()->addDays(7), fn () => parent::findToken($token));
 
         if ($cachedToken) {
