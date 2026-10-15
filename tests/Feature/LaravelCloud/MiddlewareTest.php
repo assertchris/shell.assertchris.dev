@@ -9,7 +9,7 @@ uses(RefreshDatabase::class);
 test('laravel cloud routes require authentication', function () {
     $account = Account::factory()->withLaravelCloud()->create();
 
-    $this->getJson("/api/{$account->id}/laravel-cloud/status")
+    $this->getJson("/api/{$account->id}/laravel-cloud/applications")
         ->assertUnauthorized();
 });
 
@@ -19,7 +19,7 @@ test('laravel cloud routes return 404 when account belongs to another user', fun
     $account = Account::factory()->withLaravelCloud()->for($otherUser)->create();
     $token = $user->createToken('test');
 
-    $this->getJson("/api/{$account->id}/laravel-cloud/status", [
+    $this->getJson("/api/{$account->id}/laravel-cloud/applications", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertNotFound();
@@ -33,7 +33,7 @@ test('laravel cloud routes return 404 when laravel_cloud_used is false', functio
     ]);
     $token = $user->createToken('test');
 
-    $this->getJson("/api/{$account->id}/laravel-cloud/status", [
+    $this->getJson("/api/{$account->id}/laravel-cloud/applications", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertNotFound();
@@ -47,7 +47,7 @@ test('laravel cloud routes return 404 when laravel_cloud_used is true but token 
     ]);
     $token = $user->createToken('test');
 
-    $this->getJson("/api/{$account->id}/laravel-cloud/status", [
+    $this->getJson("/api/{$account->id}/laravel-cloud/applications", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertNotFound();
