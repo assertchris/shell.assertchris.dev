@@ -26,6 +26,6 @@ class ListFailedJobsResponder
             return response()->json(['error' => $e->getMessage()], 502);
         }
 
-        return FailedJobResource::collection($data);
+        return FailedJobResource::collection($data['data'] ?? []);
     }
 }

@@ -12,8 +12,8 @@ class InstanceResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $data = $this->resource['data'];
-        $attributes = $data['attributes'];
+        $data = $this->resource['data'] ?? $this->resource;
+        $attributes = $data['attributes'] ?? [];
 
         return [
             'id' => $data['id'],

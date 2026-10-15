@@ -26,6 +26,6 @@ class ListDatabasesResponder
             return response()->json(['error' => $e->getMessage()], 502);
         }
 
-        return DatabaseResource::collection($data);
+        return DatabaseResource::collection($data['data'] ?? []);
     }
 }

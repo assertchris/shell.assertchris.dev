@@ -26,6 +26,6 @@ class GetDeploymentLogsResponder
             return response()->json(['error' => $e->getMessage()], 502);
         }
 
-        return LogResource::collection($data);
+        return LogResource::collection($data['data'] ?? []);
     }
 }

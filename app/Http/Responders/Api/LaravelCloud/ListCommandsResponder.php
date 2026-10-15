@@ -26,6 +26,6 @@ class ListCommandsResponder
             return response()->json(['error' => $e->getMessage()], 502);
         }
 
-        return CommandResource::collection($data);
+        return CommandResource::collection($data['data'] ?? []);
     }
 }

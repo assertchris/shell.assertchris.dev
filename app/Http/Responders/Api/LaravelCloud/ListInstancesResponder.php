@@ -26,6 +26,6 @@ class ListInstancesResponder
             return response()->json(['error' => $e->getMessage()], 502);
         }
 
-        return InstanceResource::collection($data);
+        return InstanceResource::collection($data['data'] ?? []);
     }
 }

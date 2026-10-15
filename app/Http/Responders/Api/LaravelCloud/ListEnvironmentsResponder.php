@@ -26,6 +26,6 @@ class ListEnvironmentsResponder
             return response()->json(['error' => $e->getMessage()], 502);
         }
 
-        return EnvironmentResource::collection($data);
+        return EnvironmentResource::collection($data['data'] ?? []);
     }
 }

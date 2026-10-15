@@ -26,6 +26,6 @@ class ListCachesResponder
             return response()->json(['error' => $e->getMessage()], 502);
         }
 
-        return CacheResource::collection($data);
+        return CacheResource::collection($data['data'] ?? []);
     }
 }

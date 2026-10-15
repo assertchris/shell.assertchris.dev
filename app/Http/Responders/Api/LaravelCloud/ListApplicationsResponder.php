@@ -26,6 +26,6 @@ class ListApplicationsResponder
             return response()->json(['error' => $e->getMessage()], 502);
         }
 
-        return ApplicationResource::collection($data);
+        return ApplicationResource::collection($data['data'] ?? []);
     }
 }

@@ -26,6 +26,6 @@ class ListDeploymentsResponder
             return response()->json(['error' => $e->getMessage()], 502);
         }
 
-        return DeploymentResource::collection($data);
+        return DeploymentResource::collection($data['data'] ?? []);
     }
 }
