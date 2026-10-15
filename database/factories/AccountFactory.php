@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Account;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Account>
+ * @extends Factory<Account>
  */
 class AccountFactory extends Factory
 {
@@ -112,6 +113,14 @@ class AccountFactory extends Factory
             'jira_base_url' => 'https://test.atlassian.net',
             'jira_email' => fake()->safeEmail(),
             'jira_api_token' => fake()->sha256(),
+        ]);
+    }
+
+    public function withLaravelCloud(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'laravel_cloud_used' => true,
+            'laravel_cloud_api_token' => 'fake-lc-token',
         ]);
     }
 }

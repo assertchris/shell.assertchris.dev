@@ -70,6 +70,7 @@ use App\Http\Responders\Api\OpenSlackConversationResponder;
 use App\Http\Responders\Api\SendSlackMessageResponder;
 use App\Http\Responders\Api\ShowCalendarEntryResponder;
 use App\Http\Responders\Api\ShowMessageResponder;
+use App\Models\Account;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'account.owner'])->group(function () {
@@ -170,6 +171,11 @@ Route::middleware(['auth:sanctum', 'account.owner'])->group(function () {
         Route::get('/filters', ListFiltersResponder::class);
         Route::get('/filters/{id}', GetFilterResponder::class);
         Route::get('/dashboards', ListDashboardsResponder::class);
+    });
+
+    // Phase 4 will expand this group with full responders.
+    Route::prefix('{account}/laravel-cloud')->middleware('service.connected:laravel-cloud')->group(function () {
+        Route::get('/status', fn (Account $account) => response()->json(['status' => 'ok']));
     });
 
     Route::middleware('service.connected:slack')->group(function () {

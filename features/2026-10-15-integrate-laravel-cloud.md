@@ -28,7 +28,7 @@ This feature adds a `laravel-cloud` service integration. Users can:
 
 ### Functional
 
-- [ ] GET endpoints for all read-only resources (apps, environments, deployments, instances, database clusters, caches, organization, regions, usage)
+- [ ] GET endpoints for all read-only resources (apps, environments, deployments, instances, databases, caches)
 - [ ] GET log endpoints for environments and deployments
 - [ ] POST endpoints for commands (run + poll), cache purge, environment start/stop, queue pause/resume/purge, and failed-job retry
 - [ ] Credentials (single API token) stored encrypted per account; configurable via Filament admin
@@ -130,12 +130,9 @@ Resource classes to create:
 - `CommandResource` — id, command, output, status, exit_code, failure_reason, started_at, finished_at, created_at
 - `InstanceResource` — id and all instance attribute fields
 - `FailedJobResource` — name, queue, failed_at, started_at, attempts, exception, retried_at, retry_reserved_until
-- `DatabaseClusterResource` — id and all cluster attribute fields
+- `DatabaseResource` — id and all database attribute fields
 - `CacheResource` — id and all cache attribute fields
-- `MetricsResource` — passes data through as-is (shape confirmed by the live API probe in the pre-requisite step)
-- `OrganizationResource` — id and org attributes
-- `RegionResource` — id and region attributes
-- `UsageResource` — passes billing and usage fields through
+- `MetricsResource` — passes data through as-is. **Not JSON:API** — the metrics response is a plain object: `{ data: { cpu_usage: {...}, memory_usage: {...}, http_response_count: {...}, replica_count: {...}, web_workers_count: {...} }, meta: { period, available_periods } }`. Each metric has `labels`, `data` (array of `{x, y}`), and aggregate fields (`average`, `min`, `max`, `total`). Accepts optional `?period=` param (6h, 24h, 3d, 7d, 30d; default 24h).
 
 ### Phase 4: Responders and Routes
 
@@ -163,15 +160,12 @@ GetInstanceResponder                — GET  instances/{instance}
 ListFailedJobsResponder             — GET  instances/{instance}/failed-jobs
 ListCommandsResponder               — GET  environments/{environment}/commands
 GetCommandResponder                 — GET  commands/{command}
-ListDatabaseClustersResponder       — GET  database-clusters
-GetDatabaseClusterResponder         — GET  database-clusters/{cluster}
-GetDatabaseClusterMetricsResponder  — GET  database-clusters/{cluster}/metrics
+ListDatabasesResponder              — GET  databases
+GetDatabaseResponder                — GET  databases/{database}
+GetDatabaseMetricsResponder         — GET  databases/{database}/metrics
 ListCachesResponder                 — GET  caches
 GetCacheResponder                   — GET  caches/{cache}
 GetCacheMetricsResponder            — GET  caches/{cache}/metrics
-GetOrganizationResponder            — GET  organization
-ListRegionsResponder                — GET  regions
-GetUsageResponder                   — GET  usage
 RunCommandResponder                 — POST environments/{environment}/commands
 PurgeEdgeCacheResponder             — POST environments/{environment}/purge-cache
 StartEnvironmentResponder           — POST environments/{environment}/start
@@ -246,9 +240,8 @@ Create `tests/Feature/LaravelCloud/` with these files:
 - `DeploymentsTest.php` — list deployments, get single, deployment logs
 - `CommandsTest.php` — list commands, get command (including polling: pending → success), run command (POST, validate body), command failure shape (exit_code = 1)
 - `InstancesTest.php` — list instances, get instance, failed jobs, retry failed job (POST), pause/resume/purge queue (POST)
-- `DatabaseClustersTest.php` — list clusters, get cluster, cluster metrics
+- `DatabasesTest.php` — list databases, get database, database metrics
 - `CachesTest.php` — list caches, get cache, cache metrics, purge edge cache (POST, validate body: one of path/prefix/tag)
-- `MetaTest.php` — organization, regions, usage
 
 All test files use `uses(RefreshDatabase::class)` and no base class. They fake HTTP with `Http::fake(['https://cloud.laravel.com/*' => Http::response([...], status)])` and build accounts with `Account::factory()->withLaravelCloud()->for($user)->create()`.
 
@@ -258,6 +251,8 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 
 ### Completed
 - Research and planning
+- Pre-requisite: API probe (prefixed UUIDs confirmed, metrics shape confirmed, database endpoint corrected to `/api/databases`)
+- Phase 1: Migration, Model, Middleware, Factory
 
 ### In Progress
 - (none)
@@ -266,8 +261,6 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 - (none)
 
 ### To Do
-- Pre-requisite: add `LARAVEL_CLOUD_API_TOKEN` to the worktree `.env`
-- Phase 1: Migration, Model, Middleware, Factory
 - Phase 2: Client, Service, Exceptions, Cache Config
 - Phase 3: Resources
 - Phase 4: Responders + Routes
@@ -278,6 +271,12 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 ## Technical Notes
 
 - **JSON:API envelope**: Laravel Cloud returns `{ data: { id, type, attributes, relationships, links } }` for single resources and `{ data: [...], meta: {...}, links: {...} }` for collections. Resources flatten this. The service layer passes the full raw array from the client, and resources pull out `data.id` and `data.attributes.*`.
+- **Resource ID format (confirmed by probe)**: All resource IDs are **prefixed UUIDs**, not bare UUIDs and not slugs. Format: `app-{uuid}`, `env-{uuid}`, `depl-{uuid}`, `db-{uuid}`, `cache-{uuid}`. A separate `slug` attribute exists (e.g. `"shell.assertchris.dev"`) but is never the ID. Route path params will receive these prefixed UUIDs.
+- **Metrics endpoint is NOT JSON:API**: `GET /environments/{id}/metrics` returns a plain object — `{ data: { cpu_usage, memory_usage, http_response_count, replica_count, web_workers_count }, meta: { period, available_periods } }`. Each metric contains `labels`, `data` (array of `{x, y}`), and aggregates. Forward the full response body as-is. Accepts optional `?period=` (6h, 24h, 3d, 7d, 30d).
+- **Databases endpoint**: The correct path is `/api/databases` (not `/api/database-clusters`). Database IDs use the `db-{uuid}` prefix.
+- **Organization/regions/usage endpoints**: Returned 401 during the probe — these endpoints require org-level token scoping, not app-level. Removed from the route surface.
+- **`environment_variables` in environment response**: Contains live credential values unredacted. Responders must NOT include this field in `EnvironmentResource.toArray()`.
+- **Deployment slug**: A sequential integer string (`"1"`, `"2"`, …), not a UUID. The ID is still `depl-{uuid}`.
 - **Command async pattern**: `POST /commands` is fire-and-forget at the transport layer. The responder returns the initial `CommandResource` with `status: pending`. The caller then polls `GET /commands/{id}`. Polling happens on the client side, not the server side.
 - **Command HTTP status vs exit code**: The shell API always returns HTTP 200 for command responses. The `exit_code` field is the authoritative signal: 0 means success, 1 means failure, and null means still running.
 - **No cache busting on read-only ops**: Only POST operations flush the TaggedCache for the account.
@@ -312,7 +311,7 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 - `app/Filament/Resources/AccountResource/Pages/EditAccount.php` — new form section
 
 ### Resources
-- `app/Http/Resources/LaravelCloud/*.php` — ~13 new files
+- `app/Http/Resources/LaravelCloud/*.php` — ~10 new files
 
 ### Console / Jobs
 - (none)
@@ -327,9 +326,8 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 - `tests/Feature/LaravelCloud/DeploymentsTest.php`
 - `tests/Feature/LaravelCloud/CommandsTest.php`
 - `tests/Feature/LaravelCloud/InstancesTest.php`
-- `tests/Feature/LaravelCloud/DatabaseClustersTest.php`
+- `tests/Feature/LaravelCloud/DatabasesTest.php`
 - `tests/Feature/LaravelCloud/CachesTest.php`
-- `tests/Feature/LaravelCloud/MetaTest.php`
 
 ### Docs
 - `resources/docs/laravel-cloud.md` — new
@@ -340,8 +338,8 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 
 ## Questions/Decisions Needed
 
-- [ ] Does the live API return string slugs or UUIDs for resource IDs? Probe before Phase 1 using the token in `.env`.
-- [ ] What's the exact metrics endpoint response shape? Probe before Phase 1.
+- [x] Does the live API return string slugs or UUIDs for resource IDs? **Prefixed UUIDs** (`app-{uuid}`, `env-{uuid}`, `depl-{uuid}`, `db-{uuid}`, `cache-{uuid}`). A `slug` attribute exists separately.
+- [x] What's the exact metrics endpoint response shape? **Plain object, not JSON:API.** See Technical Notes → "Metrics endpoint is NOT JSON:API".
 
 ## Decisions Made
 
@@ -355,6 +353,10 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 - **Cache TTL — slow data**: 5 minutes
 - **Cache TTL — fast data**: 60 seconds
 - **Cache TTL — logs + command polling**: no cache
+- **Database endpoint path**: `/api/databases` (not `/api/database-clusters`)
+- **Organization/regions/usage**: OUT — these endpoints 401 with a per-resource API token
+- **`environment_variables` field**: EXCLUDED from `EnvironmentResource` — contains live secrets
+- **Resource ID format**: prefixed UUIDs (`app-{uuid}`, `env-{uuid}`, `depl-{uuid}`, `db-{uuid}`, `cache-{uuid}`)
 - **Response normalisation**: Flatten the JSON:API envelope. `data.id` + `data.attributes` become a flat object.
 - **Token per account**: One API token per account. Scoping is managed in the Laravel Cloud UI.
 - **Validation**: Inline `$request->validate()` in write responders. No FormRequest classes, to match the existing convention.
