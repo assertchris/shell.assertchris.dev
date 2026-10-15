@@ -256,6 +256,7 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 - Phase 2: Client, Service, Exceptions, Cache Config
 - Phase 3: API Resources
 - Phase 4: Responders + Routes
+- Phase 5: Filament Admin
 
 ### In Progress
 - (none)
@@ -264,7 +265,6 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 - (none)
 
 ### To Do
-- Phase 5: Filament Admin
 - Phase 6: Docs
 - Phase 7: Tests
 

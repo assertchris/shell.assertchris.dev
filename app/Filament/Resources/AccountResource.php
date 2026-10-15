@@ -48,6 +48,9 @@ class AccountResource extends Resource
                 IconColumn::make('jira_used')
                     ->label('Jira')
                     ->boolean(),
+                IconColumn::make('laravel_cloud_used')
+                    ->label('Laravel Cloud')
+                    ->boolean(),
                 IconColumn::make('is_active')
                     ->boolean(),
                 TextColumn::make('created_at')

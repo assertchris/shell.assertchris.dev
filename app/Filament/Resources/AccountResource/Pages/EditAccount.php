@@ -12,6 +12,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class EditAccount extends EditRecord
@@ -34,18 +35,18 @@ class EditAccount extends EditRecord
                         Toggle::make('mail_read')
                             ->label('Read')
                             ->helperText('Not yet enforced — mail read endpoints are not built yet.')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('mail_used')),
+                            ->visible(fn (Get $get) => (bool) $get('mail_used')),
                         Toggle::make('mail_write')
                             ->label('Write')
                             ->helperText('Not yet enforced — mail write endpoints are not built yet.')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('mail_used')),
+                            ->visible(fn (Get $get) => (bool) $get('mail_used')),
                         TextInput::make('mail_host')
                             ->maxLength(255)
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
+                            ->visible(fn (Get $get) => $get('mail_used')),
                         TextInput::make('mail_port')
                             ->numeric()
                             ->default(993)
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
+                            ->visible(fn (Get $get) => $get('mail_used')),
                         Select::make('mail_encryption')
                             ->options([
                                 'ssl' => 'SSL',
@@ -53,16 +54,16 @@ class EditAccount extends EditRecord
                                 'none' => 'None',
                             ])
                             ->default('ssl')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
+                            ->visible(fn (Get $get) => $get('mail_used')),
                         TextInput::make('mail_username')
                             ->maxLength(255)
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
+                            ->visible(fn (Get $get) => $get('mail_used')),
                         TextInput::make('mail_password')
                             ->password()
                             ->revealable()
                             ->dehydrateStateUsing(fn (?string $state, $record) => filled($state) ? $state : $record->mail_password)
                             ->helperText('Leave blank to keep the current password.')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
+                            ->visible(fn (Get $get) => $get('mail_used')),
                     ]),
                 Section::make('Google Calendar')
                     ->schema([
@@ -71,14 +72,14 @@ class EditAccount extends EditRecord
                             ->live(),
                         Toggle::make('google_calendar_read')
                             ->label('Read')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('google_calendar_used')),
+                            ->visible(fn (Get $get) => (bool) $get('google_calendar_used')),
                         Toggle::make('google_calendar_write')
                             ->label('Write')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('google_calendar_used')),
+                            ->visible(fn (Get $get) => (bool) $get('google_calendar_used')),
                         Action::make('connectGoogle')
                             ->label('Connect Google Account')
                             ->url(fn (Account $record): string => route('google.redirect', $record))
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get, Account $record): bool => $get('google_calendar_used') && ! $record->isGoogleCalendarConnected()),
+                            ->visible(fn (Get $get, Account $record): bool => $get('google_calendar_used') && ! $record->isGoogleCalendarConnected()),
                         Action::make('disconnectGoogle')
                             ->label('Disconnect Google')
                             ->requiresConfirmation()
@@ -91,7 +92,7 @@ class EditAccount extends EditRecord
                                 ]);
                                 Notification::make()->title('Google Calendar disconnected.')->success()->send();
                             })
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get, Account $record): bool => $get('google_calendar_used') && $record->isGoogleCalendarConnected()),
+                            ->visible(fn (Get $get, Account $record): bool => $get('google_calendar_used') && $record->isGoogleCalendarConnected()),
                     ]),
                 Section::make('Slack')
                     ->schema([
@@ -100,14 +101,14 @@ class EditAccount extends EditRecord
                             ->live(),
                         Toggle::make('slack_read')
                             ->label('Read')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('slack_used')),
+                            ->visible(fn (Get $get) => (bool) $get('slack_used')),
                         Toggle::make('slack_write')
                             ->label('Write')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => (bool) $get('slack_used')),
+                            ->visible(fn (Get $get) => (bool) $get('slack_used')),
                         Action::make('connectSlack')
                             ->label('Connect Slack')
                             ->url(fn (Account $record): string => route('slack.redirect', $record))
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get, Account $record): bool => $get('slack_used') && ! $record->isSlackConnected()),
+                            ->visible(fn (Get $get, Account $record): bool => $get('slack_used') && ! $record->isSlackConnected()),
                         Action::make('disconnectSlack')
                             ->label('Disconnect Slack')
                             ->requiresConfirmation()
@@ -120,7 +121,7 @@ class EditAccount extends EditRecord
                                 ]);
                                 Notification::make()->title('Slack disconnected.')->success()->send();
                             })
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get, Account $record): bool => $get('slack_used') && $record->isSlackConnected()),
+                            ->visible(fn (Get $get, Account $record): bool => $get('slack_used') && $record->isSlackConnected()),
                     ]),
                 Section::make('GitHub')
                     ->schema([
@@ -130,7 +131,7 @@ class EditAccount extends EditRecord
                         TextInput::make('github_pat')
                             ->password()
                             ->revealable()
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('github_used'))
+                            ->visible(fn (Get $get) => $get('github_used'))
                             ->dehydrateStateUsing(fn (?string $state, Account $record) => filled($state) ? $state : $record->github_pat)
                             ->helperText('Leave blank to keep the current PAT.'),
                     ]),
@@ -140,18 +141,30 @@ class EditAccount extends EditRecord
                         TextInput::make('jira_base_url')
                             ->url()
                             ->placeholder('https://mycompany.atlassian.net')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->visible(fn (Get $get) => $get('jira_used'))
                             ->dehydrateStateUsing(fn (?string $state, Account $record) => filled($state) ? $state : $record->jira_base_url)
                             ->helperText('Leave blank to keep the current URL.'),
                         TextInput::make('jira_email')
                             ->email()
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->visible(fn (Get $get) => $get('jira_used'))
                             ->dehydrateStateUsing(fn (?string $state, Account $record) => filled($state) ? $state : $record->jira_email)
                             ->helperText('Leave blank to keep the current email.'),
                         TextInput::make('jira_api_token')
                             ->password()->revealable()
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->visible(fn (Get $get) => $get('jira_used'))
                             ->dehydrateStateUsing(fn (?string $state, Account $record) => filled($state) ? $state : $record->jira_api_token)
+                            ->helperText('Leave blank to keep the current token.'),
+                    ]),
+                Section::make('Laravel Cloud')
+                    ->schema([
+                        Toggle::make('laravel_cloud_used')
+                            ->default(false)
+                            ->live(),
+                        TextInput::make('laravel_cloud_api_token')
+                            ->password()
+                            ->revealable()
+                            ->visible(fn (Get $get) => $get('laravel_cloud_used'))
+                            ->dehydrateStateUsing(fn (?string $state, Account $record) => filled($state) ? $state : $record->laravel_cloud_api_token)
                             ->helperText('Leave blank to keep the current token.'),
                     ]),
             ]);
