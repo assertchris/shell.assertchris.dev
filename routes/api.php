@@ -229,7 +229,6 @@ Route::middleware(['auth:sanctum', 'account.owner'])->group(function () {
         // Instances
         Route::get('/instances/{instance}', GetInstanceResponder::class);
         Route::get('/instances/{instance}/failed-jobs', ListFailedJobsResponder::class);
-        Route::get('/instances/{instance}/commands', ListCommandsResponder::class);
         Route::post('/instances/{instance}/failed-jobs/{job}/retry', RetryFailedJobResponder::class);
         Route::post('/instances/{instance}/pause', PauseQueueResponder::class);
         Route::post('/instances/{instance}/resume', ResumeQueueResponder::class);

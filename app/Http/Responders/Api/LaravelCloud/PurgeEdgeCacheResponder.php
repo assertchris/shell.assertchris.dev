@@ -2,7 +2,6 @@
 
 namespace App\Http\Responders\Api\LaravelCloud;
 
-use AC\LaravelTaggedCache\TaggedCache;
 use App\Exceptions\LaravelCloud\LaravelCloudAuthException;
 use App\Exceptions\LaravelCloud\LaravelCloudClientException;
 use App\Exceptions\LaravelCloud\LaravelCloudRateLimitException;
@@ -36,8 +35,6 @@ class PurgeEdgeCacheResponder
         } catch (LaravelCloudClientException $e) {
             return response()->json(['error' => $e->getMessage()], 502);
         }
-
-        TaggedCache::for(tags: ["laravel-cloud:{$account->id}"])->flush();
 
         return response()->json($data);
     }
