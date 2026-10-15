@@ -254,6 +254,7 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 - Pre-requisite: API probe (prefixed UUIDs confirmed, metrics shape confirmed, database endpoint corrected to `/api/databases`)
 - Phase 1: Migration, Model, Middleware, Factory
 - Phase 2: Client, Service, Exceptions, Cache Config
+- Phase 3: API Resources
 
 ### In Progress
 - (none)
@@ -262,7 +263,6 @@ Rate-limit tests assert `->assertStatus(429)` and check the `Retry-After` header
 - (none)
 
 ### To Do
-- Phase 3: Resources
 - Phase 4: Responders + Routes
 - Phase 5: Filament Admin
 - Phase 6: Docs
