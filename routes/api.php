@@ -70,6 +70,8 @@ use App\Http\Responders\Api\LaravelCloud\GetDeploymentResponder;
 use App\Http\Responders\Api\LaravelCloud\GetEnvironmentMetricsResponder;
 use App\Http\Responders\Api\LaravelCloud\GetEnvironmentResponder;
 use App\Http\Responders\Api\LaravelCloud\GetInstanceResponder;
+use App\Http\Responders\Api\LaravelCloud\GetOrganizationResponder;
+use App\Http\Responders\Api\LaravelCloud\GetUsageResponder;
 use App\Http\Responders\Api\LaravelCloud\ListApplicationsResponder;
 use App\Http\Responders\Api\LaravelCloud\ListCachesResponder;
 use App\Http\Responders\Api\LaravelCloud\ListCommandsResponder;
@@ -79,6 +81,7 @@ use App\Http\Responders\Api\LaravelCloud\ListEnvironmentLogsResponder;
 use App\Http\Responders\Api\LaravelCloud\ListEnvironmentsResponder;
 use App\Http\Responders\Api\LaravelCloud\ListFailedJobsResponder;
 use App\Http\Responders\Api\LaravelCloud\ListInstancesResponder;
+use App\Http\Responders\Api\LaravelCloud\ListRegionsResponder;
 use App\Http\Responders\Api\LaravelCloud\PauseQueueResponder;
 use App\Http\Responders\Api\LaravelCloud\PurgeEdgeCacheResponder;
 use App\Http\Responders\Api\LaravelCloud\PurgeQueueResponder;
@@ -244,6 +247,11 @@ Route::middleware(['auth:sanctum', 'account.owner'])->group(function () {
         Route::get('/caches', ListCachesResponder::class);
         Route::get('/caches/{cache}', GetCacheResponder::class);
         Route::get('/caches/{cache}/metrics', GetCacheMetricsResponder::class);
+
+        // Meta
+        Route::get('/organization', GetOrganizationResponder::class);
+        Route::get('/regions', ListRegionsResponder::class);
+        Route::get('/usage', GetUsageResponder::class);
     });
 
     Route::middleware('service.connected:slack')->group(function () {

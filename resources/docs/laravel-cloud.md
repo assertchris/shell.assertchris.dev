@@ -961,7 +961,7 @@ curl -s "https://your-domain.com/api/1/laravel-cloud/commands/cmd-e5f6a7b8-c9d0-
 
 ## GET /api/{account}/laravel-cloud/databases
 
-Returns all managed database clusters. Cached for 5 minutes.
+Returns all managed database clusters. Calls `GET /databases/clusters` on the upstream API. Cached for 5 minutes.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -1157,4 +1157,130 @@ Same shape as [Environment metrics](#get-apiaccount-laravel-cloud-environments-e
 |--------|--------|
 | 401 | Unauthenticated |
 | 404 | Account not found, Laravel Cloud not connected, or cache not found |
+| 502 | Upstream Cloud API error |
+
+---
+
+## GET /api/{account}/laravel-cloud/organization
+
+Returns the Laravel Cloud organisation associated with the account token. Calls `GET /meta/organization` on the upstream API. Cached for 5 minutes.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `account` | integer | Account ID |
+
+```bash
+curl -s "https://your-domain.com/api/1/laravel-cloud/organization" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Accept: application/vnd.api+json"
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": {
+    "id": "org-a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Acme Corp",
+    "slug": "acme-corp"
+  }
+}
+```
+
+### Error Responses
+
+| Status | Reason |
+|--------|--------|
+| 401 | Unauthenticated |
+| 404 | Account not found or Laravel Cloud not connected |
+| 502 | Upstream Cloud API error |
+
+---
+
+## GET /api/{account}/laravel-cloud/regions
+
+Returns all available Laravel Cloud deployment regions. Calls `GET /meta/regions` on the upstream API. Cached for 5 minutes.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `account` | integer | Account ID |
+
+```bash
+curl -s "https://your-domain.com/api/1/laravel-cloud/regions" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Accept: application/vnd.api+json"
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "region": "us-east-1",
+      "label": "US East (N. Virginia)",
+      "flag": "🇺🇸"
+    },
+    {
+      "region": "eu-west-1",
+      "label": "EU West (Ireland)",
+      "flag": "🇮🇪"
+    }
+  ]
+}
+```
+
+### Error Responses
+
+| Status | Reason |
+|--------|--------|
+| 401 | Unauthenticated |
+| 404 | Account not found or Laravel Cloud not connected |
+| 502 | Upstream Cloud API error |
+
+---
+
+## GET /api/{account}/laravel-cloud/usage
+
+Returns billing usage data for the account. Accepts optional `period` and `environment` query params. Calls `GET /usage` on the upstream API. Cached for 5 minutes.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `account` | integer | Account ID |
+| `period` | string | Billing period (e.g. `2026-10`). Optional. |
+| `environment` | string | Filter by environment ID. Optional. |
+
+```bash
+curl -s "https://your-domain.com/api/1/laravel-cloud/usage?period=2026-10" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Accept: application/vnd.api+json"
+```
+
+### Success Response (200)
+
+```json
+{
+  "data": {
+    "summary": { "total": 150.00 },
+    "resources": [],
+    "addons": [],
+    "application_totals": [],
+    "environment_usage": [],
+    "private_cloud": null
+  },
+  "meta": {
+    "currency": "USD",
+    "period": "2026-10",
+    "available_periods": ["2026-09", "2026-10"],
+    "last_updated_at": "2026-10-15T00:00:00Z"
+  }
+}
+```
+
+### Error Responses
+
+| Status | Reason |
+|--------|--------|
+| 401 | Unauthenticated |
+| 404 | Account not found or Laravel Cloud not connected |
 | 502 | Upstream Cloud API error |

@@ -187,7 +187,7 @@ class LaravelCloudService
         return TaggedCache::for(
             tags: $this->tags(),
             context: ['type' => 'databases'],
-        )->remember(config('cache.ttl.laravel_cloud.slow'), fn () => $this->client()->get('/databases'));
+        )->remember(config('cache.ttl.laravel_cloud.slow'), fn () => $this->client()->get('/databases/clusters'));
     }
 
     /** @return array<mixed> */
@@ -196,7 +196,7 @@ class LaravelCloudService
         return TaggedCache::for(
             tags: $this->tags(),
             context: ['type' => 'database', 'id' => $id],
-        )->remember(config('cache.ttl.laravel_cloud.slow'), fn () => $this->client()->get("/databases/{$id}"));
+        )->remember(config('cache.ttl.laravel_cloud.slow'), fn () => $this->client()->get("/databases/clusters/{$id}"));
     }
 
     /** @param array<string, mixed> $query
@@ -207,7 +207,48 @@ class LaravelCloudService
         return TaggedCache::for(
             tags: $this->tags(),
             context: array_merge($query, ['type' => 'database-metrics', 'id' => $id]),
-        )->remember(config('cache.ttl.laravel_cloud.fast'), fn () => $this->client()->get("/databases/{$id}/metrics", $query));
+        )->remember(config('cache.ttl.laravel_cloud.fast'), fn () => $this->client()->get("/databases/clusters/{$id}/metrics", $query));
+    }
+
+    // -------------------------------------------------------------------------
+    // Organization (slow: 5 min)
+    // -------------------------------------------------------------------------
+
+    /** @return array<mixed> */
+    public function getOrganization(): array
+    {
+        return TaggedCache::for(
+            tags: $this->tags(),
+            context: ['type' => 'organization'],
+        )->remember(config('cache.ttl.laravel_cloud.slow'), fn () => $this->client()->get('/meta/organization'));
+    }
+
+    // -------------------------------------------------------------------------
+    // Regions (slow: 5 min)
+    // -------------------------------------------------------------------------
+
+    /** @return array<mixed> */
+    public function getRegions(): array
+    {
+        return TaggedCache::for(
+            tags: $this->tags(),
+            context: ['type' => 'regions'],
+        )->remember(config('cache.ttl.laravel_cloud.slow'), fn () => $this->client()->get('/meta/regions'));
+    }
+
+    // -------------------------------------------------------------------------
+    // Usage (slow: 5 min)
+    // -------------------------------------------------------------------------
+
+    /** @param array<string, mixed> $query
+     * @return array<mixed>
+     */
+    public function getUsage(array $query = []): array
+    {
+        return TaggedCache::for(
+            tags: $this->tags(),
+            context: array_merge($query, ['type' => 'usage']),
+        )->remember(config('cache.ttl.laravel_cloud.slow'), fn () => $this->client()->get('/usage', $query));
     }
 
     // -------------------------------------------------------------------------
