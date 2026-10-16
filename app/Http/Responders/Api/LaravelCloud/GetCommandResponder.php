@@ -2,9 +2,6 @@
 
 namespace App\Http\Responders\Api\LaravelCloud;
 
-use App\Exceptions\LaravelCloud\LaravelCloudAuthException;
-use App\Exceptions\LaravelCloud\LaravelCloudClientException;
-use App\Exceptions\LaravelCloud\LaravelCloudRateLimitException;
 use App\Http\Resources\LaravelCloud\CommandResource;
 use App\Models\Account;
 use App\Services\LaravelCloudService;
@@ -15,15 +12,7 @@ class GetCommandResponder
 {
     public function __invoke(Request $request, Account $account, string $command): CommandResource|JsonResponse
     {
-        try {
-            $data = (new LaravelCloudService($account))->getCommand($command);
-        } catch (LaravelCloudRateLimitException $e) {
-            return response()->json(['error' => $e->getMessage()], 429, ['Retry-After' => $e->retryAfter]);
-        } catch (LaravelCloudAuthException $e) {
-            return response()->json(['error' => $e->getMessage()], 401);
-        } catch (LaravelCloudClientException $e) {
-            return response()->json(['error' => $e->getMessage()], 502);
-        }
+        $data = (new LaravelCloudService($account))->getCommand($command);
 
         if (empty($data)) {
             abort(404);
