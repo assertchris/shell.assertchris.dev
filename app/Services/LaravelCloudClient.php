@@ -18,7 +18,7 @@ class LaravelCloudClient
         return Http::withHeaders([
             'Authorization' => "Bearer {$this->apiToken}",
             'Accept' => 'application/vnd.api+json',
-        ])->baseUrl('https://cloud.laravel.com/api')->timeout(30);
+        ])->baseUrl('https://cloud.laravel.com/api');
     }
 
     /**
