@@ -8,6 +8,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
 
@@ -30,11 +31,11 @@ class CreateAccount extends CreateRecord
                             ->live(),
                         TextInput::make('mail_host')
                             ->maxLength(255)
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
+                            ->visible(fn (Get $get) => $get('mail_used')),
                         TextInput::make('mail_port')
                             ->numeric()
                             ->default(993)
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
+                            ->visible(fn (Get $get) => $get('mail_used')),
                         Select::make('mail_encryption')
                             ->options([
                                 'ssl' => 'SSL',
@@ -42,14 +43,14 @@ class CreateAccount extends CreateRecord
                                 'none' => 'None',
                             ])
                             ->default('ssl')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
+                            ->visible(fn (Get $get) => $get('mail_used')),
                         TextInput::make('mail_username')
                             ->maxLength(255)
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
+                            ->visible(fn (Get $get) => $get('mail_used')),
                         TextInput::make('mail_password')
                             ->password()
                             ->revealable()
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('mail_used')),
+                            ->visible(fn (Get $get) => $get('mail_used')),
                     ]),
                 Section::make('Google Calendar')
                     ->schema([
@@ -71,7 +72,7 @@ class CreateAccount extends CreateRecord
                         TextInput::make('github_pat')
                             ->password()
                             ->revealable()
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('github_used'))
+                            ->visible(fn (Get $get) => $get('github_used'))
                             ->requiredIf('github_used', true),
                     ]),
                 Section::make('Jira')
@@ -80,16 +81,27 @@ class CreateAccount extends CreateRecord
                         TextInput::make('jira_base_url')
                             ->url()
                             ->placeholder('https://mycompany.atlassian.net')
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->visible(fn (Get $get) => $get('jira_used'))
                             ->requiredIf('jira_used', true),
                         TextInput::make('jira_email')
                             ->email()
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->visible(fn (Get $get) => $get('jira_used'))
                             ->requiredIf('jira_used', true),
                         TextInput::make('jira_api_token')
                             ->password()->revealable()
-                            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get) => $get('jira_used'))
+                            ->visible(fn (Get $get) => $get('jira_used'))
                             ->requiredIf('jira_used', true),
+                    ]),
+                Section::make('Laravel Cloud')
+                    ->schema([
+                        Toggle::make('laravel_cloud_used')
+                            ->default(false)
+                            ->live(),
+                        TextInput::make('laravel_cloud_api_token')
+                            ->password()
+                            ->revealable()
+                            ->visible(fn (Get $get) => $get('laravel_cloud_used'))
+                            ->requiredIf('laravel_cloud_used', true),
                     ]),
             ]);
     }

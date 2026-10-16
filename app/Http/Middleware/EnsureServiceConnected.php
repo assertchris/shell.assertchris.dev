@@ -12,7 +12,7 @@ class EnsureServiceConnected
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next, string $service): Response
     {
@@ -25,6 +25,7 @@ class EnsureServiceConnected
         $connected = match ($service) {
             'github' => $account->isGitHubConnected(),
             'jira' => $account->isJiraConnected(),
+            'laravel-cloud' => $account->isLaravelCloudConnected(),
             'slack' => $account->isSlackConnected(),
             'mail' => (bool) $account->mail_used,
             'calendar' => $account->isGoogleCalendarConnected(),

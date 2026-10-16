@@ -151,6 +151,11 @@ return [
             'event' => 600,    // 10 minutes — single event
         ],
 
+        'laravel_cloud' => [
+            'slow' => 300,   // 5 minutes — apps, environments, clusters, caches
+            'fast' => 60,    // 60 seconds — metrics, deployments, instances, failed jobs, commands list
+        ],
+
     ],
 
 ];

@@ -42,6 +42,8 @@ class Account extends Model
         'jira_base_url',
         'jira_email',
         'jira_api_token',
+        'laravel_cloud_used',
+        'laravel_cloud_api_token',
         'is_active',
     ];
 
@@ -69,6 +71,8 @@ class Account extends Model
             'github_pat' => 'encrypted',
             'jira_used' => 'boolean',
             'jira_api_token' => 'encrypted',
+            'laravel_cloud_used' => 'boolean',
+            'laravel_cloud_api_token' => 'encrypted',
             'is_active' => 'boolean',
         ];
     }
@@ -105,6 +109,19 @@ class Account extends Model
             && ! empty($this->jira_base_url)
             && ! empty($this->jira_email)
             && ! empty($this->jira_api_token);
+    }
+
+    public function isLaravelCloudConnected(): bool
+    {
+        return $this->laravel_cloud_used && ! empty($this->laravel_cloud_api_token);
+    }
+
+    /**
+     * @return array{api_token: string}
+     */
+    public function toLaravelCloudConfig(): array
+    {
+        return ['api_token' => $this->laravel_cloud_api_token];
     }
 
     /**

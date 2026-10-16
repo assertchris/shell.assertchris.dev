@@ -58,6 +58,38 @@ use App\Http\Responders\Api\Jira\TransitionIssueResponder;
 use App\Http\Responders\Api\Jira\UpdateCommentResponder;
 use App\Http\Responders\Api\Jira\UpdateIssueResponder;
 use App\Http\Responders\Api\Jira\UpdateWorklogResponder;
+// Laravel Cloud
+use App\Http\Responders\Api\LaravelCloud\GetApplicationResponder;
+use App\Http\Responders\Api\LaravelCloud\GetCacheMetricsResponder;
+use App\Http\Responders\Api\LaravelCloud\GetCacheResponder;
+use App\Http\Responders\Api\LaravelCloud\GetCommandResponder;
+use App\Http\Responders\Api\LaravelCloud\GetDatabaseMetricsResponder;
+use App\Http\Responders\Api\LaravelCloud\GetDatabaseResponder;
+use App\Http\Responders\Api\LaravelCloud\GetDeploymentLogsResponder;
+use App\Http\Responders\Api\LaravelCloud\GetDeploymentResponder;
+use App\Http\Responders\Api\LaravelCloud\GetEnvironmentMetricsResponder;
+use App\Http\Responders\Api\LaravelCloud\GetEnvironmentResponder;
+use App\Http\Responders\Api\LaravelCloud\GetInstanceResponder;
+use App\Http\Responders\Api\LaravelCloud\GetOrganizationResponder;
+use App\Http\Responders\Api\LaravelCloud\GetUsageResponder;
+use App\Http\Responders\Api\LaravelCloud\ListApplicationsResponder;
+use App\Http\Responders\Api\LaravelCloud\ListCachesResponder;
+use App\Http\Responders\Api\LaravelCloud\ListCommandsResponder;
+use App\Http\Responders\Api\LaravelCloud\ListDatabasesResponder;
+use App\Http\Responders\Api\LaravelCloud\ListDeploymentsResponder;
+use App\Http\Responders\Api\LaravelCloud\ListEnvironmentLogsResponder;
+use App\Http\Responders\Api\LaravelCloud\ListEnvironmentsResponder;
+use App\Http\Responders\Api\LaravelCloud\ListFailedJobsResponder;
+use App\Http\Responders\Api\LaravelCloud\ListInstancesResponder;
+use App\Http\Responders\Api\LaravelCloud\ListRegionsResponder;
+use App\Http\Responders\Api\LaravelCloud\PauseQueueResponder;
+use App\Http\Responders\Api\LaravelCloud\PurgeEdgeCacheResponder;
+use App\Http\Responders\Api\LaravelCloud\PurgeQueueResponder;
+use App\Http\Responders\Api\LaravelCloud\ResumeQueueResponder;
+use App\Http\Responders\Api\LaravelCloud\RetryFailedJobResponder;
+use App\Http\Responders\Api\LaravelCloud\RunCommandResponder;
+use App\Http\Responders\Api\LaravelCloud\StartEnvironmentResponder;
+use App\Http\Responders\Api\LaravelCloud\StopEnvironmentResponder;
 use App\Http\Responders\Api\ListAccountsResponder;
 use App\Http\Responders\Api\ListAttachmentsResponder;
 use App\Http\Responders\Api\ListCalendarEntriesResponder;
@@ -170,6 +202,56 @@ Route::middleware(['auth:sanctum', 'account.owner'])->group(function () {
         Route::get('/filters', ListFiltersResponder::class);
         Route::get('/filters/{id}', GetFilterResponder::class);
         Route::get('/dashboards', ListDashboardsResponder::class);
+    });
+
+    Route::prefix('{account}/laravel-cloud')->middleware('service.connected:laravel-cloud')->group(function () {
+        // Applications
+        Route::get('/applications', ListApplicationsResponder::class);
+        Route::get('/applications/{application}', GetApplicationResponder::class);
+        Route::get('/applications/{application}/environments', ListEnvironmentsResponder::class);
+
+        // Environments
+        Route::get('/environments/{environment}', GetEnvironmentResponder::class);
+        Route::get('/environments/{environment}/logs', ListEnvironmentLogsResponder::class);
+        Route::get('/environments/{environment}/metrics', GetEnvironmentMetricsResponder::class);
+        Route::get('/environments/{environment}/deployments', ListDeploymentsResponder::class);
+        Route::get('/environments/{environment}/instances', ListInstancesResponder::class);
+        Route::get('/environments/{environment}/commands', ListCommandsResponder::class);
+        Route::post('/environments/{environment}/commands', RunCommandResponder::class);
+        Route::post('/environments/{environment}/purge-cache', PurgeEdgeCacheResponder::class);
+        Route::post('/environments/{environment}/start', StartEnvironmentResponder::class);
+        Route::post('/environments/{environment}/stop', StopEnvironmentResponder::class);
+
+        // Deployments
+        Route::get('/deployments/{deployment}', GetDeploymentResponder::class);
+        Route::get('/deployments/{deployment}/logs', GetDeploymentLogsResponder::class);
+
+        // Instances
+        Route::get('/instances/{instance}', GetInstanceResponder::class);
+        Route::get('/instances/{instance}/failed-jobs', ListFailedJobsResponder::class);
+        Route::get('/instances/{instance}/commands', ListCommandsResponder::class);
+        Route::post('/instances/{instance}/failed-jobs/{job}/retry', RetryFailedJobResponder::class);
+        Route::post('/instances/{instance}/pause', PauseQueueResponder::class);
+        Route::post('/instances/{instance}/resume', ResumeQueueResponder::class);
+        Route::post('/instances/{instance}/purge', PurgeQueueResponder::class);
+
+        // Commands
+        Route::get('/commands/{command}', GetCommandResponder::class);
+
+        // Databases
+        Route::get('/databases', ListDatabasesResponder::class);
+        Route::get('/databases/{database}', GetDatabaseResponder::class);
+        Route::get('/databases/{database}/metrics', GetDatabaseMetricsResponder::class);
+
+        // Caches
+        Route::get('/caches', ListCachesResponder::class);
+        Route::get('/caches/{cache}', GetCacheResponder::class);
+        Route::get('/caches/{cache}/metrics', GetCacheMetricsResponder::class);
+
+        // Meta
+        Route::get('/organization', GetOrganizationResponder::class);
+        Route::get('/regions', ListRegionsResponder::class);
+        Route::get('/usage', GetUsageResponder::class);
     });
 
     Route::middleware('service.connected:slack')->group(function () {
