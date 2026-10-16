@@ -81,7 +81,7 @@ test('deployment logs returns 200', function () {
     $account = Account::factory()->withLaravelCloud()->for($user)->create();
     $token = $user->createToken('test');
 
-    $this->getJson("/api/{$account->id}/laravel-cloud/deployments/depl-uuid-1234/logs", [
+    $this->getJson("/api/{$account->id}/laravel-cloud/deployments/depl-uuid-1234/logs?from=2024-01-01T00:00:00Z&to=2024-01-01T01:00:00Z", [
         'Authorization' => 'Bearer '.$token->plainTextToken,
     ])
         ->assertOk()

@@ -118,9 +118,10 @@ class LaravelCloudService
     // -------------------------------------------------------------------------
 
     /** @return array<mixed> */
-    public function getDeploymentLogs(string $id): array
+    /** @param array<string, mixed> $query */
+    public function getDeploymentLogs(string $id, array $query = []): array
     {
-        return $this->client()->get("/deployments/{$id}/logs");
+        return $this->client()->get("/deployments/{$id}/logs", $query);
     }
 
     // -------------------------------------------------------------------------
