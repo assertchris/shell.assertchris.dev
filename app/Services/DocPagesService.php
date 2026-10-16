@@ -16,6 +16,7 @@ class DocPagesService
             'slack' => ['title' => 'Slack', 'file' => 'slack.md'],
             'github' => ['title' => 'GitHub', 'file' => 'github.md'],
             'jira' => ['title' => 'Jira', 'file' => 'jira.md'],
+            'laravel-cloud' => ['title' => 'Laravel Cloud', 'file' => 'laravel-cloud.md'],
         ];
     }
 
