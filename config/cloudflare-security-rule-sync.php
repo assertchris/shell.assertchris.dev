@@ -19,6 +19,6 @@ return [
         'forced_allow_paths' => [],
 
         // When non-empty, wraps the expression with an http.host check.
-        'hostnames' => ['shell.assertchris.dev'],
+        'hostnames' => array_filter(explode(',', env('CF_HOSTNAMES', ''))),
     ],
 ];

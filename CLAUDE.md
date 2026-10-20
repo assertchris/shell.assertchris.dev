@@ -243,7 +243,3 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - IMPORTANT: Activate `tailwindcss-development` every time you're working with a Tailwind CSS or styling-related task.
 </laravel-boost-guidelines>
 
-# Production Server
-
-- **Platform:** Laravel Cloud
-- **Domain:** `shell.assertchris.dev`
