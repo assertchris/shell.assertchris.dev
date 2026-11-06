@@ -3,7 +3,7 @@
     $logoId = preg_replace('/[^a-zA-Z0-9_-]/', '-', $logoId);
     $animName = $logoId . '-animation';
 @endphp
-<svg {{ $attributes->merge(['viewBox' => '0 0 16 16', 'xmlns' => 'http://www.w3.org/2000/svg', 'width' => '48', 'height' => '48', 'aria-label' => 'assertchris logo', 'id' => $logoId]) }}>
+<svg {{ $attributes->except('id')->merge(['viewBox' => '0 0 16 16', 'xmlns' => 'http://www.w3.org/2000/svg', 'width' => '48', 'height' => '48', 'aria-label' => 'assertchris logo']) }} id="{{ $logoId }}">
     <style>
         #{{ $logoId }} {
             --logo-stroke-start: var(--color-stone-700);

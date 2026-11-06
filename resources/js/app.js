@@ -39,11 +39,6 @@ import './bootstrap';
     });
 
     document.addEventListener('DOMContentLoaded', function () {
-        try {
-            var currentScheme = localStorage.getItem('color-scheme') || 'system';
-            applyScheme(currentScheme);
-        } catch (e) {}
-
         document.querySelectorAll('[data-scheme]').forEach(function (button) {
             button.addEventListener('click', function () {
                 var chosen = button.getAttribute('data-scheme');

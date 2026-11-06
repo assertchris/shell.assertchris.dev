@@ -26,9 +26,9 @@
                 <span class="type-heading-secondary">Shell</span>
             </a>
             <div id="scheme-switcher" class="ml-auto inline-flex gap-1 rounded-sm border border-foreground/15 px-1.5 py-1 text-xs">
-                <button data-scheme="light"  class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">Light</button>
-                <button data-scheme="system" class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">System</button>
-                <button data-scheme="dark"   class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">Dark</button>
+                <button type="button" data-scheme="light"  class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">Light</button>
+                <button type="button" data-scheme="system" class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">System</button>
+                <button type="button" data-scheme="dark"   class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">Dark</button>
             </div>
         </div>
     </header>
