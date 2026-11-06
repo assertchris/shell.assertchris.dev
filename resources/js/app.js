@@ -20,21 +20,29 @@ import './bootstrap';
         });
     }
 
-    var stored = localStorage.getItem('color-scheme') || 'system';
-    applyScheme(stored);
+    try {
+        var stored = localStorage.getItem('color-scheme') || 'system';
+        applyScheme(stored);
 
-    document.querySelectorAll('[data-scheme]').forEach(function (button) {
-        button.addEventListener('click', function () {
-            var chosen = button.getAttribute('data-scheme');
-            localStorage.setItem('color-scheme', chosen);
-            applyScheme(chosen);
+        document.querySelectorAll('[data-scheme]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var chosen = button.getAttribute('data-scheme');
+                try {
+                    localStorage.setItem('color-scheme', chosen);
+                } catch (e) {}
+                applyScheme(chosen);
+            });
         });
-    });
 
-    mediaQuery.addEventListener('change', function () {
-        var current = localStorage.getItem('color-scheme') || 'system';
-        if (current === 'system') {
-            applyScheme('system');
-        }
-    });
+        mediaQuery.addEventListener('change', function () {
+            try {
+                var current = localStorage.getItem('color-scheme') || 'system';
+                if (current === 'system') {
+                    applyScheme('system');
+                }
+            } catch (e) {}
+        });
+    } catch (e) {
+        applyScheme('system');
+    }
 })();

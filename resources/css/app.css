@@ -109,6 +109,14 @@
         margin-bottom: var(--spacing-3);
     }
 
+    .article ul ul {
+        list-style-type: circle;
+    }
+
+    .article ul ul ul {
+        list-style-type: square;
+    }
+
     .article ol {
         list-style-type: decimal;
         padding-left: var(--spacing-6);
@@ -194,6 +202,7 @@
         max-width: 100%;
         height: auto;
         border-radius: var(--radius-md);
+        align-self: flex-start;
     }
 
     .article kbd {
@@ -222,7 +231,7 @@
     }
 
     .article mark {
-        background-color: oklch(0.95 0.1 90);
+        background-color: color-mix(in oklch, var(--color-accent) 20%, var(--color-background));
         color: var(--color-foreground);
         border-radius: var(--radius-sm);
         padding: 0.05em 0.2em;

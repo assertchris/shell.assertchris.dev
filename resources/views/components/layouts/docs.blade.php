@@ -8,10 +8,12 @@
     <title>{{ $title }} - Shell API Docs</title>
     <script>
         (function () {
-            var scheme = localStorage.getItem('color-scheme') || 'system';
-            if (scheme === 'dark' || (scheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            }
+            try {
+                var scheme = localStorage.getItem('color-scheme') || 'system';
+                if (scheme === 'dark' || (scheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {}
         })();
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -19,10 +21,10 @@
 <body class="min-h-screen bg-background type-content">
     <header class="py-4">
         <div class="mx-auto flex max-w-6xl px-6 items-center gap-3">
-            <a href="{{ route('docs.index') }}" class="flex items-center no-underline">
+            <a href="{{ route('docs.index') }}" class="flex items-center gap-2 no-underline">
                 <x-logo />
+                <span class="type-heading-secondary">Shell</span>
             </a>
-            <a href="{{ route('docs.index') }}" class="type-heading-secondary no-underline">Shell</a>
             <div id="scheme-switcher" class="ml-auto inline-flex gap-1 rounded-sm border border-foreground/15 px-1.5 py-1 text-xs">
                 <button data-scheme="light"  class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">Light</button>
                 <button data-scheme="system" class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">System</button>
@@ -49,7 +51,7 @@
                 @endforeach
             </ul>
         </nav>
-        <article class="article flex flex-col min-w-0 flex-1">
+        <article class="article min-w-0 flex-1">
             {{ $slot }}
         </article>
     </div>

@@ -1,5 +1,5 @@
 @php
-    $logoId = $attributes->get('id', 'site-logo-' . uniqid());
+    $logoId = $attributes->get('id', 'site-logo-' . \Illuminate\Support\Str::random(8));
     $animName = \Illuminate\Support\Str::slug($logoId) . '-animation';
 @endphp
 <svg {{ $attributes->merge(['viewBox' => '0 0 16 16', 'xmlns' => 'http://www.w3.org/2000/svg', 'width' => '48', 'height' => '48', 'aria-label' => 'assertchris logo', 'id' => $logoId]) }}>
@@ -15,7 +15,8 @@
         #{{ $logoId }} path {
             stroke-width: 0.75;
             stroke: var(--logo-stroke-start);
-            animation: {{ $animName }} 3s linear 1s forwards;
+            animation: {{ $animName }} 3s linear 1s;
+            transition: stroke 0.3s ease;
         }
         @@keyframes {{ $animName }} {
             to {
