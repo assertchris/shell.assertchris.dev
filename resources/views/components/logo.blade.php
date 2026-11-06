@@ -1,4 +1,4 @@
-<svg {{ $attributes->merge(['viewBox' => '0 0 16 16', 'xmlns' => 'http://www.w3.org/2000/svg', 'width' => '32', 'height' => '32', 'aria-label' => 'assertchris logo']) }} id="site-logo">
+<svg {{ $attributes->merge(['viewBox' => '0 0 16 16', 'xmlns' => 'http://www.w3.org/2000/svg', 'width' => '48', 'height' => '48', 'aria-label' => 'assertchris logo']) }} id="site-logo">
     <style>
         #site-logo {
             --logo-stroke-start: var(--color-stone-700);

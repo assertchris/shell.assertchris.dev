@@ -17,15 +17,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-background type-content">
-    <header class="flex items-center gap-3 border-b border-background-secondary px-6 py-4">
-        <a href="{{ route('docs.index') }}" class="flex items-center no-underline">
-            <x-logo />
-        </a>
-        <a href="{{ route('docs.index') }}" class="type-heading-secondary no-underline">Shell</a>
-        <div id="scheme-switcher" class="ml-auto flex items-center gap-1">
-            <button data-scheme="light" class="type-label rounded px-2 py-1 hover:bg-foreground/10">Light</button>
-            <button data-scheme="system" class="type-label rounded px-2 py-1 hover:bg-foreground/10">System</button>
-            <button data-scheme="dark" class="type-label rounded px-2 py-1 hover:bg-foreground/10">Dark</button>
+    <header class="py-4">
+        <div class="mx-auto flex max-w-6xl px-6 items-center gap-3">
+            <a href="{{ route('docs.index') }}" class="flex items-center no-underline">
+                <x-logo />
+            </a>
+            <a href="{{ route('docs.index') }}" class="type-heading-secondary no-underline">Shell</a>
+            <div id="scheme-switcher" class="ml-auto inline-flex gap-1 rounded-sm border border-foreground/15 px-1.5 py-1 text-xs">
+                <button data-scheme="light"  class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">Light</button>
+                <button data-scheme="system" class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">System</button>
+                <button data-scheme="dark"   class="rounded-sm px-1.5 py-0.5 transition-colors hover:bg-foreground/10">Dark</button>
+            </div>
         </div>
     </header>
     <div class="mx-auto flex max-w-6xl px-6 py-10">
@@ -37,7 +39,7 @@
                             href="{{ route('docs.show', $slug) }}"
                             @class([
                                 'type-label no-underline block rounded px-3 py-1.5',
-                                'bg-accent/10 text-accent' => $currentSlug === $slug,
+                                'bg-background-secondary text-accent' => $currentSlug === $slug,
                                 'hover:text-foreground' => $currentSlug !== $slug,
                             ])
                         >
