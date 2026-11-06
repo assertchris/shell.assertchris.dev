@@ -20,9 +20,29 @@ import './bootstrap';
         });
     }
 
+    var stored;
     try {
-        var stored = localStorage.getItem('color-scheme') || 'system';
-        applyScheme(stored);
+        stored = localStorage.getItem('color-scheme') || 'system';
+    } catch (e) {
+        stored = 'system';
+    }
+
+    applyScheme(stored);
+
+    mediaQuery.addEventListener('change', function () {
+        try {
+            var current = localStorage.getItem('color-scheme') || 'system';
+            if (current === 'system') {
+                applyScheme('system');
+            }
+        } catch (e) {}
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        try {
+            var currentScheme = localStorage.getItem('color-scheme') || 'system';
+            applyScheme(currentScheme);
+        } catch (e) {}
 
         document.querySelectorAll('[data-scheme]').forEach(function (button) {
             button.addEventListener('click', function () {
@@ -33,16 +53,5 @@ import './bootstrap';
                 applyScheme(chosen);
             });
         });
-
-        mediaQuery.addEventListener('change', function () {
-            try {
-                var current = localStorage.getItem('color-scheme') || 'system';
-                if (current === 'system') {
-                    applyScheme('system');
-                }
-            } catch (e) {}
-        });
-    } catch (e) {
-        applyScheme('system');
-    }
+    });
 })();

@@ -202,7 +202,7 @@
         max-width: 100%;
         height: auto;
         border-radius: var(--radius-md);
-        align-self: flex-start;
+        display: block;
     }
 
     .article kbd {
@@ -235,5 +235,40 @@
         color: var(--color-foreground);
         border-radius: var(--radius-sm);
         padding: 0.05em 0.2em;
+    }
+
+    .article del,
+    .article s {
+        text-decoration: line-through;
+        color: var(--color-foreground-secondary);
+    }
+
+    .article ins {
+        text-decoration: underline;
+        color: var(--color-foreground);
+    }
+
+    .article abbr[title] {
+        text-decoration: underline dotted;
+        cursor: help;
+    }
+
+    .article details {
+        border: 1px solid var(--color-background-secondary);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-3) var(--spacing-4);
+        margin-top: var(--spacing-3);
+        margin-bottom: var(--spacing-3);
+    }
+
+    .article summary {
+        font-weight: 600;
+        cursor: pointer;
+        color: var(--color-foreground);
+    }
+
+    .article cite {
+        font-style: italic;
+        color: var(--color-foreground-secondary);
     }
 }
