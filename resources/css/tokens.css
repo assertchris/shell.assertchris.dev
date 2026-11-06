@@ -28,10 +28,10 @@
 }
 
 @layer components {
-    .type-heading { font-family: var(--font-sans); font-size: var(--text-2xl); font-weight: var(--font-semibold); color: var(--color-foreground); }
-    .type-heading-secondary { font-family: var(--font-sans); font-size: var(--text-xl); font-weight: var(--font-semibold); color: var(--color-foreground); }
-    .type-heading-tertiary { font-family: var(--font-sans); font-size: var(--text-lg); font-weight: var(--font-semibold); color: var(--color-foreground-secondary); }
-    .type-content { font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--font-normal); color: var(--color-foreground); line-height: 2; }
-    .type-content-secondary { font-family: var(--font-sans); font-size: var(--text-xs); font-weight: var(--font-normal); color: var(--color-foreground-secondary); line-height: 2; }
-    .type-label { font-family: var(--font-sans); font-size: var(--text-xs); font-weight: var(--font-semibold); color: var(--color-foreground-secondary); }
+    .type-heading { font-family: var(--font-sans); font-size: var(--text-2xl); font-weight: 600; color: var(--color-foreground); }
+    .type-heading-secondary { font-family: var(--font-sans); font-size: var(--text-xl); font-weight: 600; color: var(--color-foreground); }
+    .type-heading-tertiary { font-family: var(--font-sans); font-size: var(--text-lg); font-weight: 600; color: var(--color-foreground-secondary); }
+    .type-content { font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 400; color: var(--color-foreground); line-height: 2; }
+    .type-content-secondary { font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 400; color: var(--color-foreground-secondary); line-height: 2; }
+    .type-label { font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 600; color: var(--color-foreground-secondary); }
 }

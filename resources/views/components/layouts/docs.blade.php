@@ -9,7 +9,7 @@
     <script>
         (function () {
             var scheme = localStorage.getItem('color-scheme');
-            if (scheme === 'dark' || (scheme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (scheme === 'dark' || (scheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
             }
         })();
@@ -49,7 +49,7 @@
                 @endforeach
             </ul>
         </nav>
-        <article class="article flex flex-col gap-4 min-w-0 flex-1">
+        <article class="article flex flex-col min-w-0 flex-1">
             {{ $slot }}
         </article>
     </div>

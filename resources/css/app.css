@@ -11,8 +11,6 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-semibold: 600;
-    --font-normal: 400;
     --spacing-1: 0.25rem;
     --spacing-2: 0.5rem;
     --spacing-3: 0.75rem;
@@ -25,7 +23,7 @@
     .article h1 {
         font-family: var(--font-sans);
         font-size: var(--text-3xl);
-        font-weight: var(--font-semibold);
+        font-weight: 600;
         color: var(--color-foreground);
         margin-bottom: var(--spacing-3);
     }
@@ -33,7 +31,7 @@
     .article h2 {
         font-family: var(--font-sans);
         font-size: var(--text-2xl);
-        font-weight: var(--font-semibold);
+        font-weight: 600;
         color: var(--color-foreground);
         margin-top: var(--spacing-6);
         margin-bottom: var(--spacing-2);
@@ -42,7 +40,7 @@
     .article h3 {
         font-family: var(--font-sans);
         font-size: var(--text-xl);
-        font-weight: var(--font-semibold);
+        font-weight: 600;
         color: var(--color-foreground);
         margin-top: var(--spacing-5);
         margin-bottom: var(--spacing-2);
@@ -51,7 +49,7 @@
     .article h4 {
         font-family: var(--font-sans);
         font-size: var(--text-lg);
-        font-weight: var(--font-semibold);
+        font-weight: 600;
         color: var(--color-foreground-secondary);
         margin-top: var(--spacing-4);
         margin-bottom: var(--spacing-1);
@@ -60,7 +58,7 @@
     .article h5 {
         font-family: var(--font-sans);
         font-size: var(--text-base);
-        font-weight: var(--font-semibold);
+        font-weight: 600;
         color: var(--color-foreground-secondary);
         margin-top: var(--spacing-4);
         margin-bottom: var(--spacing-1);
@@ -69,7 +67,7 @@
     .article h6 {
         font-family: var(--font-sans);
         font-size: var(--text-sm);
-        font-weight: var(--font-semibold);
+        font-weight: 600;
         color: var(--color-foreground-secondary);
         margin-top: var(--spacing-4);
         margin-bottom: var(--spacing-1);
@@ -92,7 +90,7 @@
     }
 
     .article strong {
-        font-weight: var(--font-semibold);
+        font-weight: 600;
         color: var(--color-foreground);
     }
 
@@ -129,6 +127,7 @@
     }
 
     .article code {
+        font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
         font-size: var(--text-xs);
         background-color: var(--color-background-secondary);
         color: var(--color-foreground);
@@ -137,6 +136,7 @@
     }
 
     .article pre {
+        font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
         background-color: var(--color-background-secondary);
         color: var(--color-foreground);
         padding: var(--spacing-4);
@@ -170,7 +170,7 @@
     }
 
     .article th {
-        font-weight: var(--font-semibold);
+        font-weight: 600;
         color: var(--color-foreground);
         text-align: left;
         padding: var(--spacing-2) var(--spacing-3);

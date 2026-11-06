@@ -1,14 +1,15 @@
-<svg {{ $attributes->merge(['viewBox' => '0 0 16 16', 'xmlns' => 'http://www.w3.org/2000/svg', 'width' => '48', 'height' => '48', 'aria-label' => 'assertchris logo']) }} id="site-logo">
+@php $logoId = $attributes->get('id', 'site-logo'); @endphp
+<svg {{ $attributes->merge(['viewBox' => '0 0 16 16', 'xmlns' => 'http://www.w3.org/2000/svg', 'width' => '48', 'height' => '48', 'aria-label' => 'assertchris logo', 'id' => 'site-logo']) }}>
     <style>
-        #site-logo {
+        #{{ $logoId }} {
             --logo-stroke-start: var(--color-stone-700);
             --logo-stroke-end: var(--color-stone-900);
         }
-        :where(.dark) #site-logo {
+        :where(.dark) #{{ $logoId }} {
             --logo-stroke-start: var(--color-stone-300);
             --logo-stroke-end: var(--color-stone-100);
         }
-        #site-logo path {
+        #{{ $logoId }} path {
             stroke-width: 0.75;
             stroke: var(--logo-stroke-start);
             animation: logo-animation 3s linear 1s forwards;
@@ -19,11 +20,11 @@
                 stroke-dashoffset: 0;
             }
         }
-        #site-logo path:first-child {
+        #{{ $logoId }} path:first-child {
             stroke-dashoffset: 38.080543518066406;
             stroke-dasharray: 38.080543518066406;
         }
-        #site-logo path:last-child {
+        #{{ $logoId }} path:last-child {
             stroke-dashoffset: 38.030670166015625;
             stroke-dasharray: 38.030670166015625;
         }
