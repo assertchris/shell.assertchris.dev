@@ -1,6 +1,7 @@
 @import 'tailwindcss';
+@import './tokens.css';
 
-@plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -10,4 +11,265 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --spacing-1: 0.25rem;
+    --spacing-2: 0.5rem;
+    --spacing-3: 0.75rem;
+    --spacing-4: 1rem;
+    --spacing-5: 1.25rem;
+    --spacing-6: 1.5rem;
+}
+
+@layer base {
+    .article h1 {
+        font-family: var(--font-sans);
+        font-size: var(--text-3xl);
+        font-weight: 600;
+        color: var(--color-foreground);
+        margin-bottom: var(--spacing-3);
+    }
+
+    .article h2 {
+        font-family: var(--font-sans);
+        font-size: var(--text-2xl);
+        font-weight: 600;
+        color: var(--color-foreground);
+        margin-top: var(--spacing-6);
+        margin-bottom: var(--spacing-2);
+    }
+
+    .article h3 {
+        font-family: var(--font-sans);
+        font-size: var(--text-xl);
+        font-weight: 600;
+        color: var(--color-foreground);
+        margin-top: var(--spacing-5);
+        margin-bottom: var(--spacing-2);
+    }
+
+    .article h4 {
+        font-family: var(--font-sans);
+        font-size: var(--text-lg);
+        font-weight: 600;
+        color: var(--color-foreground-secondary);
+        margin-top: var(--spacing-4);
+        margin-bottom: var(--spacing-1);
+    }
+
+    .article h5 {
+        font-family: var(--font-sans);
+        font-size: var(--text-base);
+        font-weight: 600;
+        color: var(--color-foreground-secondary);
+        margin-top: var(--spacing-4);
+        margin-bottom: var(--spacing-1);
+    }
+
+    .article h6 {
+        font-family: var(--font-sans);
+        font-size: var(--text-sm);
+        font-weight: 600;
+        color: var(--color-foreground-secondary);
+        margin-top: var(--spacing-4);
+        margin-bottom: var(--spacing-1);
+    }
+
+    .article p {
+        font-family: var(--font-sans);
+        font-size: var(--text-sm);
+        color: var(--color-foreground);
+        line-height: 2;
+        margin-bottom: var(--spacing-4);
+    }
+
+    .article a {
+        color: var(--color-accent);
+        text-decoration: underline;
+    }
+
+    .article a:hover {
+        text-decoration: none;
+    }
+
+    .article strong {
+        font-weight: 600;
+        color: var(--color-foreground);
+    }
+
+    .article em {
+        font-style: italic;
+    }
+
+    .article ul {
+        list-style-type: disc;
+        padding-left: var(--spacing-6);
+        font-size: var(--text-sm);
+        color: var(--color-foreground);
+        line-height: 2;
+        margin-top: var(--spacing-3);
+        margin-bottom: var(--spacing-3);
+    }
+
+    .article ul ul {
+        list-style-type: circle;
+    }
+
+    .article ul ul ul {
+        list-style-type: square;
+    }
+
+    .article ol {
+        list-style-type: decimal;
+        padding-left: var(--spacing-6);
+        font-size: var(--text-sm);
+        color: var(--color-foreground);
+        line-height: 2;
+        margin-top: var(--spacing-3);
+        margin-bottom: var(--spacing-3);
+    }
+
+    .article li {
+        margin-top: var(--spacing-1);
+        margin-bottom: var(--spacing-1);
+    }
+
+    .article blockquote {
+        border-left: 4px solid var(--color-accent);
+        padding-left: var(--spacing-4);
+        color: var(--color-foreground-secondary);
+        font-style: italic;
+        margin-top: var(--spacing-4);
+        margin-bottom: var(--spacing-4);
+    }
+
+    .article code {
+        font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+        font-size: var(--text-xs);
+        background-color: var(--color-background-secondary);
+        color: var(--color-foreground);
+        padding: 0.1em 0.3em;
+        border-radius: var(--radius-sm);
+    }
+
+    .article pre {
+        font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+        background-color: var(--color-background-secondary);
+        color: var(--color-foreground);
+        padding: var(--spacing-4);
+        border-radius: var(--radius-md);
+        overflow-x: auto;
+        font-size: var(--text-xs);
+        line-height: 1.75;
+    }
+
+    .article pre code {
+        background-color: transparent;
+        padding: 0;
+        border-radius: 0;
+        font-size: inherit;
+    }
+
+    .article hr {
+        border-color: var(--color-background-secondary);
+        margin-top: var(--spacing-6);
+        margin-bottom: var(--spacing-6);
+    }
+
+    .article table {
+        width: 100%;
+        font-size: var(--text-sm);
+        border-collapse: collapse;
+    }
+
+    .article thead {
+        background-color: var(--color-background-secondary);
+    }
+
+    .article th {
+        font-weight: 600;
+        color: var(--color-foreground);
+        text-align: left;
+        padding: var(--spacing-2) var(--spacing-3);
+        border-bottom: 1px solid var(--color-background-secondary);
+    }
+
+    .article td {
+        color: var(--color-foreground);
+        padding: var(--spacing-2) var(--spacing-3);
+        border-bottom: 1px solid var(--color-background-secondary);
+    }
+
+    .article img {
+        max-width: 100%;
+        height: auto;
+        border-radius: var(--radius-md);
+        display: block;
+    }
+
+    .article kbd {
+        font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+        font-size: var(--text-xs);
+        background-color: var(--color-background-secondary);
+        color: var(--color-foreground);
+        padding: 0.1em 0.4em;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--color-foreground-secondary);
+    }
+
+    .article sub,
+    .article sup {
+        font-size: 0.75em;
+        line-height: 0;
+        vertical-align: baseline;
+    }
+
+    .article sup {
+        vertical-align: super;
+    }
+
+    .article sub {
+        vertical-align: sub;
+    }
+
+    .article mark {
+        background-color: #fef9c3; /* fallback for browsers without color-mix() */
+        background-color: color-mix(in oklch, var(--color-accent) 20%, var(--color-background));
+        color: var(--color-foreground);
+        border-radius: var(--radius-sm);
+        padding: 0.05em 0.2em;
+    }
+
+    .article del,
+    .article s {
+        text-decoration: line-through;
+        color: var(--color-foreground-secondary);
+    }
+
+    .article ins {
+        text-decoration: underline;
+        color: var(--color-foreground);
+    }
+
+    .article abbr[title] {
+        text-decoration: underline dotted;
+        cursor: help;
+    }
+
+    .article details {
+        border: 1px solid var(--color-background-secondary);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-3) var(--spacing-4);
+        margin-top: var(--spacing-3);
+        margin-bottom: var(--spacing-3);
+    }
+
+    .article summary {
+        font-weight: 600;
+        cursor: pointer;
+        color: var(--color-foreground);
+    }
+
+    .article cite {
+        font-style: italic;
+        color: var(--color-foreground-secondary);
+    }
 }
