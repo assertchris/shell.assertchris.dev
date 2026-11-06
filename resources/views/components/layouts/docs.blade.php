@@ -8,7 +8,7 @@
     <title>{{ $title }} - Shell API Docs</title>
     <script>
         (function () {
-            var scheme = localStorage.getItem('color-scheme');
+            var scheme = localStorage.getItem('color-scheme') || 'system';
             if (scheme === 'dark' || (scheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
             }
