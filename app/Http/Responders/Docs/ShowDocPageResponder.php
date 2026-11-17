@@ -4,6 +4,7 @@ namespace App\Http\Responders\Docs;
 
 use App\Services\DocPagesService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -19,9 +20,11 @@ class ShowDocPageResponder
 
         $path = resource_path('docs/'.$pages[$slug]['file']);
 
+        $content = Cache::rememberForever('docs.'.$slug, fn () => Str::markdown(file_get_contents($path)));
+
         return view('docs.show', [
             'title' => $pages[$slug]['title'],
-            'content' => Str::markdown(file_get_contents($path)),
+            'content' => $content,
             'pages' => $this->docPages->titles(),
             'currentSlug' => $slug,
         ]);
